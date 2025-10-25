@@ -27,8 +27,6 @@ export const postType = defineType({
             title: "Youtube clip link",
             description: "Link to a Youtube clip with explanation of this Delivery Audit finding",
             type: 'url',
-            initialValue: () => new Date().toISOString(),
-            validation: (rule) => rule.required(),
         }),
         defineField({
             name: 'image',
