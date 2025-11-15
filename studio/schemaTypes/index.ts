@@ -1,3 +1,9 @@
-import {postType} from './postType'
+import { post } from './post'
+import { finding } from './finding';
+import { author } from './author';
 
-export const schemaTypes = [postType];
+export const schemaTypes = [
+    post,
+    finding,
+    author,
+];
