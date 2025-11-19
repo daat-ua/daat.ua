@@ -74,7 +74,9 @@ export const post = defineType({
             title: "S7 category",
             description: "McKinsey S7 category for this particular finding",
             type: "string",
+            group: 'meta',
             options: {
+                layout: 'radio',
                 list: [
                     { value: "s1", title: "S1 Strategy" },
                     { value: "s2", title: "S2 Structure" },
@@ -84,7 +86,7 @@ export const post = defineType({
                     { value: "s6", title: "S6 Staff" },
                     { value: "s7", title: "S7 Skills" }
                 ]
-            }
+            },
         }),
 
         defineField({

@@ -20,6 +20,11 @@ export const author = defineType({
         }),
 
         defineField({
+            name: 'linkedin_link',
+            type: 'string'
+        }),
+
+        defineField({
             name: 'photo',
             type: 'image',
             options: {
