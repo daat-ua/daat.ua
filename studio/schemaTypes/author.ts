@@ -1,4 +1,4 @@
-import { defineField, defineType } from 'sanity'
+ import { defineField, defineType } from 'sanity'
 
 export const author = defineType({
     name: 'authors',
