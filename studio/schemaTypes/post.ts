@@ -143,6 +143,54 @@ export const post = defineType({
         }),
 
         defineField({
+            name: 'seo_title',
+            title: 'SEO title',
+            type: 'string',
+            group: 'seo',
+        }),
+
+        defineField({
+            name: 'seo_description',
+            title: 'SEO description',
+            type: 'text',
+            rows: 3,
+            group: 'seo',
+        }),
+
+        defineField({
+            name: 'seo_keywords',
+            title: 'SEO keywords',
+            type: 'array',
+            of: [{type: 'string'}],
+            options: {layout: 'tags'},
+            group: 'seo',
+        }),
+
+        defineField({
+            name: 'seo_image',
+            title: 'Social sharing image',
+            description: 'Image used for Open Graph / Twitter cards',
+            type: 'image',
+            options: {hotspot: true},
+            fields: [
+                {
+                    name: 'alt',
+                    type: 'string',
+                    title: 'Alternative Text',
+                },
+            ],
+            group: 'seo',
+        }),
+
+        defineField({
+            name: 'no_index',
+            title: 'Hide from search engines',
+            type: 'boolean',
+            initialValue: false,
+            group: 'seo',
+        }),
+
+        defineField({
             name: 'efforts_strategic_management',
             title: 'Strategic management',
             type: 'number',
