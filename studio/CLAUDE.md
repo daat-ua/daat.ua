@@ -4,49 +4,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Sanity CMS Studio for daat.ua, a content management system for delivery audit findings and posts. The project is built using TypeScript, React, and Sanity Studio with a focus on structured content management for business consulting and auditing content.
+Sanity Studio v4 for daat.ua — a content backend for delivery-audit findings, blog posts, and author profiles. There is no frontend in this repo; this is the editing/admin studio only. The consuming site lives elsewhere and reads from the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`).
 
-## Development Commands
+## Commands
 
-- `npm run dev` - Start development server (Sanity Studio dev mode)
-- `npm run start` - Start production server
-- `npm run build` - Build the project for production
-- `npm run deploy` - Deploy to Sanity hosting
-- `npm run deploy-graphql` - Deploy GraphQL API to Sanity
+- `npm run dev` — local studio at `http://localhost:3333`
+- `npm run build` — production build
+- `npm run deploy` — deploy hosted studio to Sanity
+- `npm run deploy-graphql` — (re)deploy the GraphQL API for the dataset; run this after any schema change consumers depend on
 
-## Code Architecture
+There is no test runner, linter script, or formatter script wired into npm. Lint/format are configured (ESLint via `@sanity/eslint-config-studio`, Prettier inline in `package.json`) but must be invoked directly (`npx eslint .`, `npx prettier --check .`).
 
-### Content Schema Structure
-The project uses Sanity's schema-first approach with three main content types defined in `schemaTypes/`:
+## Architecture
 
-- **Posts** (`post.ts`) - Main blog posts/articles with McKinsey S7 framework categorization, Linear issue tracking, and YouTube integration
-- **Findings** (`finding.ts`) - Delivery audit findings with effort radar metrics across 7 business dimensions
-- **Authors** (`author.ts`) - Content author profiles with LinkedIn integration
+### Schema is the architecture
+Everything meaningful in this repo is the content model in `schemaTypes/`. Each file exports one document type, all are registered through `schemaTypes/index.ts`, and that array is passed to `defineConfig` in `sanity.config.ts`. To add a content type: create the file, export the `defineType(...)`, and add it to the `index.ts` array — registration is purely manual.
 
-### Key Configuration Files
-- `sanity.config.ts` - Main Sanity configuration (project: 7mfhokh5, dataset: production)
-- `schemaTypes/index.ts` - Schema type exports and registration
-- `tsconfig.json` - TypeScript configuration with ES2017 target
-- `eslint.config.mjs` - ESLint configuration using Sanity's studio config
+### Schema name vs. file name mismatch (gotcha)
+The exported variable name, the file name, and the `name:` field of the document do not all match. References between documents must use the **schema `name`**, not the file/export name:
+- `post.ts` → `name: 'post'`
+- `finding.ts` → `name: 'findings'` (plural)
+- `author.ts` → `name: 'authors'` (plural)
 
-### Content Structure Features
-- **Grouped field organization** - Content, Meta, SEO, and Efforts radar field groups
-- **McKinsey S7 Framework** - Strategic categorization for posts (S1-S7 categories)
-- **Efforts Radar** - 7-dimensional scoring system for findings (0-100 scale):
-  - Strategic management, Delivery, Sales, Marketing, Company operations, People management, Financial control
-- **Rich content support** - Portable text with embedded images
-- **YouTube integration** - Dedicated fields for video explanations
-- **Linear issue tracking** - Integration with Linear project management
+Example: `post.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
 
-### Styling and Code Standards
-- Uses Prettier with custom config (no semicolons, 100 char width, single quotes, no bracket spacing)
-- TypeScript strict mode enabled
-- Styled Components for styling (v6.1.18)
+### Field groups convention
+All document types use the same set of field group names so the editor UX stays consistent: `content` (default), `meta`, `seo`, `efforts_radar`, plus the spread `ALL_FIELDS_GROUP` (hidden) for showing every field. When adding fields, assign a `group` so they land in the right tab. Note: `post` declares the `efforts_radar` group but currently has no fields in it — the group is reserved for future use, only `findings` populates it today.
 
-## Dependencies
-- **Sanity Studio v4.15** - Core CMS framework
-- **@sanity/table v2.0** - Table editing plugin
-- **@sanity/vision v4.15** - GROQ query testing tool
-- **React 19.1** - UI framework
-- **Styled Components 6.1** - CSS-in-JS styling
-- **TypeScript 5.8** - Type system
+### Efforts radar
+The 7-axis scoring lives only on `findings` (`efforts_radar_strategic_management`, `_delivery`, `_sales`, `_marketing`, `_company_operations`, `_people_management`, `_financial_control`). Each is a number with a fixed `list: [0, 10, ..., 100]`. If you add an axis, add it to all seven existing fields' visual consumers downstream — these field names are the public contract with the frontend.
+
+### Project ID / dataset are duplicated
+`projectId` and `dataset` appear in both `sanity.config.ts` and `sanity.cli.ts`. Changes must be made in both files.
+
+### Plugins
+Registered in `sanity.config.ts`: `structureTool`, `visionTool` (GROQ playground at `/vision` in dev), and `@sanity/table`. Add new plugins to the `plugins: []` array in the same file.
+
+## Conventions
+
+- Prettier: no semicolons, single quotes, 100-char width, no bracket spacing — matches what's in `package.json`'s `"prettier"` block. Existing files are not 100% consistent (some use semicolons); when editing a file, follow the surrounding style of that file.
+- `linear_issue` field on posts uses the `DAA-...` Linear ticket prefix.
+- TypeScript is `strict: true` with `target: ES2017`.
