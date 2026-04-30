@@ -65,7 +65,7 @@ export const blogPost = defineType({
             options: {
                 layout: 'radio',
                 list: [
-                    {value: 'coo', title: 'COO'},
+                    {value: 'delivery', title: 'Delivery'},
                     {value: 'cto', title: 'CTO'},
                 ],
             },
