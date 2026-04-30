@@ -82,6 +82,14 @@ export const blogPost = defineType({
         }),
 
         defineField({
+            name: 'teaser',
+            description: 'Short brief shown on listing pages — usually a hook or the first paragraph of the body',
+            type: 'array',
+            of: [{type: 'block'}],
+            group: 'content',
+        }),
+
+        defineField({
             name: 'body',
             description: 'Page contents',
             type: 'array',
