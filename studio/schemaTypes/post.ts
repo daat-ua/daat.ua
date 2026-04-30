@@ -1,4 +1,5 @@
 import { ALL_FIELDS_GROUP, defineField, defineType } from 'sanity'
+import { EffortSliderInput } from './effortSliderInput'
 
 export const post = defineType({
     name: 'post',
@@ -139,6 +140,76 @@ export const post = defineType({
             description: "Link to a Youtube clip with explanation of this Delivery Audit finding",
             type: 'url',
             group: 'content',
+        }),
+
+        defineField({
+            name: 'efforts_strategic_management',
+            title: 'Strategic management',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
+        }),
+
+        defineField({
+            name: 'efforts_delivery_excellence',
+            title: 'Delivery excellence',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
+        }),
+
+        defineField({
+            name: 'efforts_sales',
+            title: 'Sales',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
+        }),
+
+        defineField({
+            name: 'efforts_marketing',
+            title: 'Marketing',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
+        }),
+
+        defineField({
+            name: 'efforts_company_operations',
+            title: 'Company operations',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
+        }),
+
+        defineField({
+            name: 'efforts_people_management',
+            title: 'People management',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
+        }),
+
+        defineField({
+            name: 'efforts_financial_control',
+            title: 'Financial control',
+            type: 'number',
+            validation: (rule) => rule.min(0).max(100),
+            initialValue: 50,
+            group: 'efforts_radar',
+            components: {input: EffortSliderInput},
         }),
     ],
 
