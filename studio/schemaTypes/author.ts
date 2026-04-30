@@ -2,7 +2,7 @@
 
 export const author = defineType({
     name: 'authors',
-    title: 'Content authors',
+    title: 'Authors',
     type: 'document',
     fields: [
 
