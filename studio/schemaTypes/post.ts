@@ -2,7 +2,7 @@ import { ALL_FIELDS_GROUP, defineField, defineType } from 'sanity'
 
 export const post = defineType({
     name: 'post',
-    title: 'Posts',
+    title: 'Delivery audit findings',
     type: 'document',
 
     groups: [{

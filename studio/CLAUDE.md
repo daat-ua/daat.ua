@@ -21,18 +21,15 @@ There is no test runner, linter script, or formatter script wired into npm. Lint
 Everything meaningful in this repo is the content model in `schemaTypes/`. Each file exports one document type, all are registered through `schemaTypes/index.ts`, and that array is passed to `defineConfig` in `sanity.config.ts`. To add a content type: create the file, export the `defineType(...)`, and add it to the `index.ts` array — registration is purely manual.
 
 ### Schema name vs. file name mismatch (gotcha)
-The exported variable name, the file name, and the `name:` field of the document do not all match. References between documents must use the **schema `name`**, not the file/export name:
-- `post.ts` → `name: 'post'`
-- `finding.ts` → `name: 'findings'` (plural)
+The exported variable name, the file name, and the `name:` field of the document do not all match. The file/export name is for humans; references between documents must use the **schema `name`**:
+- `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI)
 - `author.ts` → `name: 'authors'` (plural)
+- `blogPost.ts` → `name: 'blogPost'`
 
-Example: `post.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
+Example: `blogPost.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
 
 ### Field groups convention
-All document types use the same set of field group names so the editor UX stays consistent: `content` (default), `meta`, `seo`, `efforts_radar`, plus the spread `ALL_FIELDS_GROUP` (hidden) for showing every field. When adding fields, assign a `group` so they land in the right tab. Note: `post` declares the `efforts_radar` group but currently has no fields in it — the group is reserved for future use, only `findings` populates it today.
-
-### Efforts radar
-The 7-axis scoring lives only on `findings` (`efforts_radar_strategic_management`, `_delivery`, `_sales`, `_marketing`, `_company_operations`, `_people_management`, `_financial_control`). Each is a number with a fixed `list: [0, 10, ..., 100]`. If you add an axis, add it to all seven existing fields' visual consumers downstream — these field names are the public contract with the frontend.
+All document types use the same set of field group names so the editor UX stays consistent: `content` (default), `meta`, `seo`, plus the spread `ALL_FIELDS_GROUP` (hidden) for showing every field. When adding fields, assign a `group` so they land in the right tab.
 
 ### Project ID / dataset are duplicated
 `projectId` and `dataset` appear in both `sanity.config.ts` and `sanity.cli.ts`. Changes must be made in both files.
