@@ -59,9 +59,9 @@ export const caseStudy = defineType({
 
         defineField({
             name: 'teaser',
-            description: 'Short brief shown on listing pages',
-            type: 'text',
-            rows: 3,
+            description: 'Short brief shown on listing pages — usually a hook or the first paragraph of the body',
+            type: 'array',
+            of: [{type: 'block'}],
             group: 'content',
         }),
 
