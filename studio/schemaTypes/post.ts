@@ -20,6 +20,9 @@ export const post = defineType({
         name: 'efforts_radar',
         title: 'Efforts radar data',
     }, {
+        name: 'art',
+        title: 'Art',
+    }, {
         ...ALL_FIELDS_GROUP,
         hidden: true,
     }],
@@ -103,7 +106,21 @@ export const post = defineType({
                     title: "Alternative Text",
                 },
             ],
-            group: 'content',
+            group: 'art',
+        }),
+
+        defineField({
+            name: 'art_description',
+            title: 'Art Description',
+            type: 'text',
+            group: 'art',
+        }),
+
+        defineField({
+            name: 'artist',
+            title: 'Artist',
+            type: 'string',
+            group: 'art',
         }),
 
         defineField({
