@@ -1,0 +1,142 @@
+# Deviations from Figma
+
+Changes made in code during the design-critique fixes, so the Figma file can be brought in line.
+Sizes are given at the 1440px desktop width (Figma is drawn at 2×, so double them there).
+
+## Typography (`/typeset`)
+
+| Element | Figma | Code now | Why |
+|---|---|---|---|
+| Type scale | 63.28 / 50 / 30 / 21 / 20.865 / 20 / 19.815 / 19.26 | 64 / 48 / 30 / 24 / 20 / 17 | Fewer, clearly distinct steps |
+| H1 (hero) | 63.28 / 66.33 line | 64 / 1.05 | Scale step |
+| H2 (`Що стримує…`, `Чому Daat?`) | 50 / line-height 1 | 48 / 1.08 | Scale step; room for Cyrillic ascenders |
+| Emphasis inside H1/H2 | H1 Medium (500), H2 DemiBold (600) | Medium (500) in both | One emphasis weight for display headings |
+| Card and key-point titles | 30 / line-height 1 | 30 / 1.1 | Multi-line titles were cramped |
+| Hero lead (orange) | 21 / normal | 24 / 1.42 | Lead should be larger than body, not only coloured |
+| Body: cards, key points, intro, example | 20–20.865 / line-height 1–1.15 | 20 / 1.42 | Readability of 4–5 line light-on-colour text |
+| Buttons | 19.815 and 19.26 | 20 (all buttons) | One size per component |
+| Eyebrow, TOC links, clients label | 20.865–21 | 17 (+0.02em tracking on the eyebrow) | Small/UI step |
+
+Responsive behaviour (code only): at 1024px and wider, text scales in proportion to the screen width like the rest of the layout, so the desktop page is an exact scaled copy of the 1440 design. Below 1024px the mobile layout uses its own sizes (body 17, H1 34–46).
+
+Compound terms (`IT-компаній`, `~50–500`, `4–5 тижнів`) no longer break across lines.
+
+## Colour and contrast (`/colorize`)
+
+On the brand blue `#0066de`, the orange `#feb161` (2.95:1) and cream `#ede9de` (4.38:1) fail WCAG AA for normal-size text. The blue itself is unchanged.
+
+| Element | Figma | Code now | Contrast |
+|---|---|---|---|
+| Eyebrow "Чому зараз?" | Orange text | Off-white `#faf8f3` text, led by a short 2px orange rule | 5.0:1 |
+| TOC links | Cream `#ede9de` | `#f4f1ea` | 4.7:1 |
+| TOC active item | Orange, DemiBold | `#faf8f3`, SemiBold, with a short off-white marker before it | 5.0:1 |
+| TOC hover | (none) | Underline | — |
+
+Orange remains in use on blue only as graphics (dividers, the eyebrow rule). Section titles stay cream: at 36px+ they are large text, where 4.38:1 passes.
+
+## Grid and spacing (`/layout`)
+
+**One column module for the whole page:** 314px columns with 37.5px gutters, starting at the 121px page margin. Columns start at x = 121 / 472.5 / 824; two columns (665.5) is the reading width, three columns (1017) the full content width.
+
+| Element | Figma | Code now |
+|---|---|---|
+| Left edge of body copy, divider, key points, buttons | 123.5 (2.5px optical indent) | 121, same as the headings |
+| Hero key points | 269.5 columns | 314 columns (same module as the blue section) |
+| Hero lead / divider / key points width | 630.5 / 577 / 576 | All 665.5 (one shared right edge) |
+| Blue-section dividers | 1046 (overshot the cards) | 1017 (ends with the third column) |
+| Founders photo | 301.2 wide in a 314 column | Fills the 314 column (crop unchanged) |
+| Table of contents | x = 1193.5 | x = 1175.5 (a fourth column start, one gutter past the content) |
+| Hero founders photo | Fixed top offset (y = 326.6 in the dark area) | Anchored to the bottom of the dark area, overflowing it by 59.5, so the crop matches Figma even though the hero is taller |
+| "Знахідки аудитів" button | Top-aligned, x = 826.5 | Vertically centred on the text, one gutter after it |
+| Outline button | 24.79 padding, 1.944 border | 24 padding, 2 border |
+
+**Spacing scale:** 8 / 16 / 24 / 32 / 48 / 64 / 96 replaces the measured values (41.1, 46.4, 47.75, 55.65, 57.25, 59.9, 60.5, 74.25, 93.75…).
+
+| Relationship | Figma | Code now |
+|---|---|---|
+| Header bottom → H1 | 136 | 128 (96 + 32) |
+| Hero blocks (lead, divider, clients, buttons) | 62–66.5 | 64 |
+| Divider → key points | 64.1 | 48 (a divider opens the block after it) |
+| Key points → second divider ("Line 2") → clients label | 66 / 86.5 | 64 / 48 (same divider rule) |
+| Key-point rows | 67 | 48 |
+| Card title → text | 15 / 21.5 / 31.4 (three variants) | 16 everywhere |
+| Card rows (problems, reasons) | 45 | 48 |
+| Eyebrow → H2 | 41.1 | 24 (the label belongs to its heading) |
+| H2 → intro, divider → next block | 46–60 | 48 |
+| Before each divider | 47.75–60.5 | 64 |
+| "Чому Daat?" → photo and cards | 93.75 | 64 |
+| Blue section top / bottom | 74.25 / 217 | 96 / 160 |
+| Client logos gap | 28.5 | 32 |
+| Clients label → logos | 26.25 | 24 |
+
+Typographic details: spaced dashes are bound to the preceding word (a line never starts with "—"), and number ranges (`0–3`, `9–18`, `~50–500`) never break.
+
+## Responsive layouts (`/adapt`)
+
+There is one breakpoint: at 1024px and up, the 1440 design scales proportionally (text included); below 1024px the single-column mobile layout applies. Figma has only the desktop frame, so the mobile details are new and worth adding as a frame:
+
+- Client logos in a 3 + 2 grid.
+- Founders photo capped at 320px.
+- The table of contents becomes a compact horizontal bar that sticks to the top of the blue section (scrolls sideways, 44px touch targets, active item underlined) instead of being hidden.
+
+## Structure and robustness (`/harden`), code only, no visual change
+
+- Hero key points are a definition list (term + description), so the heading outline is H1 → H2 → H3 with no skipped level.
+- "Перейти до змісту" skip link, visible on keyboard focus. Global focus outline, and transitions respect reduced-motion settings.
+- The table-of-contents highlight follows the section in view.
+- In-page links whose target doesn't exist yet are announced as unavailable and don't jump. They activate automatically once the section with that id exists.
+
+## TODO: content and sections still missing
+
+| Item | Where | Needed |
+|---|---|---|
+| `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
+| `#results` | "Які результати ви отримаєте?" | Results section |
+| `#audit-findings` | "Знахідки аудитів" | Audit findings section |
+| `#for-whom`, `#deliverables`, `#roadmap`, `#testimonials` | Table of contents | The four remaining sections |
+| Menu button | Header | Menu design and content |
+| Reason card 4 | "Шось четверте" | Real title (also a typo for "Щось") and its own description; it currently repeats card 3 |
+| Problem card 6 | "Команда постійно гасить пожежі…" | A description; it currently repeats the title |
+| Client logos | Hero | Confirm Adobe / Stripe / HubSpot / GitHub / Asana are real clients, or replace them |
+
+## Performance (`/optimize`), code only, no visual change
+
+| Asset | Before | After |
+|---|---|---|
+| 7 font files | 1.0 MB TTF | 236 KB woff2, subset to Latin + Cyrillic + punctuation (all OpenType features kept; every character on the page verified present) |
+| Logo | 347 KB PNG | 24 KB WebP, same 706×795 pixels |
+| Page total excluding scroll-animation frames | ~1.9 MB | ~490 KB |
+
+- The H1 fonts (Turns Light + Medium), body Regular and the hero photo are preloaded.
+- Metric-matched Arial fallbacks (`size-adjust` / ascent / descent overrides) mean text rendered before the web fonts arrive takes the same space, so the font swap doesn't shift layout.
+- Original TTFs and PNG are in `_source/` (not published).
+
+**Licence (decision needed):** the display face files are **TT Turns Trial**. Trial fonts from TypeType are not licensed for production websites. Buy a web licence (and swap in the licensed files under the same names) before launch. TT Commons also needs a web licence if one isn't already held.
+
+## Final polish (`/polish`)
+
+| Element | Figma | Code now | Why |
+|---|---|---|---|
+| Card text alignment (problems, reasons) | Fixed title slot (4 lines / 2 lines) | Descriptions in a row start below that row's tallest title (CSS subgrid) | No empty gap when every title in a row is short; rows still line up |
+| Blue-section titles | Cream `#ede9de` (4.38:1) | `#f4f1ea` (4.7:1) | Visually identical; clears AA for any size |
+| Buttons, pressed state | (none) | 1px press-down | Tactile feedback |
+
+Verified at 500 / 800 / 1024 / 1280 / 1440 / 1920:
+- no horizontal overflow;
+- no console errors.
+
+On mobile, no touch target is under 44px and no text is under 16px. Desktop text scales with width by design, so it is smaller than 1440 sizes below 1440 (body 14.2px at 1024).
+
+The automated scan went from 25 findings to 5, and the 5 remaining are false positives:
+- 3 are the hero's orange and cream text measured against white; the real background is navy, giving 8.5:1 and 12.6:1.
+- 1 says the blue section's content is flush to its edges; it is inset 121px.
+- 1 counts em-dashes, which is standard Ukrainian punctuation.
+
+## Summary for the designer: what to update in Figma
+1. Apply the type scale 64 / 48 / 30 / 24 / 20 / 17 and the new line-heights (Typography table).
+2. Use Medium (500) as the emphasis weight in both the H1 and H2s.
+3. Replace orange and cream text on blue with the off-white tints (Colour table).
+4. Re-grid the hero key points to the 314 / 37.5 module, align right edges at 665.5, and shorten the dividers to 1017.
+5. Replace measured spacing with the 8–96 scale (Grid and spacing table).
+6. Add a mobile frame (Responsive layouts section).
+7. Resolve the TODO list: missing sections, the menu, placeholder copy, client logos, and the font licence.

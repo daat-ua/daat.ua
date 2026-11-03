@@ -5,14 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ATLAS — доказова діагностика зростання IT-компаній | Daat</title>
   <meta name="description" content="ATLAS — доказова діагностика зростання IT-компаній від Daat. Перший результат — уже за 4–5 тижнів." />
+  <!-- Fonts used above the fold: the H1 (Turns Light + Medium) and hero body (Commons Regular) -->
+  <link rel="preload" href="fonts/TT_Turns_Trial_Light.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/TT_Turns_Trial_Medium.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/TTCommons-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/hero-photo.webp" as="image" fetchpriority="high" />
   <style>
-    @font-face { font-family: "TT Turns"; src: url("fonts/TT_Turns_Trial_Light.ttf") format("truetype"); font-weight: 300; font-display: swap; }
-    @font-face { font-family: "TT Turns"; src: url("fonts/TT_Turns_Trial_Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
-    @font-face { font-family: "TT Turns"; src: url("fonts/TT_Turns_Trial_DemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
-    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
-    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
-    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-DemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
-    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+    /* Fonts are subset to Latin + Cyrillic and served as woff2 (originals in _source/fonts-ttf) */
+    @font-face { font-family: "TT Turns"; src: url("fonts/TT_Turns_Trial_Light.woff2") format("woff2"); font-weight: 300; font-display: swap; }
+    @font-face { font-family: "TT Turns"; src: url("fonts/TT_Turns_Trial_Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+    @font-face { font-family: "TT Turns"; src: url("fonts/TT_Turns_Trial_DemiBold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-DemiBold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+    @font-face { font-family: "TT Commons"; src: url("fonts/TTCommons-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+    /* Metric-matched fallbacks: text shown before the web fonts load takes the same space, so nothing jumps on swap */
+    @font-face { font-family: "TT Turns Fallback"; src: local("Arial"), local("Helvetica"); size-adjust: 98%; ascent-override: 100%; descent-override: 28.5%; line-gap-override: 0%; }
+    @font-face { font-family: "TT Commons Fallback"; src: local("Arial"), local("Helvetica"); size-adjust: 86.5%; ascent-override: 80.9%; descent-override: 34.7%; line-gap-override: 17.3%; }
 
     /*
       Desktop (>= 1024px): the 1440px design scales with the viewport.
@@ -27,13 +37,50 @@
       --c-primary: #0066de;
       --c-cream: #ede9de;
       --c-white: #ffffff;
+      /* Text on the brand blue: the orange and cream fail AA there, so use warm off-whites */
+      --c-on-primary: #faf8f3;       /* 5.0:1 on #0066de */
+      --c-on-primary-muted: #f4f1ea; /* 4.7:1 on #0066de */
+      --c-ink: #33475b;              /* text on cream */
+      --c-primary-hover: #0a59bb;
+      --c-surface-hover: #374a60;
+      --c-cream-hover: #fffaf0;
 
-      --font-display: "TT Turns", system-ui, sans-serif;
-      --font-body: "TT Commons", system-ui, sans-serif;
+      --font-display: "TT Turns", "TT Turns Fallback", sans-serif;
+      --font-body: "TT Commons", "TT Commons Fallback", sans-serif;
+
+      /* Type scale (sizes at 1440): 64 / 48 / 30 / 24 / 20 / 17, scaling with the layout like everything else */
+      --text-display: calc(64 * var(--px));
+      --text-heading: calc(48 * var(--px));
+      --text-title:   calc(30 * var(--px));
+      --text-lead:    calc(24 * var(--px));
+      --text-body:    calc(20 * var(--px));
+      --text-small:   calc(17 * var(--px));
+
+      --leading-display: 1.05;
+      --leading-heading: 1.08;
+      --leading-title: 1.1;
+      --leading-body: 1.42; /* light text on dark/saturated grounds wants a little extra */
+      --leading-small: 1.3;
+
+      --weight-emphasis: 500; /* the bold half of a Light/Medium display heading */
 
       --px: calc(100vw / 1440);
-      --gutter: calc(121 * var(--px));      /* heading, logo, clients label */
-      --gutter-inner: calc(2.5 * var(--px)); /* extra indent of paragraph, divider, theses, buttons */
+      --gutter: calc(121 * var(--px));      /* page margin; every content block starts here */
+
+      /* Column module shared by all sections: 314 columns, 37.5 gutters */
+      --col: calc(314 * var(--px));
+      --col-gap: calc(37.5 * var(--px));
+      --span-2: calc(2 * var(--col) + var(--col-gap)); /* 665.5: reading width */
+      --span-3: calc(3 * var(--col) + 2 * var(--col-gap)); /* 1017: full content width */
+
+      /* Spacing scale (sizes at 1440) */
+      --space-xs: calc(8 * var(--px));
+      --space-sm: calc(16 * var(--px));
+      --space-md: calc(24 * var(--px));
+      --space-lg: calc(32 * var(--px));
+      --space-xl: calc(48 * var(--px));
+      --space-2xl: calc(64 * var(--px));
+      --space-3xl: calc(96 * var(--px));
       --header-h: calc(165 * var(--px));
       --overhang: calc(32.88 * var(--px));  /* how far the buttons hang below the dark hero */
     }
@@ -45,9 +92,37 @@
       color: var(--c-white);
       font-family: var(--font-body);
       -webkit-font-smoothing: antialiased;
+      font-kerning: normal;
+      text-rendering: optimizeLegibility;
       overflow-x: hidden;
     }
     img { display: block; }
+    h1, h2, h3 { text-wrap: balance; }
+    p { text-wrap: pretty; }
+    .nowrap { white-space: nowrap; }
+
+    :focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+    .skip-link {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 10;
+      padding: 12px 20px;
+      border-radius: 999px;
+      background: var(--c-white);
+      color: var(--c-hero);
+      font-size: var(--text-small);
+      font-weight: 600;
+      transform: translateY(-200%);
+    }
+    .skip-link:focus { transform: none; }
+    /* In-page links whose target section isn't built yet (see FIGMA-DEVIATIONS.md, TODO list) */
+    a[aria-disabled="true"] { cursor: default; }
+    a[aria-disabled="true"]:hover { text-decoration: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
     a { color: inherit; text-decoration: none; }
 
     .container {
@@ -105,7 +180,7 @@
     .hero__photo {
       position: absolute;
       left: calc(508 * var(--px));
-      top: calc(326.6 * var(--px));
+      bottom: calc(-59.5 * var(--px)); /* Figma crop: the dark band cuts the photo 59.5 above its bottom edge */
       width: calc(1344.5 * var(--px));
       height: calc(896.5 * var(--px));
       max-width: none;
@@ -115,84 +190,82 @@
 
     .hero .container {
       z-index: 1;
-      padding-top: calc(136 * var(--px));
+      padding-top: calc(var(--space-3xl) + var(--space-lg));
     }
-    .hero__inner { padding-left: var(--gutter-inner); }
 
     .hero__title {
       max-width: calc(832 * var(--px));
-      margin: 0 0 0 calc(-1 * var(--gutter-inner));
+      margin: 0;
       font-family: var(--font-display);
-      font-size: calc(63.277 * var(--px));
-      line-height: calc(66.333 * var(--px));
+      font-size: var(--text-display);
+      line-height: var(--leading-display);
       font-weight: 300;
       font-feature-settings: "dlig" 1;
     }
-    .hero__title strong { font-weight: 500; }
+    .hero__title strong { font-weight: var(--weight-emphasis); }
     .hero__title img {
       display: inline-block;
-      width: calc(63 * var(--px));
-      height: calc(63 * var(--px));
-      margin-left: calc(13 * var(--px));
-      vertical-align: calc(-12 * var(--px));
+      width: 1em;
+      height: 1em;
+      margin-left: 0.2em;
+      vertical-align: -0.19em;
     }
 
     .hero__lead {
-      max-width: calc(630.5 * var(--px));
-      margin: calc(66 * var(--px)) 0 0;
+      max-width: var(--span-2);
+      margin: var(--space-2xl) 0 0;
       color: var(--c-accent);
-      font-size: calc(21 * var(--px));
-      line-height: normal;
+      font-size: var(--text-lead);
+      line-height: var(--leading-body);
     }
     .hero__lead strong { font-weight: 600; }
 
     .hero__divider {
-      width: calc(577 * var(--px));
+      width: var(--span-2);
       max-width: 100%;
       height: calc(2 * var(--px));
-      margin-top: calc(66.5 * var(--px));
+      margin-top: var(--space-2xl);
     }
 
     .theses {
       display: grid;
-      grid-template-columns: repeat(2, calc(269.5 * var(--px)));
-      gap: calc(67 * var(--px)) calc(37.5 * var(--px));
-      margin: calc(64.1 * var(--px)) 0 0;
+      grid-template-columns: repeat(2, var(--col));
+      gap: var(--space-xl) var(--col-gap);
+      margin: var(--space-xl) 0 0;
       padding: 0;
       list-style: none;
       font-feature-settings: "dlig" 1;
     }
-    .theses h3 {
+    .theses dt {
       margin: 0;
       font-family: var(--font-display);
       font-weight: 600;
-      font-size: calc(30 * var(--px));
-      line-height: 1;
-      width: calc(279 * var(--px));
+      font-size: var(--text-title);
+      line-height: var(--leading-title);
     }
-    .theses p {
-      margin: calc(15 * var(--px)) 0 0;
-      font-size: calc(20 * var(--px));
-      line-height: 1;
+    .theses dd {
+      margin: var(--space-sm) 0 0;
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
     }
 
     .clients {
       display: grid;
-      row-gap: calc(26.25 * var(--px));
-      margin: calc(65.15 * var(--px)) 0 0 calc(-1 * var(--gutter-inner));
+      row-gap: var(--space-md);
+      margin: var(--space-xl) 0 0; /* after a divider */
     }
     .clients__label {
       margin: 0;
       color: var(--c-cream);
-      font-size: calc(21 * var(--px));
-      line-height: normal;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
     }
     .clients__logos {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: calc(16 * var(--px)) calc(28.5 * var(--px));
-      margin: 0 0 0 var(--gutter-inner);
+      gap: var(--space-sm) var(--space-lg);
+      margin: 0;
       padding: 0;
       list-style: none;
     }
@@ -201,27 +274,28 @@
     .cta {
       position: relative;
       display: flex;
-      margin-top: calc(62.1 * var(--px));
+      margin-top: var(--space-2xl);
     }
     .btn {
       display: inline-flex;
       align-items: center;
-      height: calc(62.63 * var(--px));
+      min-height: calc(62.63 * var(--px));
       border-radius: 999px;
-      font-size: calc(19.815 * var(--px));
+      font-size: var(--text-body);
       font-weight: 500;
-      line-height: normal;
+      line-height: 1.2;
       white-space: nowrap;
       transition: background-color .2s ease;
     }
     .btn:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 3px; }
+    .btn:active { transform: translateY(1px); }
     .btn--primary {
       position: relative;
       z-index: 2;
       padding-inline: calc(53.5 * var(--px));
       background: var(--c-primary);
     }
-    .btn--primary:hover { background: #0a59bb; }
+    .btn--primary:hover { background: var(--c-primary-hover); }
     .btn--secondary {
       position: relative;
       z-index: 1;
@@ -229,7 +303,7 @@
       padding: 0 calc(53.5 * var(--px)) 0 calc(100.5 * var(--px));
       background: var(--c-surface);
     }
-    .btn--secondary:hover { background: #374a60; }
+    .btn--secondary:hover { background: var(--c-surface-hover); }
 
     /* ---------- Scroll-scrubbed clip ---------- */
     /*
@@ -256,272 +330,330 @@
     /* ---------- Why now / Why Daat ---------- */
     .why {
       position: relative;
-      padding: calc(74.25 * var(--px)) 0 calc(217.1 * var(--px));
+      padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
       background: var(--c-primary);
     }
-    .why__inner { padding-left: var(--gutter-inner); }
 
     /* Floating table of contents: sticks while this section scrolls past */
     .why__toc {
       position: absolute;
-      top: calc(75.75 * var(--px));
+      top: var(--space-3xl); /* level with the eyebrow */
       bottom: 0;
-      left: calc(1193.5 * var(--px));
+      left: calc(var(--gutter) + var(--span-3) + var(--col-gap)); /* a fourth column, right of the content */
       width: calc(184 * var(--px));
     }
     .why__toc nav {
       position: sticky;
-      top: calc(76 * var(--px));
+      top: var(--space-3xl);
     }
     .why__toc ul {
       display: grid;
-      row-gap: calc(13.5 * var(--px));
+      row-gap: var(--space-sm);
       margin: 0;
       padding: 0;
       list-style: none;
     }
+    .why__toc li { position: relative; }
     .why__toc a {
-      color: var(--c-cream);
-      font-size: calc(20.865 * var(--px));
-      line-height: calc(24 * var(--px));
+      color: var(--c-on-primary-muted);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
       transition: color .2s ease;
     }
-    .why__toc a:hover,
-    .why__toc a[aria-current="true"] { color: var(--c-accent); }
-    .why__toc a[aria-current="true"] { font-weight: 600; }
+    .why__toc a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+    .why__toc a[aria-current="true"] { color: var(--c-on-primary); font-weight: 600; }
+    /* "You are here" marker: shape + weight, not colour alone */
+    .why__toc a[aria-current="true"]::before {
+      content: "";
+      position: absolute;
+      top: calc(var(--leading-small) * 0.5em - 1px);
+      left: -1.1em;
+      width: 0.7em;
+      height: 2px;
+      background: var(--c-on-primary);
+    }
+    .why__toc a:focus-visible { outline: 2px solid var(--c-on-primary); outline-offset: 3px; border-radius: 2px; }
 
     .why__eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
       margin: 0;
-      color: var(--c-accent);
-      font-size: calc(20.865 * var(--px));
+      color: var(--c-on-primary);
+      font-size: var(--text-small);
       font-weight: 600;
-      line-height: calc(24 * var(--px));
+      line-height: var(--leading-small);
+      letter-spacing: 0.02em;
+    }
+    /* Orange stays as graphic accent on blue (it is too light for text there) */
+    .why__eyebrow::before {
+      content: "";
+      width: 1.5em;
+      height: 2px;
+      background: var(--c-accent);
     }
     .why__title {
       max-width: calc(831.82 * var(--px));
-      margin: calc(41.125 * var(--px)) 0 0;
-      color: var(--c-cream);
+      margin: var(--space-md) 0 0;
+      color: var(--c-on-primary-muted);
       font-family: var(--font-display);
-      font-size: calc(50 * var(--px));
+      font-size: var(--text-heading);
       font-weight: 300;
-      line-height: 1;
+      line-height: var(--leading-heading);
       font-feature-settings: "dlig" 1;
     }
-    .why__title strong { font-weight: 600; }
-    .why__title--daat { margin-top: calc(57.25 * var(--px)); }
+    .why__title strong { font-weight: var(--weight-emphasis); }
+    .why__title--daat { margin-top: var(--space-xl); }
     .why__title--daat strong { font-feature-settings: "dlig" 1, "ss01" 1; }
 
     .why__intro {
-      max-width: calc(537 * var(--px));
-      margin-top: calc(59.875 * var(--px));
-      font-size: calc(20.865 * var(--px));
-      line-height: calc(24 * var(--px));
+      max-width: var(--span-2);
+      margin-top: var(--space-xl);
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
     }
     .why__intro p { margin: 0; }
-    .why__intro p + p { margin-top: calc(24 * var(--px)); }
+    .why__intro p + p { margin-top: calc(var(--leading-body) * 1em); }
     .why__intro strong { font-weight: 700; }
 
+    /* Dividers open the block that follows: more space before (64) than after (48) */
     .why__divider {
-      width: calc(1046 * var(--px));
+      width: var(--span-3);
       max-width: 100%;
       height: calc(2 * var(--px));
-      margin-top: calc(47.75 * var(--px));
+      margin-top: var(--space-2xl);
     }
+
+    .why__divider + * { margin-top: var(--space-xl); }
 
     .card h3 {
       margin: 0;
       font-family: var(--font-display);
-      font-size: calc(30 * var(--px));
+      font-size: var(--text-title);
       font-weight: 600;
-      line-height: 1;
+      line-height: var(--leading-title);
       font-feature-settings: "dlig" 1;
     }
     .card p {
-      max-width: calc(269.5 * var(--px));
-      margin: 0;
-      font-size: calc(20 * var(--px));
-      line-height: 1;
+      margin: var(--space-sm) 0 0;
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
       font-feature-settings: "dlig" 1;
     }
 
     .problems {
       display: grid;
-      grid-template-columns: repeat(3, calc(314 * var(--px)));
-      gap: calc(45 * var(--px)) calc(37.5 * var(--px));
-      margin: calc(46.4 * var(--px)) 0 0;
+      grid-template-columns: repeat(3, var(--col));
+      gap: var(--space-xl) var(--col-gap);
+      margin: var(--space-xl) 0 0;
       padding: 0;
       list-style: none;
     }
-    .problems .card { min-height: calc(244 * var(--px)); }
-    .problems .card h3 { min-height: calc(120 * var(--px)); } /* four title lines, so descriptions line up */
-    .problems .card p { margin-top: calc(21.5 * var(--px)); }
-    .problems + .why__divider { margin-top: calc(48.5 * var(--px)); }
+    /* Each card spans two rows of the parent grid (title, text), so every description in a row
+       starts below the tallest title in that row, without reserving empty lines */
+    .problems .card,
+    .reasons .card {
+      display: grid;
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+      row-gap: 0;
+    }
+
 
     .example {
       display: flex;
-      align-items: flex-start;
-      margin-top: calc(55.65 * var(--px));
+      align-items: center;
+      gap: var(--col-gap);
+      margin-top: var(--space-xl);
     }
     .example p {
-      width: calc(665.5 * var(--px));
+      width: var(--span-2);
       margin: 0;
-      font-size: calc(20.865 * var(--px));
-      line-height: calc(24 * var(--px));
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
     }
     .example strong { font-weight: 600; }
-    .example .btn { margin: calc(4.5 * var(--px)) 0 0 calc(37.5 * var(--px)); padding-inline: calc(26.5 * var(--px)); }
-    .example + .why__divider { margin-top: calc(60.5 * var(--px)); }
+    .example .btn { flex: none; padding-inline: var(--space-lg); }
 
     .btn--light {
       padding-inline: calc(53.5 * var(--px));
       background: var(--c-cream);
-      color: #33475b;
+      color: var(--c-ink);
     }
-    .btn--light:hover { background: #fffaf0; }
+    .btn--light:hover { background: var(--c-cream-hover); }
     .btn--outline {
-      height: calc(60.7 * var(--px)); /* Figma border sits inside this box */
-      padding-inline: calc(24.79 * var(--px));
-      border: calc(1.944 * var(--px)) solid var(--c-white);
+      min-height: calc(62.63 * var(--px));
+      padding-inline: var(--space-md);
+      border: 2px solid var(--c-white);
       background: var(--c-primary);
-      font-size: calc(19.26 * var(--px));
     }
     .btn--outline:hover { background: var(--c-white); color: var(--c-primary); }
 
     .why-daat {
       display: grid;
-      grid-template-columns: calc(314 * var(--px)) calc(665.5 * var(--px));
-      column-gap: calc(37.5 * var(--px));
+      grid-template-columns: var(--col) var(--span-2);
+      column-gap: var(--col-gap);
       align-items: start;
-      margin-top: calc(93.75 * var(--px));
+      margin-top: var(--space-2xl);
     }
     .why-daat__photo {
       position: relative;
-      width: calc(301.2 * var(--px));
-      height: calc(339 * var(--px));
+      width: 100%;
+      aspect-ratio: 301.2 / 339;
       overflow: hidden;
       -webkit-mask: url("assets/founders-mask.svg") no-repeat 0 0 / 100% 100%;
               mask: url("assets/founders-mask.svg") no-repeat 0 0 / 100% 100%;
     }
     .why-daat__photo img {
       position: absolute;
-      left: calc(-141 * var(--px));
-      top: calc(-4 * var(--px));
-      width: calc(582.5 * var(--px));
-      height: calc(388.5 * var(--px));
+      /* Figma crop, expressed relative to the mask box so it scales with the column */
+      left: -46.81%;
+      top: -1.18%;
+      width: 193.39%;
+      height: 114.6%;
       max-width: none;
       object-fit: cover;
     }
     .reasons {
       display: grid;
-      grid-template-columns: repeat(2, calc(314 * var(--px)));
-      gap: calc(45 * var(--px)) calc(37.5 * var(--px));
+      grid-template-columns: repeat(2, var(--col));
+      gap: var(--space-xl) var(--col-gap);
       margin: 0;
       padding: 0;
       list-style: none;
     }
-    .reasons .card h3 { min-height: calc(60 * var(--px)); }
-    .reasons .card p { margin-top: calc(31.375 * var(--px)); }
-    .reasons__cta { display: flex; width: fit-content; margin-top: calc(45 * var(--px)); }
+    .reasons__cta { display: flex; width: fit-content; margin-top: var(--space-xl); }
 
     /* ---------- Mobile (< 1024px) ---------- */
     @media (max-width: 1023.98px) {
       :root {
         --px: 1px;
         --gutter: 24px;
-        --gutter-inner: 0px;
         --header-h: 96px;
         --overhang: 0px; /* no overhang on mobile: the image is too short to share with the buttons */
+
+        /* Phone sizes, growing gently from 390px to 1023px */
+        --text-display: clamp(2.125rem, calc(1.9vw + 1.66rem), 2.875rem); /* 34–46 */
+        --text-heading: clamp(1.875rem, calc(0.95vw + 1.645rem), 2.25rem); /* 30–36 */
+        --text-title:   clamp(1.375rem, calc(0.32vw + 1.297rem), 1.5rem);  /* 22–24 */
+        --text-lead:    clamp(1.125rem, calc(0.32vw + 1.047rem), 1.25rem); /* 18–20 */
+        --text-body:    1.0625rem; /* 17 */
+        --text-small:   1rem;      /* 16 */
       }
       .logo { top: 20px; width: 106px; }
       .menu-btn img { width: 32px; height: 32px; }
       .hero .container { padding-top: 120px; padding-bottom: 40px; }
-      .hero__title { max-width: 640px; font-size: clamp(34px, 7vw, 52px); line-height: 1.05; }
-      .hero__title img { width: 1em; height: 1em; vertical-align: -0.18em; }
-      .hero__lead { margin-top: 40px; font-size: 19px; }
+      .hero__title { max-width: 640px; }
+      .hero__lead { margin-top: 40px; }
       .hero__photo { left: 20%; top: auto; bottom: 0; width: 140vw; height: auto; aspect-ratio: 1344.5 / 896.5; opacity: .3; }
       .hero__divider { margin-top: 40px; }
       .theses { grid-template-columns: 1fr; row-gap: 32px; margin-top: 36px; }
-      .theses h3 { width: auto; font-size: 26px; }
-      .theses p { font-size: 18px; line-height: 1.15; }
-      .clients { grid-template-columns: 1fr; row-gap: 24px; margin-top: 56px; }
+      .clients { grid-template-columns: 1fr; row-gap: 24px; margin-top: 32px; }
+      .clients__logos { display: grid; grid-template-columns: repeat(3, max-content); gap: 20px 28px; }
       .clients__logos img { height: 30px; }
       .cta { flex-direction: column; align-items: stretch; max-width: 480px; margin-top: 48px; }
-      .btn { justify-content: center; height: 62.63px; white-space: normal; text-align: center; font-size: 18px; }
+      .btn { justify-content: center; min-height: 62.63px; padding-block: 12px; white-space: normal; text-align: center; }
       .btn--primary { padding-inline: 32px; }
       .btn--secondary { margin: 12px 0 0; padding-inline: 32px; }
 
       .why { padding: 64px 0 80px; }
-      .why__toc { display: none; }
-      .why__title { max-width: 640px; margin-top: 24px; font-size: clamp(32px, 7vw, 50px); line-height: 1.05; }
+      /* Table of contents becomes a compact bar that sticks while the section scrolls */
+      .why__toc {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        width: auto;
+        margin: -64px 0 32px;
+        background: var(--c-primary);
+        box-shadow: 0 1px 0 rgb(250 248 243 / 0.2);
+      }
+      .why__toc nav { position: static; }
+      .why__toc ul {
+        display: flex;
+        gap: 24px;
+        overflow-x: auto;
+        padding-inline: var(--gutter);
+        scrollbar-width: none;
+      }
+      .why__toc ul::-webkit-scrollbar { display: none; }
+      .why__toc a {
+        display: block;
+        padding-block: 12px; /* 44px touch target */
+        white-space: nowrap;
+      }
+      .why__toc a[aria-current="true"]::before { content: none; }
+      .why__toc a[aria-current="true"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.35em; }
+      .why__title { max-width: 640px; margin-top: 24px; }
       .why__title--daat { margin-top: 56px; }
-      .why__intro { max-width: 640px; margin-top: 32px; font-size: 18px; line-height: 1.35; }
-      .why__intro p + p { margin-top: 1.35em; }
-      .why__divider { width: 100%; margin-top: 48px; }
-      .card h3 { font-size: 24px; line-height: 1.1; }
-      .card p { max-width: 540px; font-size: 18px; line-height: 1.25; }
+      .why__intro { max-width: 640px; margin-top: 32px; }
+      .why__divider { width: 100%; }
+      .card p { max-width: 540px; }
       .problems { grid-template-columns: 1fr; row-gap: 40px; margin-top: 40px; }
-      .problems .card { min-height: 0; }
-      .problems .card h3, .reasons .card h3 { min-height: 0; }
-      .problems .card p, .reasons .card p { margin-top: 12px; }
-      .problems + .why__divider, .example + .why__divider { margin-top: 48px; }
+      .card p { margin-top: 12px; }
+      .why__divider { margin-top: 48px; }
+      .why__divider + * { margin-top: 40px; }
       .example { flex-direction: column; align-items: stretch; max-width: 640px; margin-top: 40px; }
-      .example p { width: auto; font-size: 18px; line-height: 1.35; }
-      .example .btn { margin: 24px 0 0; }
+      .example p { width: auto; }
+      .example { gap: 24px; }
       .why-daat { grid-template-columns: 1fr; row-gap: 40px; margin-top: 40px; }
+      .why-daat__photo { max-width: 320px; }
       .reasons { grid-template-columns: 1fr; row-gap: 32px; padding-top: 0; }
       .reasons__cta { width: auto; max-width: 480px; margin-top: 40px; }
     }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Перейти до змісту</a>
   <header class="topbar">
     <div class="container">
       <a class="logo" href="/">
-        <img src="assets/logo.png" width="706" height="795" alt="Daat — IT business strategy" />
+        <img src="assets/logo.webp" width="706" height="795" alt="Daat&nbsp;— IT business strategy" />
       </a>
     </div>
+    <!-- TODO: no menu exists yet; wire this up (aria-expanded + aria-controls) when the menu is designed -->
     <button class="menu-btn" type="button" aria-label="Відкрити меню">
       <img src="assets/icon-menu.svg" width="91.25" height="91.25" alt="" />
     </button>
   </header>
 
-  <main>
+  <main id="main">
     <section class="hero">
       <div class="hero__photo-clip" aria-hidden="true">
         <img class="hero__photo" src="assets/hero-photo.webp" width="2880" height="1921" alt="" />
       </div>
 
       <div class="container">
-        <div class="hero__inner">
           <h1 class="hero__title">
-            Ваша компанія здатна на більше. <strong>ATLAS покаже, що стримує її зростання</strong><img src="assets/icon-plant.svg" width="126" height="126" alt="" />
+            Ваша компанія здатна на більше. <strong>ATLAS покаже, що стримує її <span class="nowrap">зростання<img src="assets/icon-plant.svg" width="126" height="126" alt="" /></span></strong>
           </h1>
 
           <p class="hero__lead">
-            <strong>ATLAS — доказова діагностика зростання IT-компаній від Daat.</strong>
-            Ми знаходимо системи й елементи, що стримують розвиток вашої компанії, пропонуємо найкращі практики delivery та технічної досконалості — і допомагаємо їх упровадити. Перший результат — уже за 4–5 тижнів.
+            <strong>ATLAS&nbsp;— доказова діагностика зростання <span class="nowrap">IT-компаній</span> від Daat.</strong>
+            Ми знаходимо системи й елементи, що стримують розвиток вашої компанії, пропонуємо найкращі практики delivery та технічної досконалості&nbsp;— і допомагаємо їх упровадити. Перший результат&nbsp;— уже за <span class="nowrap">4–5 тижнів</span>.
           </p>
 
           <img class="hero__divider" src="assets/divider.svg" width="1154" height="4" alt="" />
 
-          <ul class="theses">
-            <li>
-              <h3>4 тижні</h3>
-              <p>від старту до діагнозу й дорожньої карти зростання</p>
-            </li>
-            <li>
-              <h3>20 годин</h3>
-              <p>часу вашої команди на всю діагностику — решту робимо ми</p>
-            </li>
-            <li>
-              <h3>3 горизонти планування</h3>
-              <p>дорожня карта на 0–3, 3–9 і 9–18 місяців</p>
-            </li>
-            <li>
-              <h3>Діагноз впровадження</h3>
-              <p>для IT-компаній на ~50–500 людей: не лише звіт, а супровід змін</p>
-            </li>
-          </ul>
+          <dl class="theses">
+            <div>
+              <dt>4 тижні</dt>
+              <dd>від старту до діагнозу й дорожньої карти зростання</dd>
+            </div>
+            <div>
+              <dt>20 годин</dt>
+              <dd>часу вашої команди на всю діагностику&nbsp;— решту робимо ми</dd>
+            </div>
+            <div>
+              <dt>3 горизонти планування</dt>
+              <dd>дорожня карта на <span class="nowrap">0–3</span>, <span class="nowrap">3–9</span> і <span class="nowrap">9–18</span> місяців</dd>
+            </div>
+            <div>
+              <dt>Діагноз впровадження</dt>
+              <dd>для <span class="nowrap">IT-компаній</span> на <span class="nowrap">~50–500</span> людей: не лише звіт, а супровід змін</dd>
+            </div>
+          </dl>
+
+          <img class="hero__divider" src="assets/divider.svg" width="1154" height="4" alt="" />
 
           <div class="clients">
             <p class="clients__label">Ми пишаємося нашими клієнтами</p>
@@ -538,11 +670,10 @@
             <a class="btn btn--primary" href="#contact">Записатися на діагностичний дзвінок</a>
             <a class="btn btn--secondary" href="#results">Які результати ви отримаєте?</a>
           </div>
-        </div>
       </div>
     </section>
 
-    <section class="scrub" aria-label="Business strategy, technical excellence та delivery — з'єднані в одну систему">
+    <section class="scrub" aria-label="Business strategy, technical excellence та delivery&nbsp;— з'єднані в одну систему">
       <img class="scrub__poster" src="assets/scrub/1440/f001.webp" width="1440" height="720" alt="" />
       <canvas class="scrub__canvas" aria-hidden="true"></canvas>
     </section>
@@ -561,13 +692,12 @@
       </aside>
 
       <div class="container">
-        <div class="why__inner">
           <p class="why__eyebrow">Чому зараз?</p>
-          <h2 class="why__title">Що стримує зростання? Рідко ринок. Частіше — <strong>процеси, ролі й рішення всередині компанії.</strong></h2>
+          <h2 class="why__title">Що стримує зростання? Рідко ринок. Частіше&nbsp;— <strong>процеси, ролі й рішення всередині компанії.</strong></h2>
 
           <div class="why__intro">
-            <p><strong>Діагностика зростання</strong> — це незалежна доказова оцінка того, які системи та елементи IT-компанії прискорюють її розвиток, а які стримують: стратегія, управління, delivery, інженерна культура, лідерство, люди й компетенції. ATLAS простежує кожне обмеження до першопричини й показує, що змінити, щоб компанія могла рости далі.</p>
-            <p>У 2026 році зростати по-старому вже не виходить: клієнти вимагають передбачуваності та якості, ринок — зрілого delivery, а AI змінює те, що здатна зробити невелика команда. Компанії, які вчасно перебудовують свої системи, відриваються від решти.</p>
+            <p><strong>Діагностика зростання</strong>&nbsp;— це незалежна доказова оцінка того, які системи та елементи <span class="nowrap">IT-компанії</span> прискорюють її розвиток, а які стримують: стратегія, управління, delivery, інженерна культура, лідерство, люди й компетенції. ATLAS простежує кожне обмеження до першопричини й показує, що змінити, щоб компанія могла рости далі.</p>
+            <p>У 2026 році зростати по-старому вже не виходить: клієнти вимагають передбачуваності та якості, ринок&nbsp;— зрілого delivery, а AI змінює те, що здатна зробити невелика команда. Компанії, які вчасно перебудовують свої системи, відриваються від решти.</p>
           </div>
 
           <img class="why__divider" src="assets/divider-full.svg" width="2092" height="4" alt="" />
@@ -583,7 +713,7 @@
             </li>
             <li class="card">
               <h3>Ви запускаєте правильні ініціативи, але вони не приживаються.</h3>
-              <p>Дизайн випереджає впровадження: фреймворки є на папері, а ресурсу й залученості, щоб їх прийняти, — немає.</p>
+              <p>Дизайн випереджає впровадження: фреймворки є на папері, а ресурсу й залученості, щоб їх прийняти,&nbsp;— немає.</p>
             </li>
             <li class="card">
               <h3>Нові проєкти приносять виручку, але не приносять прибутку.</h3>
@@ -594,8 +724,9 @@
               <p>Технічна досконалість без власника: немає інженерних стандартів, code review і гейтів якості.</p>
             </li>
             <li class="card">
-              <h3>Команда постійно гасить пожежі — на розвиток часу немає.</h3>
-              <p>Команда постійно гасить пожежі — на розвиток часу немає.</p>
+              <!-- TODO copy: the description repeats the title -->
+              <h3>Команда постійно гасить пожежі&nbsp;— на розвиток часу немає.</h3>
+              <p>Команда постійно гасить пожежі&nbsp;— на розвиток часу немає.</p>
             </li>
           </ul>
 
@@ -618,30 +749,62 @@
               <ul class="reasons">
                 <li class="card">
                   <h3>Погляд ззовні, досвід зсередини</h3>
-                  <p>Діагностику ведуть люди, які самі будували delivery та інженерію як CTO, — а не універсали з шаблоном.</p>
+                  <p>Діагностику ведуть люди, які самі будували delivery та інженерію як CTO,&nbsp;— а не універсали з шаблоном.</p>
                 </li>
                 <li class="card">
                   <h3>Докази, а не думки</h3>
-                  <p>Кожна оцінка спирається на документи, інтерв’ю та дані систем — з рейтингом надійності й довірчим інтервалом.</p>
+                  <p>Кожна оцінка спирається на документи, інтерв’ю та дані систем&nbsp;— з рейтингом надійності й довірчим інтервалом.</p>
                 </li>
                 <li class="card">
-                  <h3>Не лише діагноз — упровадження</h3>
-                  <p>Ми пропонуємо найкращі практики delivery й технічної досконалості під ваш рівень зрілості — і впроваджуємо їх разом із вашою командою.</p>
+                  <h3>Не лише діагноз&nbsp;— упровадження</h3>
+                  <p>Ми пропонуємо найкращі практики delivery й технічної досконалості під ваш рівень зрілості&nbsp;— і впроваджуємо їх разом із вашою командою.</p>
                 </li>
                 <li class="card">
-                  <h3>Шось четверте</h3>
-                  <p>Ми пропонуємо найкращі практики delivery й технічної досконалості під ваш рівень зрілості — і впроваджуємо їх разом із вашою командою.</p>
+                  <!-- TODO copy: placeholder title (and a typo: "Щось"); the description below repeats card 3 -->
+              <h3>Шось четверте</h3>
+                  <p>Ми пропонуємо найкращі практики delivery й технічної досконалості під ваш рівень зрілості&nbsp;— і впроваджуємо їх разом із вашою командою.</p>
                 </li>
               </ul>
               <a class="btn btn--outline reasons__cta" href="#contact">Записатися на діагностичний дзвінок</a>
             </div>
           </div>
-        </div>
       </div>
     </section>
   </main>
 
   <script>
+    // In-page links: mark ones whose target doesn't exist yet as unavailable, and
+    // make the table of contents highlight follow the section in view.
+    (() => {
+      const links = [...document.querySelectorAll('a[href^="#"]:not([href="#"])')];
+      for (const a of links) {
+        if (document.getElementById(a.hash.slice(1))) continue;
+        a.setAttribute("aria-disabled", "true");
+        a.setAttribute("tabindex", "-1");
+        a.addEventListener("click", (e) => e.preventDefault());
+      }
+
+      const tocLinks = [...document.querySelectorAll(".why__toc a")];
+      const targets = tocLinks
+        .map((a) => [a, document.getElementById(a.hash.slice(1))])
+        .filter(([, el]) => el);
+      if (!targets.length) return;
+
+      function setCurrent(link) {
+        for (const a of tocLinks) a.removeAttribute("aria-current");
+        link.setAttribute("aria-current", "true");
+      }
+      // The current section is the last one whose top has passed the upper third of the viewport.
+      function update() {
+        const line = innerHeight / 3;
+        let current = targets[0][0];
+        for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
+        setCurrent(current);
+      }
+      update();
+      addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+    })();
+
     // Scroll-scrubbed frame sequence: frames live in assets/scrub/<width>/f001.webp … f121.webp
     (() => {
       const FRAME_COUNT = 121;
