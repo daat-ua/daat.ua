@@ -93,7 +93,7 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 | `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
 | `#results` | "Які результати ви отримаєте?" | Results section |
 | `#audit-findings` | "Знахідки аудитів" | Audit findings section |
-| `#for-whom`, `#deliverables`, `#roadmap`, `#testimonials` | Table of contents | The four remaining sections |
+| `#roadmap`, `#testimonials` | Table of contents | The two remaining sections (`#for-whom` and `#deliverables` now exist) |
 | Menu button | Header | Menu design and content |
 | Reason card 4 | "Шось четверте" | Real title (also a typo for "Щось") and its own description; it currently repeats card 3 |
 | Problem card 6 | "Команда постійно гасить пожежі…" | A description; it currently repeats the title |
@@ -292,3 +292,31 @@ Circles at Figma's positions over the clip (the video's final frame has the same
 - **Look:** peach `#f7d8bc` circles, 121.5px at 1440, with slate `#2c3b4e` SemiBold text, centred horizontally and vertically (Figma has it left-aligned). Text uses the 17px small size (Figma 19).
 - **Fade:** opacity follows the clip's progress, from 0 when it starts playing to 1 at its last frame. Scrolling back fades them out the same way.
 - **Mobile:** circles are 68–121.5px (17vw) with 10–17px text (2.3vw).
+
+## "Що ви отримаєте" section (new, from the wireframe; not in Figma yet)
+
+Placed after "Для кого", using the "Чому зараз?" section pattern (blue background, eyebrow, H2, intro, divider, 3-column cards). It sits inside the floating table-of-contents area with `id="deliverables"`, so the "Що ви отримаєте" link works and highlights there.
+
+Distilled from the wireframe:
+
+| Wireframe | Page |
+|---|---|
+| Eyebrow "04 · Що ви отримаєте — для власників і керівників" | "Що ви отримаєте" |
+| H2 "Що ATLAS дає власникам і тим, хто ухвалює рішення" | Same, with "Що ATLAS дає" emphasised (the page's two-weight heading pattern) |
+| Intro line | Same |
+| Six cards: number, title, description, "Дає змогу", "Приклад" | Title, description and "Дає змогу". Numbers dropped (no other card section has them); examples dropped |
+| "DA'AT" | "Daat" |
+
+Card titles line up across each row; each card's description and benefit line flow together beneath its title.
+
+The benefit line has no "Дає змогу:" label. The idea is phrased into the sentence instead:
+1. "Ви одразу бачите…"
+2. "Стає зрозуміло…"
+3. "Ви робите наступний крок…"
+4. "Команда знає, з чого почати…"
+5. "Ви отримуєте результат…"
+6. "Ви можете довести прогрес…"
+
+Each benefit line is led by an orange "idea" icon (`assets/icon-idea.svg`, hugeicons stroke-rounded, drawn as a CSS mask) on its first line, with one line of space above it.
+
+The "Приклад" examples are concrete evidence ("загальний індекс зрілості — 2,5 з 5…") and could come back later. The wireframe styles them as left-stripe callouts, which the critique flagged as a generic pattern, so they would need a different treatment.

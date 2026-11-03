@@ -547,6 +547,28 @@
     }
     .btn--outline:hover { background: var(--c-white); color: var(--c-primary); }
 
+    /* "Що ви отримаєте": same section pattern; cards have a third row (the benefit) */
+    .why--gains { margin-top: 0; } /* nothing overhangs this one */
+    /* Titles align across a row (subgrid); description and benefit flow together beneath */
+    .card__body > p:first-child { margin-top: var(--space-sm); }
+    /* Benefit line: one line of space above, an orange "idea" icon on its first line */
+    .card .card__benefit {
+      display: grid;
+      grid-template-columns: 1.2em 1fr;
+      column-gap: 0.5em;
+      margin-top: calc(var(--leading-body) * 1em);
+      color: var(--c-on-primary);
+    }
+    .card__benefit::before {
+      content: "";
+      width: 1.2em;
+      height: 1.2em;
+      margin-top: calc((var(--leading-body) * 1em - 1.2em) / 2); /* centred on the first line */
+      background: var(--c-accent);
+      -webkit-mask: url("assets/icon-idea.svg") center / contain no-repeat;
+              mask: url("assets/icon-idea.svg") center / contain no-repeat;
+    }
+
     .why-daat {
       display: grid;
       grid-template-columns: var(--col) var(--span-2);
@@ -1405,6 +1427,64 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="why why--gains" id="deliverables">
+      <div class="container">
+        <p class="eyebrow">Що ви отримаєте</p>
+        <h2 class="section-title"><strong>Що ATLAS дає</strong> власникам і тим, хто ухвалює рішення</h2>
+
+        <div class="why__intro">
+          <p>Не список із 50 зауважень, а чітка відповідь на два питання: що заважає компанії рости&nbsp;— і як саме це змінити.</p>
+        </div>
+
+        <img class="why__divider" src="assets/divider-full.svg" width="2092" height="4" alt="" />
+
+        <ul class="problems gains">
+            <li class="card">
+              <h3>Одне чесне число</h3>
+              <div class="card__body">
+                <p>Індекс зрілості за шкалою <span class="nowrap">1–5</span>&nbsp;— для кожного енейблера й загалом&nbsp;— із довірчим інтервалом.</p>
+                <p class="card__benefit">Ви одразу бачите, наскільки компанія готова до наступного етапу зростання.</p>
+              </div>
+            </li>
+            <li class="card">
+              <h3>Обмеження, які справді стримують</h3>
+              <div class="card__body">
+                <p><span class="nowrap">3–6</span> наскрізних тем і ключова петля, що їх пов’язує: системи й ролі, які гальмують розвиток,&nbsp;— замість зауважень, розкиданих по відділах.</p>
+                <p class="card__benefit">Стає зрозуміло, що розблокувати першим.</p>
+              </div>
+            </li>
+            <li class="card">
+              <h3>Найкращі практики&nbsp;— під вашу зрілість</h3>
+              <div class="card__body">
+                <p>Конкретні практики delivery й технічної досконалості&nbsp;— від Discovery та оцінювання до code review й інженерних стандартів&nbsp;— підібрані під ваш рівень, а не скопійовані з чужої компанії.</p>
+                <p class="card__benefit">Ви робите наступний крок, а не стрибаєте через три.</p>
+              </div>
+            </li>
+            <li class="card">
+              <h3>Дорожня карта зростання на 18 місяців</h3>
+              <div class="card__body">
+                <p>Ініціативи, упорядковані за впливом, ризиком і залежностями на трьох горизонтах,&nbsp;— кожна з відповідальним і критерієм завершення.</p>
+                <p class="card__benefit">Команда знає, з чого почати вже в понеділок.</p>
+              </div>
+            </li>
+            <li class="card">
+              <h3>Супровід упровадження</h3>
+              <div class="card__body">
+                <p>Окремим треком Daat допомагає втілити зміни: налаштувати процеси, інженерні стандарти, гейти якості та управлінські ритуали разом із вашими людьми.</p>
+                <p class="card__benefit">Ви отримуєте результат, а не лише діагноз.</p>
+              </div>
+            </li>
+            <li class="card">
+              <h3>Прогрес, який можна виміряти</h3>
+              <div class="card__body">
+                <p>Усі дані залишаються у вас, а повторна діагностика через <span class="nowrap">12–15</span> місяців покаже зростання зрілості в цифрах.</p>
+                <p class="card__benefit">Ви можете довести прогрес борду, інвесторам&nbsp;— і собі.</p>
+              </div>
+            </li>
+        </ul>
       </div>
     </section>
     </div>
