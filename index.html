@@ -47,6 +47,8 @@
       --c-night: #0e151b;            /* "for whom" section */
       --c-peach: #f7d8bc;            /* diagram strokes and icons */
 
+      --ease-out: cubic-bezier(0.25, 1, 0.5, 1); /* ease-out-quart */
+
       --font-display: "TT Turns", "TT Turns Fallback", sans-serif;
       --font-body: "TT Commons", "TT Commons Fallback", sans-serif;
 
@@ -135,7 +137,7 @@
     /* ---------- Header ---------- */
     .topbar {
       position: relative;
-      z-index: 3;
+      z-index: 4; /* above the hero: the logo hangs below the header bar */
       height: var(--header-h);
       background: var(--c-header);
     }
@@ -342,7 +344,7 @@
     }
 
     /* ---------- Why now / Why Daat ---------- */
-    /* Stacking: content sections (0) < table of contents (1) < animated clip (2) < hero (3) */
+    /* Stacking: content sections (0) < table of contents (1) < animated clip (2) < hero (3) < header (4) */
     .toc-scope { position: relative; }
     .why {
       position: relative;
@@ -358,7 +360,7 @@
       z-index: 1;
       top: var(--space-3xl); /* level with the eyebrow */
       bottom: 0;
-      left: calc(var(--gutter) + var(--span-3) + var(--col-gap)); /* a fourth column, right of the content */
+      left: calc(var(--gutter) + var(--span-3) + var(--col-gap) + 15 * var(--px)); /* a fourth column, right of the content, nudged 15 right */
       width: calc(184 * var(--px));
     }
     .why__toc nav {
@@ -638,25 +640,46 @@
       list-style: none;
     }
     .situations > li + li { background: url("assets/divider-dark.svg") no-repeat 0 0 / 100% 2px; }
-    .situation summary {
+    .situation { padding-bottom: var(--space-lg); }
+    .situation__heading { margin: 0; font: inherit; }
+    .situation__toggle {
       display: grid;
       grid-template-columns: calc(36.5 * var(--px)) 1fr;
       column-gap: var(--space-md);
-      padding-block: var(--space-lg);
-      list-style: none;
+      width: 100%;
+      padding: var(--space-lg) 0 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
       cursor: pointer;
     }
-    .situation summary::-webkit-details-marker { display: none; }
-    .situation summary::before {
-      content: "";
+    .situation__toggle:focus-visible { outline-offset: 6px; border-radius: 4px; }
+    .situation__toggle:hover .situation__title { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+
+    /* Icon: two chevron strokes. Closed they overlap as one "down" chevron;
+       open, one rises and the other flips up through a flat line (Figma "unfold less") */
+    .situation__icon {
       grid-row: span 2;
       width: calc(36.5 * var(--px));
       height: calc(36.5 * var(--px));
       margin-top: calc((var(--text-lead) * 1.2 - 36.5 * var(--px)) / 2); /* centred on the title line */
-      background: url("assets/icon-chevron-down.svg") center / contain no-repeat;
+      overflow: visible;
     }
-    .situation[open] summary::before { background-image: url("assets/icon-unfold-less.svg"); }
-    .situation[data-static] summary { cursor: default; }
+    .situation__icon path {
+      fill: none;
+      stroke: var(--c-peach);
+      stroke-width: calc(2.3 * var(--px)); /* screen units (non-scaling): Figma's 4.6/73 of the 36.5 icon */
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke; /* line weight stays constant while the chevron flips */
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform .4s var(--ease-out);
+    }
+    .situation.is-open .chev--a { transform: translateY(-7.5px) scaleY(0.83); }
+    .situation.is-open .chev--b { transform: translateY(20px) scaleY(-0.83); }
+
     .situation__title, .situation__sub { grid-column: 2; }
     .situation__title {
       font-size: var(--text-lead);
@@ -668,15 +691,35 @@
       font-size: var(--text-body);
       line-height: var(--leading-body);
     }
-    .situation__body {
-      margin: calc(-1 * var(--space-sm)) 0 0;
-      padding: 0 0 var(--space-lg) calc(36.5 * var(--px) + var(--space-md));
+
+    /* Panel: animates height by transitioning a grid row from 0fr to 1fr */
+    .situation__panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .4s var(--ease-out);
     }
+    .situation.is-open .situation__panel { grid-template-rows: 1fr; }
+    .situation__inner {
+      min-height: 0;
+      overflow: hidden;
+      visibility: hidden;   /* collapsed content is out of the tab order and the accessibility tree */
+      opacity: 0;
+      transition: opacity .25s ease, visibility 0s .4s;
+    }
+    .situation.is-open .situation__inner {
+      visibility: visible;
+      opacity: 1;
+      transition: opacity .3s ease .1s, visibility 0s;
+    }
+    .situation__body {
+      padding: var(--space-xs) 0 0 calc(36.5 * var(--px) + var(--space-md));
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+    .situation__body p { margin: 0; }
     .situation__body ol {
       margin: 0;
       padding-left: 1.4em;
-      font-size: var(--text-body);
-      line-height: var(--leading-body);
     }
 
     /* ---------- Mobile (< 1024px) ---------- */
@@ -763,8 +806,10 @@
       .audience-tab { padding-block: 14px; }
       .for-whom__layout { grid-template-columns: 1fr; row-gap: 48px; width: auto; margin-top: 48px; }
       .venn { max-width: 400px; }
-      .situation summary { grid-template-columns: 28px 1fr; column-gap: 16px; padding-block: 24px; }
-      .situation summary::before { width: 28px; height: 28px; margin-top: calc((var(--text-lead) * 1.2 - 28px) / 2); }
+      .situation { padding-bottom: 24px; }
+      .situation__toggle { grid-template-columns: 28px 1fr; column-gap: 16px; padding-top: 24px; }
+      .situation__icon { width: 28px; height: 28px; margin-top: calc((var(--text-lead) * 1.2 - 28px) / 2); }
+      .situation__icon path { stroke-width: 1.8px; }
       .situation__body { padding-left: 44px; }
     }
   </style>
@@ -985,42 +1030,94 @@
             <div role="tabpanel" id="panel-manager" aria-labelledby="tab-manager">
               <p class="situations__intro">Ви власник, CEO або новий керівник delivery і хочете зрозуміти, що стримує компанію на наступному етапі.</p>
               <ul class="situations">
-                <li>
-                  <details class="situation" name="situations" open>
-                    <summary><span class="situation__title">Масштабування без зламів</span><span class="situation__sub">Виявлення місць зламу</span></summary>
-                    <div class="situation__body">
-                      <ol>
-                        <li>Знаходить, де система зламається наступною,&nbsp;— ще до того, як туди дійде зростання.</li>
-                        <li>Відрізняє героїзм окремих людей від системи.</li>
-                        <li>Вибудовує розвиток там, де зростання тисне першим.</li>
-                        <li>Захищає те, що вже працює, поки ви масштабуєтесь.</li>
-                      </ol>
+                <li class="situation is-open">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-1-toggle" aria-expanded="true" aria-controls="situation-1">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Масштабування без зламів</span>
+                      <span class="situation__sub">Виявлення місць зламу</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-1" role="region" aria-labelledby="situation-1-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ol>
+                            <li>Знаходить, де система зламається наступною,&nbsp;— ще до того, як туди дійде зростання.</li>
+                            <li>Відрізняє героїзм окремих людей від системи.</li>
+                            <li>Вибудовує розвиток там, де зростання тисне першим.</li>
+                            <li>Захищає те, що вже працює, поки ви масштабуєтесь.</li>
+                          </ol>
+                      </div>
                     </div>
-                  </details>
+                  </div>
                 </li>
-                <li>
-                  <details class="situation" name="situations" data-static>
-                    <summary><span class="situation__title">Діагностика плато</span><span class="situation__sub">Який важіль зростання зламався</span></summary>
-                    <!-- TODO copy: details for this situation -->
-                  </details>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-2-toggle" aria-expanded="false" aria-controls="situation-2">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Діагностика плато</span>
+                      <span class="situation__sub">Який важіль зростання зламався</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-2" role="region" aria-labelledby="situation-2-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <!-- TODO copy: details for this situation -->
+                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                      </div>
+                    </div>
+                  </div>
                 </li>
-                <li>
-                  <details class="situation" name="situations" data-static>
-                    <summary><span class="situation__title">Готовність до зростання</span><span class="situation__sub">Органічно чи через покупця</span></summary>
-                    <!-- TODO copy: details for this situation -->
-                  </details>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-3-toggle" aria-expanded="false" aria-controls="situation-3">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Готовність до зростання</span>
+                      <span class="situation__sub">Органічно чи через покупця</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-3" role="region" aria-labelledby="situation-3-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <!-- TODO copy: details for this situation -->
+                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                      </div>
+                    </div>
+                  </div>
                 </li>
-                <li>
-                  <details class="situation" name="situations" data-static>
-                    <summary><span class="situation__title">Вихід на <span class="nowrap">enterprise-клієнтів</span></span><span class="situation__sub">Довести зрілість великим клієнтам</span></summary>
-                    <!-- TODO copy: details for this situation -->
-                  </details>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-4-toggle" aria-expanded="false" aria-controls="situation-4">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Вихід на <span class="nowrap">enterprise-клієнтів</span></span>
+                      <span class="situation__sub">Довести зрілість великим клієнтам</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-4" role="region" aria-labelledby="situation-4-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <!-- TODO copy: details for this situation -->
+                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                      </div>
+                    </div>
+                  </div>
                 </li>
-                <li>
-                  <details class="situation" name="situations" data-static>
-                    <summary><span class="situation__title">Перші 90 днів нового керівника</span><span class="situation__sub">Реальна картина замість припущень</span></summary>
-                    <!-- TODO copy: details for this situation -->
-                  </details>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-5-toggle" aria-expanded="false" aria-controls="situation-5">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Перші 90 днів нового керівника</span>
+                      <span class="situation__sub">Реальна картина замість припущень</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-5" role="region" aria-labelledby="situation-5-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <!-- TODO copy: details for this situation -->
+                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                      </div>
+                    </div>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -1096,8 +1193,18 @@
           select(tabs[(next + tabs.length) % tabs.length], true);
         });
       }
-      for (const summary of section.querySelectorAll(".situation[data-static] summary")) {
-        summary.addEventListener("click", (e) => e.preventDefault());
+      // Situations accordion: one open at a time; height and icon animate in CSS
+      const situations = [...section.querySelectorAll(".situation")];
+      function setOpen(item, open) {
+        item.classList.toggle("is-open", open);
+        item.querySelector(".situation__toggle").setAttribute("aria-expanded", String(open));
+      }
+      for (const item of situations) {
+        item.querySelector(".situation__toggle").addEventListener("click", () => {
+          const open = !item.classList.contains("is-open");
+          for (const other of situations) if (other !== item) setOpen(other, false);
+          setOpen(item, open);
+        });
       }
     })();
 

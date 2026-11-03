@@ -45,7 +45,7 @@ Orange remains in use on blue only as graphics (dividers, the eyebrow rule). Sec
 | Hero lead / divider / key points width | 630.5 / 577 / 576 | All 665.5 (one shared right edge) |
 | Blue-section dividers | 1046 (overshot the cards) | 1017 (ends with the third column) |
 | Founders photo | 301.2 wide in a 314 column | Fills the 314 column (crop unchanged) |
-| Table of contents | x = 1193.5 | x = 1175.5 (a fourth column start, one gutter past the content) |
+| Table of contents | x = 1193.5 | x = 1190.5 (one gutter past the content, plus 15) |
 | Hero founders photo | Fixed top offset (y = 326.6 in the dark area) | Anchored to the bottom of the dark area, overflowing it by 59.5, so the crop matches Figma even though the hero is taller |
 | "Знахідки аудитів" button | Top-aligned, x = 826.5 | Vertically centred on the text, one gutter after it |
 | Outline button | 24.79 padding, 1.944 border | 24 padding, 2 border |
@@ -183,3 +183,11 @@ Gradient from transparent to `#0e151b`, 131.5 tall at 1440 (263 at 2×). It sits
 - The table of contents now stays pinned from "Чому зараз?" through the end of "Для кого", and highlights "Для кого Atlas?" there.
 - It floats under the animated clip: the clip (and its fade into "Для кого") slides over it while passing.
 - On mobile the compact TOC bar sticks across the same range; it keeps its blue background over the dark section.
+
+## "Для кого" situations: animated accordion
+
+- Every situation row toggles, with one open at a time. The panel height animates open and closed (0.4s ease-out-quart) and its content fades in.
+- The icon is one inline SVG of two chevron strokes, drawn to match Figma's chevron and "unfold less" icons. Closed, they overlap as a single down chevron. Opening, one rises and the other flips up into the "unfold less" shape, and closing reverses it. The line weight stays constant throughout.
+- Built as accessible accordion buttons (`aria-expanded`, labelled regions); collapsed content is hidden from keyboard and screen readers. Motion is disabled for reduced-motion users.
+- The four rows without copy show a placeholder line (TODO) so they still open.
+- The static `icon-chevron-down.svg` / `icon-unfold-less.svg` files were removed (replaced by the inline animated icon).
