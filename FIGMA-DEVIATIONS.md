@@ -145,3 +145,41 @@ The automated scan went from 25 findings to 5, and the 5 remaining are false pos
 
 - **Section order:** hero → "why now" (blue) → animated clip. The hero buttons now hang over the top edge of the blue section.
 - **Hero buttons** ("Записатися на діагностичний дзвінок", "Які результати ви отримаєте?"): 2px white border. This also keeps the blue button visible where it overlaps the blue section.
+
+## "Для кого" section (node 31:42), built on the page system
+
+Placed after the animated clip. Uses the same tokens as the rest of the page rather than the frame's raw values:
+
+| Element | Figma | Code |
+|---|---|---|
+| Background | `#0e151b` | Same (token `--c-night`) |
+| Eyebrow "Для кого?" | Orange text | Cream text with the orange rule (same component as "Чому зараз?") |
+| H2 | DemiBold "Для кого ATLAS:" + Regular rest, 50 | Medium + Light, 48 (the page's heading pattern; no extra font weight to load) |
+| Intro, accordion text, list | 20.865 / 19 | Body 20 / 1.42 |
+| Accordion titles | 26 DemiBold | Lead 24, SemiBold |
+| Venn caption, tab sub-labels | 16–19.8 | Small 17 |
+| Tabs | Overlap ~118, padding 135.5 / 53.5–88.5 | Overlap 64, padding 112 / 48 (same overlapping-pill pattern as the hero buttons) |
+| Selected tab | Blue, 4 (2×) white border | Blue, 2px white border (same as hero buttons) |
+| Inactive Venn labels | `#2c3b4e` on `#0e151b` (≈1.6:1, unreadable) | Cream at 50% (≈4.5:1) |
+| Layout | Venn 446 + accordion 483 at x = 658.5 | Venn and accordion across the 1017 content width (accordion 480, gap 96), right edge on the grid |
+| Spacing | 41–125 measured | 24 / 48 / 96 scale; accordion rows 32 above and below |
+| Typo | "моніторінг" | "моніторинг" |
+
+Behaviour (code only):
+- The three audience buttons are real tabs (click, or ← → Home End on the keyboard). The selected audience's circle turns blue and its label brightens.
+- The situations are a native accordion with one open at a time. Rows without details don't toggle.
+
+TODO content for this section:
+- Situations for "Я інвестую або купую" and "Я обираю підрядника". Only the manager view exists in Figma; the other two tabs show a short placeholder line.
+- Details for "Діагностика плато", "Готовність до зростання", "Вихід на enterprise-клієнтів" and "Перші 90 днів нового керівника".
+- Figma repeats "Перші 90 днів нового керівника" four times. Only one is built; the other rows need real situations.
+
+## Clip → "Для кого" fade (node 31:144, "Rectangle 7")
+
+Gradient from transparent to `#0e151b`, 131.5 tall at 1440 (263 at 2×). It sits over the bottom of the animated clip and ends where "Для кого" starts. It's attached to the top of that section, so it scales and moves with it. On mobile it's 64px, because the clip is only about 250px tall there.
+
+## Floating table of contents: extended through "Для кого"
+
+- The table of contents now stays pinned from "Чому зараз?" through the end of "Для кого", and highlights "Для кого Atlas?" there.
+- It floats under the animated clip: the clip (and its fade into "Для кого") slides over it while passing.
+- On mobile the compact TOC bar sticks across the same range; it keeps its blue background over the dark section.

@@ -170,7 +170,7 @@
     /* ---------- Hero ---------- */
     .hero {
       position: relative;
-      z-index: 2; /* buttons overhang onto the blue section below */
+      z-index: 3; /* buttons overhang onto the blue section below */
     }
     .hero__photo-clip {
       position: absolute;
@@ -316,7 +316,7 @@
     */
     .scrub {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       aspect-ratio: 2042 / 1020;
       overflow: hidden;
       background: #08090c;
@@ -329,10 +329,24 @@
       height: 100%;
     }
     .scrub__poster { object-fit: cover; }
+    /* Fade into the "Для кого" section below (Figma "Rectangle 7") */
+    .scrub::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: calc(131.5 * var(--px));
+      background: linear-gradient(to bottom, rgb(14 21 27 / 0), var(--c-night));
+      pointer-events: none;
+    }
 
     /* ---------- Why now / Why Daat ---------- */
+    /* Stacking: content sections (0) < table of contents (1) < animated clip (2) < hero (3) */
+    .toc-scope { position: relative; }
     .why {
       position: relative;
+      z-index: 0;
       margin-top: calc(-1 * var(--overhang)); /* the hero buttons hang over its top edge */
       padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
       background: var(--c-primary);
@@ -341,6 +355,7 @@
     /* Floating table of contents: sticks while this section scrolls past */
     .why__toc {
       position: absolute;
+      z-index: 1;
       top: var(--space-3xl); /* level with the eyebrow */
       bottom: 0;
       left: calc(var(--gutter) + var(--span-3) + var(--col-gap)); /* a fourth column, right of the content */
@@ -531,6 +546,8 @@
 
     /* ---------- For whom ---------- */
     .for-whom {
+      position: relative;
+      z-index: 0;
       --eyebrow-color: var(--c-cream);
       --title-color: var(--c-white);
       padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
@@ -640,6 +657,7 @@
     }
     .situation[open] summary::before { background-image: url("assets/icon-unfold-less.svg"); }
     .situation[data-static] summary { cursor: default; }
+    .situation__title, .situation__sub { grid-column: 2; }
     .situation__title {
       font-size: var(--text-lead);
       font-weight: 600;
@@ -700,7 +718,7 @@
         top: 0;
         z-index: 2;
         width: auto;
-        margin: -64px 0 32px;
+        margin: 0;
         background: var(--c-primary);
         box-shadow: 0 1px 0 rgb(250 248 243 / 0.2);
       }
@@ -738,6 +756,7 @@
       .reasons__cta { width: auto; max-width: 480px; margin-top: 40px; }
 
       .for-whom { padding: 64px 0 80px; }
+      .scrub::after { height: 64px; }
       .for-whom__intro { max-width: 640px; margin-top: 32px; }
       .audience-tabs { flex-direction: column; max-width: 480px; margin-top: 32px; }
       .audience-tab + .audience-tab { margin: 12px 0 0; padding-left: var(--space-xl); }
@@ -821,7 +840,8 @@
       </div>
     </section>
 
-    <section class="why" id="why-now">
+    <!-- The table of contents floats over these three sections (and slides under the animated clip) -->
+    <div class="toc-scope">
       <aside class="why__toc">
         <nav aria-label="Зміст">
           <ul>
@@ -834,6 +854,7 @@
         </nav>
       </aside>
 
+    <section class="why" id="why-now">
       <div class="container">
           <p class="eyebrow">Чому зараз?</p>
           <h2 class="section-title">Що стримує зростання? Рідко ринок. Частіше&nbsp;— <strong>процеси, ролі й рішення всередині компанії.</strong></h2>
@@ -918,6 +939,104 @@
       <img class="scrub__poster" src="assets/scrub/1440/f001.webp" width="1440" height="720" alt="" />
       <canvas class="scrub__canvas" aria-hidden="true"></canvas>
     </section>
+
+    <section class="for-whom" id="for-whom" data-audience="manager">
+      <div class="container">
+        <p class="eyebrow">Для кого?</p>
+        <h2 class="section-title"><strong>Для кого ATLAS:</strong> оберіть свою ситуацію</h2>
+        <p class="for-whom__intro">ATLAS відкалібровано для <span class="nowrap">IT-сервісних</span> і продуктових компаній на <span class="nowrap">50–500 FTE</span>. Одна методологія, одна шкала зрілості&nbsp;— і три погляди на компанію:</p>
+
+        <div class="audience-tabs" role="tablist" aria-label="Оберіть свою ситуацію">
+            <button class="audience-tab" type="button" role="tab" id="tab-manager" aria-controls="panel-manager" aria-selected="true" tabindex="0" data-audience="manager">
+              <span class="audience-tab__title">Я керую компанією</span>
+              <span class="audience-tab__sub">власник, CEO, керівник delivery</span>
+            </button>
+            <button class="audience-tab" type="button" role="tab" id="tab-investor" aria-controls="panel-investor" aria-selected="false" tabindex="-1" data-audience="investor">
+              <span class="audience-tab__title">Я інвестую або купую</span>
+              <span class="audience-tab__sub">фонд, борд, покупець</span>
+            </button>
+            <button class="audience-tab" type="button" role="tab" id="tab-contractor" aria-controls="panel-contractor" aria-selected="false" tabindex="-1" data-audience="contractor">
+              <span class="audience-tab__title">Я обираю підрядника</span>
+              <span class="audience-tab__sub">клієнт, відділ закупівель</span>
+            </button>
+        </div>
+
+        <div class="for-whom__layout">
+          <figure class="venn">
+            <svg viewBox="0 0 892 846" role="img" aria-label="Три погляди на компанію: керую компанією, інвестую або купую, обираю підрядника. Перетини: продаж і купівля, вибір підрядника, постійний моніторинг; у центрі&nbsp;— одна шкала зрілості.">
+                <circle class="venn__ring" cx="282" cy="282" r="280" />
+                <circle class="venn__ring" cx="610" cy="282" r="280" />
+                <circle class="venn__ring" cx="435" cy="564" r="280" />
+                <circle class="venn__highlight" data-audience="manager" cx="282" cy="282" r="274" />
+                <circle class="venn__highlight" data-audience="investor" cx="610" cy="282" r="274" />
+                <circle class="venn__highlight" data-audience="contractor" cx="435" cy="564" r="274" />
+                <text class="venn__label" data-audience="manager" x="107" y="228"><tspan x="107" dy="0">Керую</tspan><tspan x="107" dy="43">компанією</tspan></text>
+                <text class="venn__label" data-audience="investor" x="645" y="228"><tspan x="645" dy="0">Інвестую</tspan><tspan x="645" dy="43">або купую</tspan></text>
+                <text class="venn__label" data-audience="contractor" x="359" y="686"><tspan x="359" dy="0">Обираю</tspan><tspan x="359" dy="43">підрядника</tspan></text>
+                <text class="venn__overlap" x="376" y="204"><tspan x="376" dy="0">Продаж /</tspan><tspan x="376" dy="38">купівля</tspan></text>
+                <text class="venn__overlap" x="393" y="345"><tspan x="393" dy="0">Одна</tspan><tspan x="393" dy="38">шкала</tspan><tspan x="393" dy="38">зрілості</tspan></text>
+                <text class="venn__overlap" x="220" y="450"><tspan x="220" dy="0">Вибір</tspan><tspan x="220" dy="38">підрядника</tspan></text>
+                <text class="venn__overlap" x="537" y="450"><tspan x="537" dy="0">Постійний</tspan><tspan x="537" dy="38">моніторинг</tspan></text>
+            </svg>
+            <figcaption>Одна методологія&nbsp;— три погляди на компанію. Перетини&nbsp;— ситуації, де ATLAS бачить ту саму компанію з двох боків: продавця й покупця, підрядника й замовника.</figcaption>
+          </figure>
+
+          <div>
+            <div role="tabpanel" id="panel-manager" aria-labelledby="tab-manager">
+              <p class="situations__intro">Ви власник, CEO або новий керівник delivery і хочете зрозуміти, що стримує компанію на наступному етапі.</p>
+              <ul class="situations">
+                <li>
+                  <details class="situation" name="situations" open>
+                    <summary><span class="situation__title">Масштабування без зламів</span><span class="situation__sub">Виявлення місць зламу</span></summary>
+                    <div class="situation__body">
+                      <ol>
+                        <li>Знаходить, де система зламається наступною,&nbsp;— ще до того, як туди дійде зростання.</li>
+                        <li>Відрізняє героїзм окремих людей від системи.</li>
+                        <li>Вибудовує розвиток там, де зростання тисне першим.</li>
+                        <li>Захищає те, що вже працює, поки ви масштабуєтесь.</li>
+                      </ol>
+                    </div>
+                  </details>
+                </li>
+                <li>
+                  <details class="situation" name="situations" data-static>
+                    <summary><span class="situation__title">Діагностика плато</span><span class="situation__sub">Який важіль зростання зламався</span></summary>
+                    <!-- TODO copy: details for this situation -->
+                  </details>
+                </li>
+                <li>
+                  <details class="situation" name="situations" data-static>
+                    <summary><span class="situation__title">Готовність до зростання</span><span class="situation__sub">Органічно чи через покупця</span></summary>
+                    <!-- TODO copy: details for this situation -->
+                  </details>
+                </li>
+                <li>
+                  <details class="situation" name="situations" data-static>
+                    <summary><span class="situation__title">Вихід на <span class="nowrap">enterprise-клієнтів</span></span><span class="situation__sub">Довести зрілість великим клієнтам</span></summary>
+                    <!-- TODO copy: details for this situation -->
+                  </details>
+                </li>
+                <li>
+                  <details class="situation" name="situations" data-static>
+                    <summary><span class="situation__title">Перші 90 днів нового керівника</span><span class="situation__sub">Реальна картина замість припущень</span></summary>
+                    <!-- TODO copy: details for this situation -->
+                  </details>
+                </li>
+              </ul>
+            </div>
+            <div role="tabpanel" id="panel-investor" aria-labelledby="tab-investor" hidden>
+              <!-- TODO copy: intro and situations for this audience (only "Я керую компанією" exists in Figma) -->
+              <p class="situations__intro">Сценарії для цієї ролі з’являться найближчим часом.</p>
+            </div>
+            <div role="tabpanel" id="panel-contractor" aria-labelledby="tab-contractor" hidden>
+              <!-- TODO copy: intro and situations for this audience (only "Я керую компанією" exists in Figma) -->
+              <p class="situations__intro">Сценарії для цієї ролі з’являться найближчим часом.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    </div>
   </main>
 
   <script>
@@ -951,6 +1070,35 @@
       }
       update();
       addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+    })();
+
+    // Audience tabs (arrow keys move between tabs) and accordion rows that have no details yet
+    (() => {
+      const section = document.querySelector(".for-whom");
+      const tabs = [...section.querySelectorAll('[role="tab"]')];
+      function select(tab, focus = false) {
+        for (const t of tabs) {
+          const on = t === tab;
+          t.setAttribute("aria-selected", String(on));
+          t.tabIndex = on ? 0 : -1;
+          document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+        }
+        section.dataset.audience = tab.dataset.audience;
+        if (focus) tab.focus();
+      }
+      for (const tab of tabs) {
+        tab.addEventListener("click", () => select(tab));
+        tab.addEventListener("keydown", (e) => {
+          const i = tabs.indexOf(tab);
+          const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+          if (next === undefined) return;
+          e.preventDefault();
+          select(tabs[(next + tabs.length) % tabs.length], true);
+        });
+      }
+      for (const summary of section.querySelectorAll(".situation[data-static] summary")) {
+        summary.addEventListener("click", (e) => e.preventDefault());
+      }
     })();
 
     // Scroll-scrubbed frame sequence: frames live in assets/scrub/<width>/f001.webp … f121.webp
