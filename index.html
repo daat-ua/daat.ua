@@ -44,6 +44,8 @@
       --c-primary-hover: #0a59bb;
       --c-surface-hover: #374a60;
       --c-cream-hover: #fffaf0;
+      --c-night: #0e151b;            /* "for whom" section */
+      --c-peach: #f7d8bc;            /* diagram strokes and icons */
 
       --font-display: "TT Turns", "TT Turns Fallback", sans-serif;
       --font-body: "TT Commons", "TT Commons Fallback", sans-serif;
@@ -168,7 +170,7 @@
     /* ---------- Hero ---------- */
     .hero {
       position: relative;
-      z-index: 2; /* buttons overhang onto the scroll-scrubbed clip below */
+      z-index: 2; /* buttons overhang onto the blue section below */
     }
     .hero__photo-clip {
       position: absolute;
@@ -289,6 +291,8 @@
     }
     .btn:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 3px; }
     .btn:active { transform: translateY(1px); }
+    .btn--primary,
+    .btn--secondary { border: 2px solid var(--c-white); }
     .btn--primary {
       position: relative;
       z-index: 2;
@@ -314,7 +318,6 @@
       position: relative;
       z-index: 1;
       aspect-ratio: 2042 / 1020;
-      margin-top: calc(-1 * var(--overhang));
       overflow: hidden;
       background: #08090c;
     }
@@ -330,6 +333,7 @@
     /* ---------- Why now / Why Daat ---------- */
     .why {
       position: relative;
+      margin-top: calc(-1 * var(--overhang)); /* the hero buttons hang over its top edge */
       padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
       background: var(--c-primary);
     }
@@ -374,37 +378,38 @@
     }
     .why__toc a:focus-visible { outline: 2px solid var(--c-on-primary); outline-offset: 3px; border-radius: 2px; }
 
-    .why__eyebrow {
+    /* Section label + heading, shared by every content section; colours come from the section */
+    .eyebrow {
       display: flex;
       align-items: center;
       gap: 0.6em;
       margin: 0;
-      color: var(--c-on-primary);
+      color: var(--eyebrow-color, var(--c-on-primary));
       font-size: var(--text-small);
       font-weight: 600;
       line-height: var(--leading-small);
       letter-spacing: 0.02em;
     }
     /* Orange stays as graphic accent on blue (it is too light for text there) */
-    .why__eyebrow::before {
+    .eyebrow::before {
       content: "";
       width: 1.5em;
       height: 2px;
       background: var(--c-accent);
     }
-    .why__title {
+    .section-title {
       max-width: calc(831.82 * var(--px));
       margin: var(--space-md) 0 0;
-      color: var(--c-on-primary-muted);
+      color: var(--title-color, var(--c-on-primary-muted));
       font-family: var(--font-display);
       font-size: var(--text-heading);
       font-weight: 300;
       line-height: var(--leading-heading);
       font-feature-settings: "dlig" 1;
     }
-    .why__title strong { font-weight: var(--weight-emphasis); }
-    .why__title--daat { margin-top: var(--space-xl); }
-    .why__title--daat strong { font-feature-settings: "dlig" 1, "ss01" 1; }
+    .section-title strong { font-weight: var(--weight-emphasis); }
+    .section-title--daat { margin-top: var(--space-xl); }
+    .section-title--daat strong { font-feature-settings: "dlig" 1, "ss01" 1; }
 
     .why__intro {
       max-width: var(--span-2);
@@ -524,6 +529,138 @@
     }
     .reasons__cta { display: flex; width: fit-content; margin-top: var(--space-xl); }
 
+    /* ---------- For whom ---------- */
+    .for-whom {
+      --eyebrow-color: var(--c-cream);
+      --title-color: var(--c-white);
+      padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
+      background: var(--c-night);
+    }
+    .for-whom__intro {
+      max-width: var(--span-2);
+      margin: var(--space-xl) 0 0;
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+
+    /* Audience tabs: overlapping pills, the selected one blue with a white border */
+    .audience-tabs {
+      display: flex;
+      margin-top: var(--space-xl);
+    }
+    .audience-tab {
+      --tab-overlap: var(--space-2xl);
+      position: relative;
+      display: grid;
+      padding: var(--space-sm) var(--space-xl);
+      border: 2px solid var(--c-night);
+      border-radius: 999px;
+      background: var(--c-surface);
+      color: var(--c-white);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color .2s ease;
+    }
+    .audience-tab + .audience-tab {
+      margin-left: calc(-1 * var(--tab-overlap));
+      padding-left: calc(var(--tab-overlap) + var(--space-xl));
+    }
+    .audience-tab:nth-child(1) { z-index: 3; }
+    .audience-tab:nth-child(2) { z-index: 2; }
+    .audience-tab:nth-child(3) { z-index: 1; background: var(--c-ink); }
+    .audience-tab:hover { background: var(--c-surface-hover); }
+    .audience-tab[aria-selected="true"] {
+      border-color: var(--c-white);
+      background: var(--c-primary);
+    }
+    .audience-tab__title {
+      font-size: var(--text-body);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .audience-tab__sub {
+      font-size: var(--text-small);
+      line-height: 1.3;
+    }
+
+    .for-whom__layout {
+      display: grid;
+      grid-template-columns: 1fr calc(480 * var(--px));
+      column-gap: var(--space-3xl);
+      align-items: start;
+      width: var(--span-3);
+      max-width: 100%;
+      margin-top: var(--space-3xl);
+    }
+
+    /* Venn diagram: one circle per audience; the selected one is drawn in blue */
+    .venn { margin: 0; }
+    .venn svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .venn__ring { fill: none; stroke: var(--c-peach); stroke-width: 4; }
+    .venn__highlight { fill: none; stroke: var(--c-primary); stroke-width: 16; opacity: 0; transition: opacity .25s ease; }
+    .venn__label { font-family: var(--font-body); font-size: 36px; font-weight: 700; fill: var(--c-cream); fill-opacity: 0.5; transition: fill-opacity .25s ease; }
+    .venn__overlap { font-family: var(--font-body); font-size: 32px; fill: var(--c-white); }
+    .for-whom[data-audience="manager"] .venn [data-audience="manager"],
+    .for-whom[data-audience="investor"] .venn [data-audience="investor"],
+    .for-whom[data-audience="contractor"] .venn [data-audience="contractor"] { opacity: 1; fill-opacity: 1; }
+    .venn figcaption {
+      margin-top: var(--space-xl);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .situations__intro {
+      margin: 0;
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+    .situations {
+      margin: var(--space-xl) 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .situations > li + li { background: url("assets/divider-dark.svg") no-repeat 0 0 / 100% 2px; }
+    .situation summary {
+      display: grid;
+      grid-template-columns: calc(36.5 * var(--px)) 1fr;
+      column-gap: var(--space-md);
+      padding-block: var(--space-lg);
+      list-style: none;
+      cursor: pointer;
+    }
+    .situation summary::-webkit-details-marker { display: none; }
+    .situation summary::before {
+      content: "";
+      grid-row: span 2;
+      width: calc(36.5 * var(--px));
+      height: calc(36.5 * var(--px));
+      margin-top: calc((var(--text-lead) * 1.2 - 36.5 * var(--px)) / 2); /* centred on the title line */
+      background: url("assets/icon-chevron-down.svg") center / contain no-repeat;
+    }
+    .situation[open] summary::before { background-image: url("assets/icon-unfold-less.svg"); }
+    .situation[data-static] summary { cursor: default; }
+    .situation__title {
+      font-size: var(--text-lead);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .situation__sub {
+      margin-top: var(--space-xs);
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+    .situation__body {
+      margin: calc(-1 * var(--space-sm)) 0 0;
+      padding: 0 0 var(--space-lg) calc(36.5 * var(--px) + var(--space-md));
+    }
+    .situation__body ol {
+      margin: 0;
+      padding-left: 1.4em;
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+
     /* ---------- Mobile (< 1024px) ---------- */
     @media (max-width: 1023.98px) {
       :root {
@@ -583,8 +720,8 @@
       }
       .why__toc a[aria-current="true"]::before { content: none; }
       .why__toc a[aria-current="true"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.35em; }
-      .why__title { max-width: 640px; margin-top: 24px; }
-      .why__title--daat { margin-top: 56px; }
+      .section-title { max-width: 640px; margin-top: 24px; }
+      .section-title--daat { margin-top: 56px; }
       .why__intro { max-width: 640px; margin-top: 32px; }
       .why__divider { width: 100%; }
       .card p { max-width: 540px; }
@@ -599,6 +736,17 @@
       .why-daat__photo { max-width: 320px; }
       .reasons { grid-template-columns: 1fr; row-gap: 32px; padding-top: 0; }
       .reasons__cta { width: auto; max-width: 480px; margin-top: 40px; }
+
+      .for-whom { padding: 64px 0 80px; }
+      .for-whom__intro { max-width: 640px; margin-top: 32px; }
+      .audience-tabs { flex-direction: column; max-width: 480px; margin-top: 32px; }
+      .audience-tab + .audience-tab { margin: 12px 0 0; padding-left: var(--space-xl); }
+      .audience-tab { padding-block: 14px; }
+      .for-whom__layout { grid-template-columns: 1fr; row-gap: 48px; width: auto; margin-top: 48px; }
+      .venn { max-width: 400px; }
+      .situation summary { grid-template-columns: 28px 1fr; column-gap: 16px; padding-block: 24px; }
+      .situation summary::before { width: 28px; height: 28px; margin-top: calc((var(--text-lead) * 1.2 - 28px) / 2); }
+      .situation__body { padding-left: 44px; }
     }
   </style>
 </head>
@@ -673,11 +821,6 @@
       </div>
     </section>
 
-    <section class="scrub" aria-label="Business strategy, technical excellence та delivery&nbsp;— з'єднані в одну систему">
-      <img class="scrub__poster" src="assets/scrub/1440/f001.webp" width="1440" height="720" alt="" />
-      <canvas class="scrub__canvas" aria-hidden="true"></canvas>
-    </section>
-
     <section class="why" id="why-now">
       <aside class="why__toc">
         <nav aria-label="Зміст">
@@ -692,8 +835,8 @@
       </aside>
 
       <div class="container">
-          <p class="why__eyebrow">Чому зараз?</p>
-          <h2 class="why__title">Що стримує зростання? Рідко ринок. Частіше&nbsp;— <strong>процеси, ролі й рішення всередині компанії.</strong></h2>
+          <p class="eyebrow">Чому зараз?</p>
+          <h2 class="section-title">Що стримує зростання? Рідко ринок. Частіше&nbsp;— <strong>процеси, ролі й рішення всередині компанії.</strong></h2>
 
           <div class="why__intro">
             <p><strong>Діагностика зростання</strong>&nbsp;— це незалежна доказова оцінка того, які системи та елементи <span class="nowrap">IT-компанії</span> прискорюють її розвиток, а які стримують: стратегія, управління, delivery, інженерна культура, лідерство, люди й компетенції. ATLAS простежує кожне обмеження до першопричини й показує, що змінити, щоб компанія могла рости далі.</p>
@@ -739,7 +882,7 @@
 
           <img class="why__divider" src="assets/divider-full.svg" width="2092" height="4" alt="" />
 
-          <h2 class="why__title why__title--daat">Чому <strong>Daat</strong>?</h2>
+          <h2 class="section-title section-title--daat">Чому <strong>Daat</strong>?</h2>
 
           <div class="why-daat">
             <div class="why-daat__photo">
@@ -769,6 +912,11 @@
             </div>
           </div>
       </div>
+    </section>
+
+    <section class="scrub" aria-label="Business strategy, technical excellence та delivery&nbsp;— з'єднані в одну систему">
+      <img class="scrub__poster" src="assets/scrub/1440/f001.webp" width="1440" height="720" alt="" />
+      <canvas class="scrub__canvas" aria-hidden="true"></canvas>
     </section>
   </main>
 

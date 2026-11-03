@@ -140,3 +140,8 @@ The automated scan went from 25 findings to 5, and the 5 remaining are false pos
 5. Replace measured spacing with the 8–96 scale (Grid and spacing table).
 6. Add a mobile frame (Responsive layouts section).
 7. Resolve the TODO list: missing sections, the menu, placeholder copy, client logos, and the font licence.
+
+## Requested changes after the critique
+
+- **Section order:** hero → "why now" (blue) → animated clip. The hero buttons now hang over the top edge of the blue section.
+- **Hero buttons** ("Записатися на діагностичний дзвінок", "Які результати ви отримаєте?"): 2px white border. This also keeps the blue button visible where it overlaps the blue section.
