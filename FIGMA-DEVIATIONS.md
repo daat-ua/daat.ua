@@ -274,3 +274,7 @@ Mobile headings are reduced by the same factor. The "Для кого" accordion 
 
 - Removed "20 годин" and "3 горизонти планування"; two key points remain in one row: "4 тижні" and "Стратегія впровадження" (renamed from "Діагноз впровадження", same description).
 - Removed the second hero divider (Figma "Line 2"). The clients block now follows the key points with the regular 64px gap (48 on mobile).
+
+## Animated clip: later start
+
+The clip's scroll range runs from its top edge entering at the bottom of the screen to that edge reaching the top. The first frame is held for the first 40% of that range, and the whole clip plays over the remaining 60% (`START_AT = 0.4` in the script).
