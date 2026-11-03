@@ -170,9 +170,8 @@ Behaviour (code only):
 - The situations are a native accordion with one open at a time. Rows without details don't toggle.
 
 TODO content for this section:
-- Situations for "Я інвестую або купую" and "Я обираю підрядника". Only the manager view exists in Figma; the other two tabs show a short placeholder line.
-- Details for "Діагностика плато", "Готовність до зростання", "Вихід на enterprise-клієнтів" and "Перші 90 днів нового керівника".
-- Figma repeats "Перші 90 днів нового керівника" four times. Only one is built; the other rows need real situations.
+- ~~Situations for the investor and contractor tabs~~: done (see below).
+- ~~Details for the manager situations~~: done. The content comes from the "Self-commissioned" scenarios S-1 to S-8, translated (see below).
 
 ## Clip → "Для кого" fade (node 31:144, "Rectangle 7")
 
@@ -189,5 +188,56 @@ Gradient from transparent to `#0e151b`, 131.5 tall at 1440 (263 at 2×). It sits
 - Every situation row toggles, with one open at a time. The panel height animates open and closed (0.4s ease-out-quart) and its content fades in.
 - The icon is one inline SVG of two chevron strokes, drawn to match Figma's chevron and "unfold less" icons. Closed, they overlap as a single down chevron. Opening, one rises and the other flips up into the "unfold less" shape, and closing reverses it. The line weight stays constant throughout.
 - Built as accessible accordion buttons (`aria-expanded`, labelled regions); collapsed content is hidden from keyboard and screen readers. Motion is disabled for reduced-motion users.
-- The four rows without copy show a placeholder line (TODO) so they still open.
+- Every row now has content (see the next section).
 - The static `icon-chevron-down.svg` / `icon-unfold-less.svg` files were removed (replaced by the inline animated icon).
+
+## "Я керую компанією" situations: content from the scenario map
+
+Source: the "Self-commissioned" branch (S-1 to S-8) of the Atlas audit map, translated to Ukrainian. Order on the page:
+
+1. S-5 Масштабування без зламів (open by default)
+2. S-4 Діагностика плато
+3. S-6 Готовність до зростання
+4. S-7 Вихід на enterprise-клієнтів
+5. S-2 Перші 90 днів нового керівника
+6. S-3 Вихід із кризи (new row)
+7. S-1 Підвищення мультиплікатора (new row)
+8. S-8 Регулярна перевірка стану (new row)
+
+The first five are Figma's rows; the last three are added. Left out because they are internal rather than client-facing:
+- S-8 point 4 ("natural commercial spine of the self-commissioned arm");
+- the Ω score symbol;
+- the repeated "How Atlas helps in this case:" label.
+
+Figma needs three more rows, and the translations should be proofread by a native copywriter.
+
+## "Я інвестую або купую" and "Я обираю підрядника": content from the scenario map
+
+Source: the "Investor / acquirer" (I-1 to I-3) and "Client / procurement" (C-1, C-2) branches, translated.
+
+| Tab | Row | Source |
+|---|---|---|
+| Investor | Due diligence перед купівлею · Зниження ризиків угоди | I-1 |
+| Investor | Базова оцінка після злиття · Спершу оцінка, потім порядок інтеграції | The points listed under I-3, which describe the post-merger case. The map's I-2 points are a "?"-marked copy of I-1; the point repeating I-1 is left out. |
+| Investor | Моніторинг портфеля · Регулярна переоцінка компаній портфеля | **No content in the map.** Adapted from S-8 "Recurring health check" plus ATLAS's "one maturity scale". Needs review. |
+| Contractor | Вибір підрядника · Порівняння кандидатів перед підписанням | C-1 |
+| Contractor | Контроль стратегічного постачальника · Перевірка критичного партнера | C-2 |
+
+The intro line for each tab is new copy, written from the map's node labels ("Audits a target", "Audits its vendor"). Each tab opens with its first row expanded, and one row is open at a time within each tab. The translations should be proofread by a native copywriter, and Figma needs these rows added.
+
+## Situations accordion: row lines
+
+Every row has its gradient line after it, including the last one (Figma has no line after the last row). Lines are at 25% opacity, and the line under the open row fades to 100%, using the same 0.4s ease-out as the panel.
+
+## Venn diagram: sticky
+
+On desktop the Venn diagram and its caption stay pinned (96px from the top, the same as the table of contents) while the situations list scrolls beside them. They release at the end of the list. On mobile they scroll normally.
+
+## Venn diagram: clickable circles and overlap labels
+
+- Clicking a circle selects that audience (same as its tab). In overlaps the circle with the nearest centre wins. Hovering shows a pointer and a faint preview of the blue highlight. Keyboard users use the tabs.
+- Overlap labels are pale (50%) unless the overlap belongs to the selected circle. The centre ("Одна шкала зрілості") belongs to all three, so it is always bright. (In Figma all overlap labels are always white.)
+
+## Situation lists: dots instead of numbers
+
+The points in every situation are an unordered list with medium peach dots (`#f7d8bc`, about 7px at 1440, scaled with the text), optically centred on the first line, with 8px between points. Figma uses a numbered list.

@@ -614,15 +614,35 @@
     }
 
     /* Venn diagram: one circle per audience; the selected one is drawn in blue */
-    .venn { margin: 0; }
+    /* The diagram and its caption stay in view while the situations list scrolls (same offset as the TOC) */
+    .venn {
+      position: sticky;
+      top: var(--space-3xl);
+      margin: 0;
+    }
     .venn svg { display: block; width: 100%; height: auto; overflow: visible; }
     .venn__ring { fill: none; stroke: var(--c-peach); stroke-width: 4; }
     .venn__highlight { fill: none; stroke: var(--c-primary); stroke-width: 16; opacity: 0; transition: opacity .25s ease; }
     .venn__label { font-family: var(--font-body); font-size: 36px; font-weight: 700; fill: var(--c-cream); fill-opacity: 0.5; transition: fill-opacity .25s ease; }
-    .venn__overlap { font-family: var(--font-body); font-size: 32px; fill: var(--c-white); }
+    .venn__overlap { font-family: var(--font-body); font-size: 32px; fill: var(--c-white); fill-opacity: 0.5; transition: fill-opacity .25s ease; }
+    /* Overlaps that belong to the selected circle are bright, the rest pale */
+    .for-whom[data-audience="manager"] .venn__overlap[data-in~="manager"],
+    .for-whom[data-audience="investor"] .venn__overlap[data-in~="investor"],
+    .for-whom[data-audience="contractor"] .venn__overlap[data-in~="contractor"] { fill-opacity: 1; }
+    /* Circles are clickable: hovering previews the highlight */
+    .venn svg.is-pointing { cursor: pointer; }
+    .for-whom[data-hover="manager"] .venn__highlight[data-audience="manager"],
+    .for-whom[data-hover="investor"] .venn__highlight[data-audience="investor"],
+    .for-whom[data-hover="contractor"] .venn__highlight[data-audience="contractor"] { opacity: 0.35; }
+    .for-whom[data-hover="manager"] .venn__label[data-audience="manager"],
+    .for-whom[data-hover="investor"] .venn__label[data-audience="investor"],
+    .for-whom[data-hover="contractor"] .venn__label[data-audience="contractor"] { fill-opacity: 0.8; }
     .for-whom[data-audience="manager"] .venn [data-audience="manager"],
     .for-whom[data-audience="investor"] .venn [data-audience="investor"],
     .for-whom[data-audience="contractor"] .venn [data-audience="contractor"] { opacity: 1; fill-opacity: 1; }
+    .for-whom[data-audience="manager"][data-hover="manager"] .venn [data-audience="manager"],
+    .for-whom[data-audience="investor"][data-hover="investor"] .venn [data-audience="investor"],
+    .for-whom[data-audience="contractor"][data-hover="contractor"] .venn [data-audience="contractor"] { opacity: 1; fill-opacity: 1; }
     .venn figcaption {
       margin-top: var(--space-xl);
       font-size: var(--text-small);
@@ -639,8 +659,23 @@
       padding: 0;
       list-style: none;
     }
-    .situations > li + li { background: url("assets/divider-dark.svg") no-repeat 0 0 / 100% 2px; }
-    .situation { padding-bottom: var(--space-lg); }
+    .situation {
+      position: relative;
+      padding-bottom: var(--space-lg);
+    }
+    /* Line after each row: 25% by default, full strength under the open row */
+    .situation::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: url("assets/divider-dark.svg") no-repeat 0 0 / 100% 2px;
+      opacity: 0.25;
+      transition: opacity .4s var(--ease-out);
+    }
+    .situation.is-open::after { opacity: 1; }
     .situation__heading { margin: 0; font: inherit; }
     .situation__toggle {
       display: grid;
@@ -717,9 +752,27 @@
       line-height: var(--leading-body);
     }
     .situation__body p { margin: 0; }
-    .situation__body ol {
+    /* Dotted list: medium peach dots centred on the first line of each point */
+    .dots {
+      display: grid;
+      row-gap: var(--space-xs);
       margin: 0;
-      padding-left: 1.4em;
+      padding: 0;
+      list-style: none;
+    }
+    .dots li {
+      position: relative;
+      padding-left: 1.1em;
+    }
+    .dots li::before {
+      content: "";
+      position: absolute;
+      left: 0.1em;
+      top: calc((var(--leading-body) * 1em - 0.34em) / 2 - 0.06em); /* optically centred on lowercase letters */
+      width: 0.34em;
+      height: 0.34em;
+      border-radius: 50%;
+      background: var(--c-peach);
     }
 
     /* ---------- Mobile (< 1024px) ---------- */
@@ -805,7 +858,7 @@
       .audience-tab + .audience-tab { margin: 12px 0 0; padding-left: var(--space-xl); }
       .audience-tab { padding-block: 14px; }
       .for-whom__layout { grid-template-columns: 1fr; row-gap: 48px; width: auto; margin-top: 48px; }
-      .venn { max-width: 400px; }
+      .venn { position: static; max-width: 400px; }
       .situation { padding-bottom: 24px; }
       .situation__toggle { grid-template-columns: 28px 1fr; column-gap: 16px; padding-top: 24px; }
       .situation__icon { width: 28px; height: 28px; margin-top: calc((var(--text-lead) * 1.2 - 28px) / 2); }
@@ -1018,10 +1071,10 @@
                 <text class="venn__label" data-audience="manager" x="107" y="228"><tspan x="107" dy="0">Керую</tspan><tspan x="107" dy="43">компанією</tspan></text>
                 <text class="venn__label" data-audience="investor" x="645" y="228"><tspan x="645" dy="0">Інвестую</tspan><tspan x="645" dy="43">або купую</tspan></text>
                 <text class="venn__label" data-audience="contractor" x="359" y="686"><tspan x="359" dy="0">Обираю</tspan><tspan x="359" dy="43">підрядника</tspan></text>
-                <text class="venn__overlap" x="376" y="204"><tspan x="376" dy="0">Продаж /</tspan><tspan x="376" dy="38">купівля</tspan></text>
-                <text class="venn__overlap" x="393" y="345"><tspan x="393" dy="0">Одна</tspan><tspan x="393" dy="38">шкала</tspan><tspan x="393" dy="38">зрілості</tspan></text>
-                <text class="venn__overlap" x="220" y="450"><tspan x="220" dy="0">Вибір</tspan><tspan x="220" dy="38">підрядника</tspan></text>
-                <text class="venn__overlap" x="537" y="450"><tspan x="537" dy="0">Постійний</tspan><tspan x="537" dy="38">моніторинг</tspan></text>
+                <text class="venn__overlap" data-in="manager investor" x="376" y="204"><tspan x="376" dy="0">Продаж /</tspan><tspan x="376" dy="38">купівля</tspan></text>
+                <text class="venn__overlap" data-in="manager investor contractor" x="393" y="345"><tspan x="393" dy="0">Одна</tspan><tspan x="393" dy="38">шкала</tspan><tspan x="393" dy="38">зрілості</tspan></text>
+                <text class="venn__overlap" data-in="manager contractor" x="220" y="450"><tspan x="220" dy="0">Вибір</tspan><tspan x="220" dy="38">підрядника</tspan></text>
+                <text class="venn__overlap" data-in="investor contractor" x="537" y="450"><tspan x="537" dy="0">Постійний</tspan><tspan x="537" dy="38">моніторинг</tspan></text>
             </svg>
             <figcaption>Одна методологія&nbsp;— три погляди на компанію. Перетини&nbsp;— ситуації, де ATLAS бачить ту саму компанію з двох боків: продавця й покупця, підрядника й замовника.</figcaption>
           </figure>
@@ -1041,12 +1094,12 @@
                   <div class="situation__panel" id="situation-1" role="region" aria-labelledby="situation-1-toggle">
                     <div class="situation__inner">
                       <div class="situation__body">
-                          <ol>
-                            <li>Знаходить, де система зламається наступною,&nbsp;— ще до того, як туди дійде зростання.</li>
+                          <ul class="dots">
+                            <li>Знаходить, де система зламається <em>наступною</em>,&nbsp;— ще до того, як туди дійде зростання.</li>
                             <li>Відрізняє героїзм окремих людей від системи.</li>
                             <li>Вибудовує розвиток там, де зростання тисне першим.</li>
                             <li>Захищає те, що вже працює, поки ви масштабуєтесь.</li>
-                          </ol>
+                          </ul>
                       </div>
                     </div>
                   </div>
@@ -1062,8 +1115,12 @@
                   <div class="situation__panel" id="situation-2" role="region" aria-labelledby="situation-2-toggle">
                     <div class="situation__inner">
                       <div class="situation__body">
-                          <!-- TODO copy: details for this situation -->
-                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                          <ul class="dots">
+                            <li>Показує, який важіль насправді зламався,&nbsp;— замість здогадок.</li>
+                            <li>Відділяє проблему попиту від проблеми delivery.</li>
+                            <li>Висвітлює економіку, якої компанія досі не бачить.</li>
+                            <li>Спрямовує діагноз на правильний наступний крок&nbsp;— зокрема на позиціонування, коли ніші немає.</li>
+                          </ul>
                       </div>
                     </div>
                   </div>
@@ -1079,8 +1136,12 @@
                   <div class="situation__panel" id="situation-3" role="region" aria-labelledby="situation-3-toggle">
                     <div class="situation__inner">
                       <div class="situation__body">
-                          <!-- TODO copy: details for this situation -->
-                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                          <ul class="dots">
+                            <li>Спершу відповідає на розвилку, а вже потім ставить оцінку: який шлях зростання реально витримає ваш delivery.</li>
+                            <li>Для органічного шляху перевіряє, чи витримає система більше навантаження без втрати якості.</li>
+                            <li>Для шляху через покупця ставить дзеркальне до due diligence питання: чи варта <em>ваша</em> система того, щоб у неї вливатися?</li>
+                            <li>Перетворює готовність на контрольну точку зі списком того, що добудувати,&nbsp;— а не на «так/ні».</li>
+                          </ul>
                       </div>
                     </div>
                   </div>
@@ -1096,8 +1157,12 @@
                   <div class="situation__panel" id="situation-4" role="region" aria-labelledby="situation-4-toggle">
                     <div class="situation__inner">
                       <div class="situation__body">
-                          <!-- TODO copy: details for this situation -->
-                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                          <ul class="dots">
+                            <li>Закриває розрив між «достатньо добре» і «достатньо <em>доказово</em>» для <span class="nowrap">enterprise-покупців</span>.</li>
+                            <li>Зіставляє реальну зрілість компанії з планкою, яку очікує цільовий сегмент.</li>
+                            <li>Вибудовує розвиток під конкретний сегмент, на який ви цілитеся, а не під абстрактну зрілість.</li>
+                            <li>Перетворює докази зрілості на інструмент продажу, а не лише на внутрішню оцінку.</li>
+                          </ul>
                       </div>
                     </div>
                   </div>
@@ -1113,8 +1178,74 @@
                   <div class="situation__panel" id="situation-5" role="region" aria-labelledby="situation-5-toggle">
                     <div class="situation__inner">
                       <div class="situation__body">
-                          <!-- TODO copy: details for this situation -->
-                          <p>Деталі цього сценарію додамо найближчим часом.</p>
+                          <ul class="dots">
+                            <li>Страхує від хибних рішень у найдорожчий для нового керівника період.</li>
+                            <li>Показує, що варто зберегти, а не лише що треба виправити.</li>
+                            <li>Читає політичну карту компанії, не стаючи її заручником.</li>
+                            <li>Фіксує стартову точку, від якої згодом видно вплив нового керівника.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-6-toggle" aria-expanded="false" aria-controls="situation-6">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Вихід із кризи</span>
+                      <span class="situation__sub">Відтік клієнтів, маржа, зриви delivery</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-6" role="region" aria-labelledby="situation-6-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Веде стабілізацію й діагностику паралельно, кожну у своєму темпі.</li>
+                            <li>Доводить, що три пожежі мають один корінь.</li>
+                            <li>Знаходить причину, яку підтверджують кілька незалежних джерел, а не ту, яку найзручніше звинуватити.</li>
+                            <li>Вибудовує кроки відповідно до запасу часу&nbsp;— і чесно каже, коли він вичерпується.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-7-toggle" aria-expanded="false" aria-controls="situation-7">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Підвищення мультиплікатора</span>
+                      <span class="situation__sub">Підготовка до продажу компанії</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-7" role="region" aria-labelledby="situation-7-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Перетворює незадокументовані можливості на цінність, яку можна обґрунтувати.</li>
+                            <li>Б’є по найбільшому чиннику дисконту&nbsp;— залежності від засновника й ключових людей.</li>
+                            <li>Знаходить приховані ризики раніше, ніж це зробить покупець.</li>
+                            <li>Подає план усунення недоліків як план створення цінності для покупця.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="situation">
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-8-toggle" aria-expanded="false" aria-controls="situation-8">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Регулярна перевірка стану</span>
+                      <span class="situation__sub">Щорічна повторна оцінка й супровід</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-8" role="region" aria-labelledby="situation-8-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Перетворює разовий знімок на траєкторію&nbsp;— саме в ній справжній сигнал.</li>
+                            <li>Помічає регрес, перш ніж він стане кризою.</li>
+                            <li>Тримає роботу з покращень під контролем доказів.</li>
+                          </ul>
                       </div>
                     </div>
                   </div>
@@ -1122,12 +1253,123 @@
               </ul>
             </div>
             <div role="tabpanel" id="panel-investor" aria-labelledby="tab-investor" hidden>
-              <!-- TODO copy: intro and situations for this audience (only "Я керую компанією" exists in Figma) -->
-              <p class="situations__intro">Сценарії для цієї ролі з’являться найближчим часом.</p>
+              <p class="situations__intro">Ви інвестор, член борду або покупець і хочете знати, що насправді купуєте,&nbsp;— і як цим керувати після угоди.</p>
+              <ul class="situations">
+                <li class="situation is-open">
+                  <!-- Source: I-1 -->
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-i1-toggle" aria-expanded="true" aria-controls="situation-i1">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Due diligence перед купівлею</span>
+                      <span class="situation__sub">Зниження ризиків угоди</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-i1" role="region" aria-labelledby="situation-i1-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Починає з вашої інвестиційної тези: це швидке сортування ризиків, а не збалансований аудит.</li>
+                            <li>Перевіряє критично й спирається передусім на дані систем, а не на презентації.</li>
+                            <li>Першими шукає ризики, що можуть зірвати угоду,&nbsp;— у порядку, який найшвидше перевірить тезу.</li>
+                            <li>Те, що не вдалося перевірити за відведений час, стає частиною структури угоди, а не приміткою.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="situation">
+                  <!-- Source: the points listed under I-3 in the map (they describe the post-merger case); the point duplicating I-1 is left out -->
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-i2-toggle" aria-expanded="false" aria-controls="situation-i2">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Базова оцінка після злиття</span>
+                      <span class="situation__sub">Спершу оцінка, потім порядок інтеграції</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-i2" role="region" aria-labelledby="situation-i2-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Фіксує реальний стан щойно купленого&nbsp;— незалежно від due diligence, яким обґрунтовували купівлю.</li>
+                            <li>Вибудовує порядок інтеграції за залежностями, щоб злиття не зламало те, заради чого купували.</li>
+                            <li>Перетворює список зауважень із due diligence на вимірюваний план отримання цінності з контрольною переоцінкою.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="situation">
+                  <!-- TODO copy: I-3 has no points of its own in the map; adapted from S-8 "Recurring health check" plus the one-scale idea. Review. -->
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-i3-toggle" aria-expanded="false" aria-controls="situation-i3">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Моніторинг портфеля</span>
+                      <span class="situation__sub">Регулярна переоцінка компаній портфеля</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-i3" role="region" aria-labelledby="situation-i3-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Оцінює всі компанії портфеля на одній шкалі зрілості.</li>
+                            <li>Перетворює разовий знімок кожної компанії на траєкторію&nbsp;— саме в ній справжній сигнал.</li>
+                            <li>Помічає регрес, перш ніж він стане кризою.</li>
+                            <li>Тримає роботу з покращень під контролем доказів.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
             <div role="tabpanel" id="panel-contractor" aria-labelledby="tab-contractor" hidden>
-              <!-- TODO copy: intro and situations for this audience (only "Я керую компанією" exists in Figma) -->
-              <p class="situations__intro">Сценарії для цієї ролі з’являться найближчим часом.</p>
+              <p class="situations__intro">Ви клієнт або відділ закупівель і хочете знати, чи справді підрядник витримає ваш контракт.</p>
+              <ul class="situations">
+                <li class="situation is-open">
+                  <!-- Source: C-1 -->
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-c1-toggle" aria-expanded="true" aria-controls="situation-c1">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Вибір підрядника</span>
+                      <span class="situation__sub">Порівняння кандидатів перед підписанням</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-c1" role="region" aria-labelledby="situation-c1-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Оцінює підрядників із шорт-листа за зрілістю delivery, а не за якістю продажної презентації.</li>
+                            <li>Порівнює їх на одній шкалі&nbsp;— як рівне з рівним.</li>
+                            <li>Зважує оцінку відповідно до того, чого насправді потребує конкретний контракт.</li>
+                            <li>Виявляє ризики, які варто врахувати в ціні та умовах контракту ще до підписання.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="situation">
+                  <!-- Source: C-2 -->
+                  <h3 class="situation__heading">
+                    <button class="situation__toggle" type="button" id="situation-c2-toggle" aria-expanded="false" aria-controls="situation-c2">
+                      <svg class="situation__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      <span class="situation__title">Контроль стратегічного постачальника</span>
+                      <span class="situation__sub">Перевірка критичного партнера</span>
+                    </button>
+                  </h3>
+                  <div class="situation__panel" id="situation-c2" role="region" aria-labelledby="situation-c2-toggle">
+                    <div class="situation__inner">
+                      <div class="situation__body">
+                          <ul class="dots">
+                            <li>Це регулярна перевірка стану, спрямована назовні,&nbsp;— на партнера, збій якого ви не можете собі дозволити.</li>
+                            <li>Помічає, що постачальник просідає, раніше, ніж це стане вашим інцидентом.</li>
+                            <li>Відстежує траєкторію, яка важить більше за будь-який разовий знімок.</li>
+                            <li>Будує управління відносинами на доказах, а не на запевненнях.</li>
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -1193,16 +1435,39 @@
           select(tabs[(next + tabs.length) % tabs.length], true);
         });
       }
-      // Situations accordion: one open at a time; height and icon animate in CSS
-      const situations = [...section.querySelectorAll(".situation")];
+      // Venn diagram: clicking a circle selects that audience (in overlaps, the nearest centre wins)
+      const svg = section.querySelector(".venn svg");
+      const circles = [...svg.querySelectorAll(".venn__highlight")].map((c) => ({
+        audience: c.dataset.audience, cx: +c.getAttribute("cx"), cy: +c.getAttribute("cy"), r: 282,
+      }));
+      function audienceAt(e) {
+        const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
+        const hits = circles
+          .map((c) => ({ ...c, d: Math.hypot(p.x - c.cx, p.y - c.cy) }))
+          .filter((c) => c.d <= c.r)
+          .sort((a, b) => a.d - b.d);
+        return hits[0]?.audience;
+      }
+      svg.addEventListener("pointermove", (e) => {
+        const audience = audienceAt(e);
+        svg.classList.toggle("is-pointing", !!audience);
+        if (audience) section.dataset.hover = audience; else delete section.dataset.hover;
+      });
+      svg.addEventListener("pointerleave", () => { svg.classList.remove("is-pointing"); delete section.dataset.hover; });
+      svg.addEventListener("click", (e) => {
+        const audience = audienceAt(e);
+        if (audience) select(tabs.find((t) => t.dataset.audience === audience));
+      });
+
+      // Situations accordion: one open at a time within each audience's list; height and icon animate in CSS
       function setOpen(item, open) {
         item.classList.toggle("is-open", open);
         item.querySelector(".situation__toggle").setAttribute("aria-expanded", String(open));
       }
-      for (const item of situations) {
+      for (const item of section.querySelectorAll(".situation")) {
         item.querySelector(".situation__toggle").addEventListener("click", () => {
           const open = !item.classList.contains("is-open");
-          for (const other of situations) if (other !== item) setOpen(other, false);
+          for (const other of item.parentElement.children) if (other !== item) setOpen(other, false);
           setOpen(item, open);
         });
       }
