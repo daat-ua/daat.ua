@@ -35,7 +35,7 @@
       --gutter: calc(121 * var(--px));      /* heading, logo, clients label */
       --gutter-inner: calc(2.5 * var(--px)); /* extra indent of paragraph, divider, theses, buttons */
       --header-h: calc(165 * var(--px));
-      --overhang: calc(31.75 * var(--px));  /* how far the buttons hang below the dark hero */
+      --overhang: calc(32.88 * var(--px));  /* how far the buttons hang below the dark hero */
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -105,7 +105,7 @@
     .hero__photo {
       position: absolute;
       left: calc(508 * var(--px));
-      top: calc(81.5 * var(--px));
+      top: calc(326.6 * var(--px));
       width: calc(1344.5 * var(--px));
       height: calc(896.5 * var(--px));
       max-width: none;
@@ -150,14 +150,14 @@
       width: calc(577 * var(--px));
       max-width: 100%;
       height: calc(2 * var(--px));
-      margin-top: calc(48.5 * var(--px));
+      margin-top: calc(66.5 * var(--px));
     }
 
     .theses {
       display: grid;
-      grid-template-columns: repeat(3, calc(269.5 * var(--px)));
-      column-gap: calc(60 * var(--px));
-      margin: calc(32 * var(--px)) 0 0;
+      grid-template-columns: repeat(2, calc(269.5 * var(--px)));
+      gap: calc(67 * var(--px)) calc(37.5 * var(--px));
+      margin: calc(64.1 * var(--px)) 0 0;
       padding: 0;
       list-style: none;
       font-feature-settings: "dlig" 1;
@@ -178,9 +178,8 @@
 
     .clients {
       display: grid;
-      grid-template-columns: calc(329.5 * var(--px)) 1fr;
-      align-items: center;
-      margin: calc(68.5 * var(--px)) 0 0 calc(-1 * var(--gutter-inner));
+      row-gap: calc(26.25 * var(--px));
+      margin: calc(65.15 * var(--px)) 0 0 calc(-1 * var(--gutter-inner));
     }
     .clients__label {
       margin: 0;
@@ -202,7 +201,7 @@
     .cta {
       position: relative;
       display: flex;
-      margin-top: calc(66.3 * var(--px));
+      margin-top: calc(62.1 * var(--px));
     }
     .btn {
       display: inline-flex;
@@ -257,7 +256,7 @@
     /* ---------- Why now / Why Daat ---------- */
     .why {
       position: relative;
-      padding: calc(74.25 * var(--px)) 0 calc(147.05 * var(--px));
+      padding: calc(74.25 * var(--px)) 0 calc(217.1 * var(--px));
       background: var(--c-primary);
     }
     .why__inner { padding-left: var(--gutter-inner); }
@@ -348,15 +347,15 @@
     .problems {
       display: grid;
       grid-template-columns: repeat(3, calc(314 * var(--px)));
-      gap: calc(81 * var(--px)) calc(52 * var(--px));
-      margin: calc(38.625 * var(--px)) 0 0;
+      gap: calc(45 * var(--px)) calc(37.5 * var(--px));
+      margin: calc(46.4 * var(--px)) 0 0;
       padding: 0;
       list-style: none;
     }
     .problems .card { min-height: calc(244 * var(--px)); }
     .problems .card h3 { min-height: calc(120 * var(--px)); } /* four title lines, so descriptions line up */
     .problems .card p { margin-top: calc(21.5 * var(--px)); }
-    .problems + .why__divider { margin-top: calc(20.5 * var(--px)); }
+    .problems + .why__divider { margin-top: calc(48.5 * var(--px)); }
 
     .example {
       display: flex;
@@ -364,13 +363,13 @@
       margin-top: calc(55.65 * var(--px));
     }
     .example p {
-      width: calc(754 * var(--px));
+      width: calc(665.5 * var(--px));
       margin: 0;
       font-size: calc(20.865 * var(--px));
-      font-weight: 600;
       line-height: calc(24 * var(--px));
     }
-    .example .btn { margin: calc(5 * var(--px)) 0 0 calc(50.5 * var(--px)); }
+    .example strong { font-weight: 600; }
+    .example .btn { margin: calc(4.5 * var(--px)) 0 0 calc(37.5 * var(--px)); padding-inline: calc(26.5 * var(--px)); }
     .example + .why__divider { margin-top: calc(60.5 * var(--px)); }
 
     .btn--light {
@@ -390,8 +389,8 @@
 
     .why-daat {
       display: grid;
-      grid-template-columns: calc(314 * var(--px)) calc(680 * var(--px));
-      column-gap: calc(52 * var(--px));
+      grid-template-columns: calc(314 * var(--px)) calc(665.5 * var(--px));
+      column-gap: calc(37.5 * var(--px));
       align-items: start;
       margin-top: calc(93.75 * var(--px));
     }
@@ -415,22 +414,14 @@
     .reasons {
       display: grid;
       grid-template-columns: repeat(2, calc(314 * var(--px)));
-      column-gap: calc(52 * var(--px));
+      gap: calc(45 * var(--px)) calc(37.5 * var(--px));
       margin: 0;
-      padding: calc(35 * var(--px)) 0 0;
+      padding: 0;
       list-style: none;
     }
-    .reasons .card { min-height: calc(244 * var(--px)); }
     .reasons .card h3 { min-height: calc(60 * var(--px)); }
     .reasons .card p { margin-top: calc(31.375 * var(--px)); }
-    .reasons__cta { padding-top: 0; align-items: start; }
-    .reasons__cta .btn { justify-self: start; }
-    .reasons__note {
-      max-width: calc(312 * var(--px));
-      margin: calc(19.5 * var(--px)) 0 0;
-      font-size: calc(16 * var(--px));
-      line-height: normal;
-    }
+    .reasons__cta { display: flex; width: fit-content; margin-top: calc(45 * var(--px)); }
 
     /* ---------- Mobile (< 1024px) ---------- */
     @media (max-width: 1023.98px) {
@@ -448,7 +439,8 @@
       .hero__title img { width: 1em; height: 1em; vertical-align: -0.18em; }
       .hero__lead { margin-top: 40px; font-size: 19px; }
       .hero__photo { left: 20%; top: auto; bottom: 0; width: 140vw; height: auto; aspect-ratio: 1344.5 / 896.5; opacity: .3; }
-      .theses { grid-template-columns: 1fr; row-gap: 32px; }
+      .hero__divider { margin-top: 40px; }
+      .theses { grid-template-columns: 1fr; row-gap: 32px; margin-top: 36px; }
       .theses h3 { width: auto; font-size: 26px; }
       .theses p { font-size: 18px; line-height: 1.15; }
       .clients { grid-template-columns: 1fr; row-gap: 24px; margin-top: 56px; }
@@ -468,7 +460,7 @@
       .card h3 { font-size: 24px; line-height: 1.1; }
       .card p { max-width: 540px; font-size: 18px; line-height: 1.25; }
       .problems { grid-template-columns: 1fr; row-gap: 40px; margin-top: 40px; }
-      .problems .card, .reasons .card { min-height: 0; }
+      .problems .card { min-height: 0; }
       .problems .card h3, .reasons .card h3 { min-height: 0; }
       .problems .card p, .reasons .card p { margin-top: 12px; }
       .problems + .why__divider, .example + .why__divider { margin-top: 48px; }
@@ -477,9 +469,7 @@
       .example .btn { margin: 24px 0 0; }
       .why-daat { grid-template-columns: 1fr; row-gap: 40px; margin-top: 40px; }
       .reasons { grid-template-columns: 1fr; row-gap: 32px; padding-top: 0; }
-      .reasons__cta { max-width: 480px; margin-top: 8px; row-gap: 0; }
-      .reasons__cta .btn { justify-self: stretch; }
-      .reasons__note { margin-top: 12px; }
+      .reasons__cta { width: auto; max-width: 480px; margin-top: 40px; }
     }
   </style>
 </head>
@@ -522,6 +512,10 @@
             <li>
               <h3>20 годин</h3>
               <p>часу вашої команди на всю діагностику — решту робимо ми</p>
+            </li>
+            <li>
+              <h3>3 горизонти планування</h3>
+              <p>дорожня карта на 0–3, 3–9 і 9–18 місяців</p>
             </li>
             <li>
               <h3>Діагноз впровадження</h3>
@@ -608,7 +602,7 @@
           <img class="why__divider" src="assets/divider-full.svg" width="2092" height="4" alt="" />
 
           <div class="example">
-            <p>Приклад із практики: у компанії на ~50 людей п’ятеро керівників, кожен в окремому інтерв’ю, назвали ту саму головну перешкоду зростанню. Клієнт почав її усувати ще до фінального звіту.</p>
+            <p><strong>Приклад із практики:</strong> у компанії на ~50 людей п’ятеро керівників, кожен в окремому інтерв’ю, назвали ту саму головну перешкоду зростанню. Клієнт почав її усувати ще до фінального звіту.</p>
             <a class="btn btn--light" href="#audit-findings">Знахідки аудитів</a>
           </div>
 
@@ -639,10 +633,7 @@
                   <p>Ми пропонуємо найкращі практики delivery й технічної досконалості під ваш рівень зрілості — і впроваджуємо їх разом із вашою командою.</p>
                 </li>
               </ul>
-              <div class="reasons reasons__cta">
-                <a class="btn btn--outline" href="#contact">Записатися на діагностичний дзвінок</a>
-                <p class="reasons__note">Опис того що буде відбуватися під час дзвінка</p>
-              </div>
+              <a class="btn btn--outline reasons__cta" href="#contact">Записатися на діагностичний дзвінок</a>
             </div>
           </div>
         </div>
