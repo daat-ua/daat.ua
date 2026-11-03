@@ -241,3 +241,7 @@ On desktop the Venn diagram and its caption stay pinned (96px from the top, the 
 ## Situation lists: dots instead of numbers
 
 The points in every situation are an unordered list with medium peach dots (`#f7d8bc`, about 7px at 1440, scaled with the text), optically centred on the first line, with 8px between points. Figma uses a numbered list.
+
+## Hero H1: arrow icon (not in Figma)
+
+An orange "arrow up right" icon (`assets/icon-arrow-up-right.svg`, hugeicons stroke-rounded, recoloured to `#FEB161`) follows "Ваша компанія здатна на більше" (the full stop after "більше" is removed). It uses the same size, spacing and alignment as the plant icon and is kept on the same line as "більше".
