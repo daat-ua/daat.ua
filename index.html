@@ -333,6 +333,40 @@
       height: 100%;
     }
     .scrub__poster { object-fit: cover; }
+    /* Three pillars over the final frame (Figma node 6:304); their opacity follows the clip's progress */
+    .pillars {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      pointer-events: none;
+    }
+    .pillar {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--pillar-size, calc(121.5 * var(--px)));
+      height: var(--pillar-size, calc(121.5 * var(--px)));
+      border-radius: 50%;
+      background: var(--c-peach);
+      color: var(--c-header);
+      font-size: var(--pillar-font, var(--text-small));
+      font-weight: 600;
+      line-height: 1.15;
+      text-align: center;
+      opacity: var(--clip-progress, 0); /* fades in with the clip: 0 at its start, 1 at its last frame */
+      transform: translate(-50%, -50%);
+    }
+    /* Centre points as a share of the frame, so the circles stay on the traces at any width */
+    .pillar--technical { --x: 13.628%; --y: 51.146%; }
+    .pillar--strategy  { --x: 50.104%; --y: 48.090%; }
+    .pillar--delivery  { --x: 88.073%; --y: 26.215%; }
+
     /* Fade into the "Для кого" section below (Figma "Rectangle 7") */
     .scrub::after {
       content: "";
@@ -855,6 +889,7 @@
 
       .for-whom { padding: 64px 0 80px; }
       .scrub::after { height: 64px; }
+      .pillars { --pillar-size: clamp(68px, 17vw, 121.5px); --pillar-font: clamp(10px, 2.3vw, 17px); }
       .for-whom__intro { max-width: 640px; margin-top: 32px; }
       .audience-tabs { flex-direction: column; max-width: 480px; margin-top: 32px; }
       .audience-tab + .audience-tab { margin: 12px 0 0; padding-left: var(--space-xl); }
@@ -1028,6 +1063,11 @@
     <section class="scrub" aria-label="Business strategy, technical excellence та delivery&nbsp;— з'єднані в одну систему">
       <img class="scrub__poster" src="assets/scrub/1440/f001.webp" width="1440" height="720" alt="" />
       <canvas class="scrub__canvas" aria-hidden="true"></canvas>
+      <ul class="pillars" aria-hidden="true">
+        <li class="pillar pillar--technical"><span>Технологічна<br />досконалість</span></li>
+        <li class="pillar pillar--strategy"><span>Стратегія<br />IT-компанії</span></li>
+        <li class="pillar pillar--delivery"><span>Делівері</span></li>
+      </ul>
     </section>
 
     <section class="for-whom" id="for-whom" data-audience="manager">
@@ -1510,7 +1550,9 @@
 
       function render(force = false) {
         ticking = false;
-        const target = reducedMotion ? FRAME_COUNT - 1 : Math.round(progress() * (FRAME_COUNT - 1));
+        const p = reducedMotion ? 1 : progress();
+        const target = Math.round(p * (FRAME_COUNT - 1));
+        section.style.setProperty("--clip-progress", p.toFixed(3)); // pillars' opacity
         const i = nearestLoaded(target);
         if (i < 0 || (i === current && !force)) return;
         current = i;

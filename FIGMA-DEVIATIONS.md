@@ -278,3 +278,17 @@ Mobile headings are reduced by the same factor. The "Для кого" accordion 
 ## Animated clip: later start
 
 The clip's scroll range runs from its top edge entering at the bottom of the screen to that edge reaching the top. The first frame is held for the first 40% of that range, and the whole clip plays over the remaining 60% (`START_AT = 0.4` in the script).
+
+## Animated clip: the three pillars (node 6:304)
+
+Circles at Figma's positions over the clip (the video's final frame has the same framing as the original still), with Ukrainian labels:
+
+| Figma | Code |
+|---|---|
+| Technical excellence | Технологічна досконалість |
+| Business strategy | Стратегія IT-компанії |
+| Delivery | Делівері |
+
+- **Look:** peach `#f7d8bc` circles, 121.5px at 1440, with slate `#2c3b4e` SemiBold text, centred horizontally and vertically (Figma has it left-aligned). Text uses the 17px small size (Figma 19).
+- **Fade:** opacity follows the clip's progress, from 0 when it starts playing to 1 at its last frame. Scrolling back fades them out the same way.
+- **Mobile:** circles are 68–121.5px (17vw) with 10–17px text (2.3vw).
