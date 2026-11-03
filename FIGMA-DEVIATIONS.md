@@ -245,3 +245,32 @@ The points in every situation are an unordered list with medium peach dots (`#f7
 ## Hero H1: arrow icon (not in Figma)
 
 An orange "arrow up right" icon (`assets/icon-arrow-up-right.svg`, hugeicons stroke-rounded, recoloured to `#FEB161`) follows "Ваша компанія здатна на більше" (the full stop after "більше" is removed). It uses the same size, spacing and alignment as the plant icon and is kept on the same line as "більше".
+
+## Header: 20% smaller
+
+| Element | Figma (1440) | Code (1440) | Mobile |
+|---|---|---|---|
+| Gray header bar height | 165 | 132 | 96 → 76.8 |
+| Orange menu square (sized from the header height) | 165 | 132 | 96 → 76.8 |
+| Menu icon | 45.6 | 36.5 | 32 → 25.6 |
+| Logo width | 176.5 | 141.2 | 106 → 84.8 |
+| Logo offset from top | 45 | 36 | 20 → 16 |
+
+The hero content starts 33px higher at 1440, because the space below the header is unchanged.
+
+## Headings: 15% smaller
+
+All heading sizes are reduced by 15% (one `--heading-scale: 0.85` factor):
+
+| Level | Used for | Before (1440) | Now (1440) |
+|---|---|---|---|
+| H1 | Hero heading | 64 | 54.4 |
+| H2 | Section titles | 48 | 40.8 |
+| H3 | Card titles and hero key points | 30 | 25.5 |
+
+Mobile headings are reduced by the same factor. The "Для кого" accordion titles (H3 elements set in the 24px lead size) are unchanged: reduced, they would match their 20px subtitles.
+
+## Hero key points trimmed
+
+- Removed "20 годин" and "3 горизонти планування"; two key points remain in one row: "4 тижні" and "Стратегія впровадження" (renamed from "Діагноз впровадження", same description).
+- Removed the second hero divider (Figma "Line 2"). The clients block now follows the key points with the regular 64px gap (48 on mobile).

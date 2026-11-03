@@ -53,9 +53,11 @@
       --font-body: "TT Commons", "TT Commons Fallback", sans-serif;
 
       /* Type scale (sizes at 1440): 64 / 48 / 30 / 24 / 20 / 17, scaling with the layout like everything else */
-      --text-display: calc(64 * var(--px));
-      --text-heading: calc(48 * var(--px));
-      --text-title:   calc(30 * var(--px));
+      /* Headings were reduced 15% from 64 / 48 / 30 */
+      --heading-scale: 0.85;
+      --text-display: calc(64 * var(--heading-scale) * var(--px)); /* 54.4 */
+      --text-heading: calc(48 * var(--heading-scale) * var(--px)); /* 40.8 */
+      --text-title:   calc(30 * var(--heading-scale) * var(--px)); /* 25.5 */
       --text-lead:    calc(24 * var(--px));
       --text-body:    calc(20 * var(--px));
       --text-small:   calc(17 * var(--px));
@@ -85,7 +87,7 @@
       --space-xl: calc(48 * var(--px));
       --space-2xl: calc(64 * var(--px));
       --space-3xl: calc(96 * var(--px));
-      --header-h: calc(165 * var(--px));
+      --header-h: calc(132 * var(--px)); /* Figma 165, reduced 20% */
       --overhang: calc(32.88 * var(--px));  /* how far the buttons hang below the dark hero */
     }
 
@@ -145,9 +147,9 @@
 
     .logo {
       position: absolute;
-      top: calc(45 * var(--px));
+      top: calc(36 * var(--px));      /* Figma 45, reduced 20% */
       left: var(--gutter);
-      width: calc(176.5 * var(--px));
+      width: calc(141.2 * var(--px)); /* Figma 176.5, reduced 20% */
     }
     .logo img { width: 100%; height: auto; }
 
@@ -167,7 +169,7 @@
     }
     .menu-btn:hover { filter: brightness(1.06); }
     .menu-btn:focus-visible { outline: 3px solid var(--c-white); outline-offset: -6px; }
-    .menu-btn img { width: calc(45.625 * var(--px)); height: calc(45.625 * var(--px)); }
+    .menu-btn img { width: calc(36.5 * var(--px)); height: calc(36.5 * var(--px)); } /* Figma 45.6, reduced 20% */
 
     /* ---------- Hero ---------- */
     .hero {
@@ -256,7 +258,7 @@
     .clients {
       display: grid;
       row-gap: var(--space-md);
-      margin: var(--space-xl) 0 0; /* after a divider */
+      margin: var(--space-2xl) 0 0;
     }
     .clients__label {
       margin: 0;
@@ -780,26 +782,26 @@
       :root {
         --px: 1px;
         --gutter: 24px;
-        --header-h: 96px;
+        --header-h: 76.8px;
         --overhang: 0px; /* no overhang on mobile: the image is too short to share with the buttons */
 
         /* Phone sizes, growing gently from 390px to 1023px */
-        --text-display: clamp(2.125rem, calc(1.9vw + 1.66rem), 2.875rem); /* 34–46 */
-        --text-heading: clamp(1.875rem, calc(0.95vw + 1.645rem), 2.25rem); /* 30–36 */
-        --text-title:   clamp(1.375rem, calc(0.32vw + 1.297rem), 1.5rem);  /* 22–24 */
+        --text-display: calc(var(--heading-scale) * clamp(2.125rem, calc(1.9vw + 1.66rem), 2.875rem)); /* 34–46, less 15% */
+        --text-heading: calc(var(--heading-scale) * clamp(1.875rem, calc(0.95vw + 1.645rem), 2.25rem)); /* 30–36, less 15% */
+        --text-title:   calc(var(--heading-scale) * clamp(1.375rem, calc(0.32vw + 1.297rem), 1.5rem));  /* 22–24, less 15% */
         --text-lead:    clamp(1.125rem, calc(0.32vw + 1.047rem), 1.25rem); /* 18–20 */
         --text-body:    1.0625rem; /* 17 */
         --text-small:   1rem;      /* 16 */
       }
-      .logo { top: 20px; width: 106px; }
-      .menu-btn img { width: 32px; height: 32px; }
+      .logo { top: 16px; width: 84.8px; }
+      .menu-btn img { width: 25.6px; height: 25.6px; }
       .hero .container { padding-top: 120px; padding-bottom: 40px; }
       .hero__title { max-width: 640px; }
       .hero__lead { margin-top: 40px; }
       .hero__photo { left: 20%; top: auto; bottom: 0; width: 140vw; height: auto; aspect-ratio: 1344.5 / 896.5; opacity: .3; }
       .hero__divider { margin-top: 40px; }
       .theses { grid-template-columns: 1fr; row-gap: 32px; margin-top: 36px; }
-      .clients { grid-template-columns: 1fr; row-gap: 24px; margin-top: 32px; }
+      .clients { grid-template-columns: 1fr; row-gap: 24px; margin-top: 48px; }
       .clients__logos { display: grid; grid-template-columns: repeat(3, max-content); gap: 20px 28px; }
       .clients__logos img { height: 30px; }
       .cta { flex-direction: column; align-items: stretch; max-width: 480px; margin-top: 48px; }
@@ -905,20 +907,10 @@
               <dd>від старту до діагнозу й дорожньої карти зростання</dd>
             </div>
             <div>
-              <dt>20 годин</dt>
-              <dd>часу вашої команди на всю діагностику&nbsp;— решту робимо ми</dd>
-            </div>
-            <div>
-              <dt>3 горизонти планування</dt>
-              <dd>дорожня карта на <span class="nowrap">0–3</span>, <span class="nowrap">3–9</span> і <span class="nowrap">9–18</span> місяців</dd>
-            </div>
-            <div>
-              <dt>Діагноз впровадження</dt>
+              <dt>Стратегія впровадження</dt>
               <dd>для <span class="nowrap">IT-компаній</span> на <span class="nowrap">~50–500</span> людей: не лише звіт, а супровід змін</dd>
             </div>
           </dl>
-
-          <img class="hero__divider" src="assets/divider.svg" width="1154" height="4" alt="" />
 
           <div class="clients">
             <p class="clients__label">Ми пишаємося нашими клієнтами</p>
