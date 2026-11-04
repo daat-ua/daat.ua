@@ -381,5 +381,14 @@ Placed after "Що всередині звіту ATLAS", in the "Для кого
 - **Separators:** no boxes and no horizontal lines; only pale vertical lines between columns (none on mobile, where the columns stack).
 - **Copy:** "DA'AT" written as "Daat".
 
+**Revenue impact table (under the horizon columns, from the mockup):**
+- **Heading:** "Вплив на виручку: ілюстративний сценарій" with the mockup's caption.
+- **Table:** columns Показник / Зараз / H1 / H2 / H3. Six rows: revenue run-rate, growth, additional revenue, gross margin, largest-client share and what drives the effect. Each revenue value has a bar under it on an equal-length track (one scale, $0 → $4,0 млн); a 2px gap at $3,0 млн marks today's level on every track, so the growth beyond it is visible. Value columns are equal width so the tracks line up.
+- **Linked to the tabs:** the column for the selected horizon is bold and full white, with its revenue bar in the active blue (`#0066de`), and the others are muted. The mockup shows H3 bold as its static version.
+- **Clickable:** clicking any cell in the H1–H3 columns (header included) selects that horizon, the same as its tab. Inactive columns show a pointer and brighten on hover; "Зараз" isn't clickable.
+- **Separators:** thin pale lines between rows, no outer box.
+- **Summary:** "+$725 тис. … → $1,16 млн на рік" on a light paper strip below the table.
+- **Mobile:** the table scrolls sideways (min width 720px).
+
 TODO:
 - Report row 06 can now link "Дивіться нижче ↓" to `#roadmap`.
