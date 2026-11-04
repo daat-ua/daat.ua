@@ -46,6 +46,7 @@
       --c-cream-hover: #fffaf0;
       --c-night: #0e151b;            /* "for whom" section */
       --c-peach: #f7d8bc;            /* diagram strokes and icons */
+      --c-paper: #f5f4ed;            /* light sections (report) */
 
       --ease-out: cubic-bezier(0.25, 1, 0.5, 1); /* ease-out-quart */
 
@@ -394,7 +395,7 @@
     .why__toc {
       position: absolute;
       z-index: 1;
-      top: var(--space-3xl); /* level with the eyebrow */
+      top: var(--space-3xl); /* level with the first section title */
       bottom: 0;
       left: calc(var(--gutter) + var(--span-3) + var(--col-gap) + 15 * var(--px)); /* a fourth column, right of the content, nudged 15 right */
       width: calc(184 * var(--px));
@@ -430,26 +431,13 @@
       background: var(--c-on-primary);
     }
     .why__toc a:focus-visible { outline: 2px solid var(--c-on-primary); outline-offset: 3px; border-radius: 2px; }
+    /* Over light sections the TOC switches to dark text */
+    .why__toc a { transition: color .25s ease; }
+    .why__toc[data-theme="light"] a { color: var(--c-ink); }
+    .why__toc[data-theme="light"] a[aria-current="true"] { color: var(--c-hero); }
+    .why__toc[data-theme="light"] a[aria-current="true"]::before { background: var(--c-hero); }
 
-    /* Section label + heading, shared by every content section; colours come from the section */
-    .eyebrow {
-      display: flex;
-      align-items: center;
-      gap: 0.6em;
-      margin: 0;
-      color: var(--eyebrow-color, var(--c-on-primary));
-      font-size: var(--text-small);
-      font-weight: 600;
-      line-height: var(--leading-small);
-      letter-spacing: 0.02em;
-    }
-    /* Orange stays as graphic accent on blue (it is too light for text there) */
-    .eyebrow::before {
-      content: "";
-      width: 1.5em;
-      height: 2px;
-      background: var(--c-accent);
-    }
+    /* Section heading, shared by every content section; colour comes from the section */
     .section-title {
       max-width: calc(831.82 * var(--px));
       margin: var(--space-md) 0 0;
@@ -461,6 +449,7 @@
       font-feature-settings: "dlig" 1;
     }
     .section-title strong { font-weight: var(--weight-emphasis); }
+    .section-title:first-child { margin-top: 0; } /* opens its section, level with the floating TOC */
     .section-title--daat { margin-top: var(--space-xl); }
     .section-title--daat strong { font-feature-settings: "dlig" 1, "ss01" 1; }
 
@@ -569,6 +558,143 @@
               mask: url("assets/icon-idea.svg") center / contain no-repeat;
     }
 
+    /* ---------- Report structure (light section) ---------- */
+    .report {
+      position: relative;
+      z-index: 0;
+      --title-color: var(--c-hero);
+      --c-report-line: rgb(28 38 50 / 0.15);
+      padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
+      background: var(--c-paper);
+      color: var(--c-hero);
+    }
+    /* Same columns as the "Для кого" layout: charts where the Venn diagram is, text where the situations are */
+    .report__layout {
+      display: grid;
+      grid-template-columns: 1fr calc(480 * var(--px));
+      column-gap: var(--space-3xl);
+      align-items: start;
+      width: var(--span-3);
+      max-width: 100%;
+      margin-top: var(--space-xl);
+    }
+    /* Example charts from a real report, pinned beside the text (same offset as the TOC) */
+    .report__charts {
+      position: sticky;
+      top: var(--space-3xl);
+      display: grid;
+      row-gap: var(--space-md);
+    }
+    .chart-zoom {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: zoom-in;
+    }
+    .chart-zoom img { display: block; width: 100%; height: auto; }
+    .chart-zoom:focus-visible { outline-offset: 4px; border-radius: 4px; }
+
+    /* Full-size chart overlay */
+    .lightbox {
+      max-width: min(92vw, 1200px);
+      max-height: 92vh;
+      padding: var(--space-lg);
+      border: 0;
+      border-radius: 12px;
+      background: var(--c-paper);
+      overflow: auto;
+    }
+    .lightbox::backdrop { background: rgb(14 21 27 / 0.82); }
+    .lightbox__img { display: block; width: min(86vw, 1100px); max-height: 80vh; height: auto; object-fit: contain; cursor: zoom-out; }
+    .lightbox__close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      background: none;
+      color: var(--c-hero);
+      font-size: 32px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .report__intro {
+      max-width: var(--span-2);
+      margin: var(--space-xl) 0 0;
+      color: var(--c-ink);
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+    .report-toc {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .report-toc li {
+      display: grid;
+      grid-template-columns: 2.4em 1fr;
+      padding: var(--space-md) 0;
+    }
+    /* Dashed 2px separators between sections only (none above the first or below the last) */
+    .report-toc li + li { border-top: 2px dashed rgb(28 38 50 / 0.25); }
+    .report-toc__num {
+      grid-row: span 2;
+      padding-top: 0.2em;
+      color: var(--c-ink);
+      font-size: var(--text-small);
+      font-variant-numeric: tabular-nums;
+    }
+    .report-toc h3 {
+      margin: 0;
+      font-size: var(--text-lead);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .report-toc p {
+      margin: var(--space-xs) 0 0;
+      color: var(--c-ink);
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+    .report__files {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-xl);
+    }
+    .report__files p {
+      margin: 0;
+      font-size: var(--text-small);
+      font-weight: 600;
+    }
+    .report__files ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .report__files li {
+      padding: var(--space-xs) var(--space-sm);
+      border: 1px solid rgb(28 38 50 / 0.3);
+      border-radius: 999px;
+      font-size: var(--text-small);
+      line-height: 1.2;
+    }
+    .report__cta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-md) var(--space-lg);
+      margin-top: var(--space-xl);
+    }
+    .report__cta .btn--primary { border-color: var(--c-primary); color: var(--c-white); }
+
     .why-daat {
       display: grid;
       grid-template-columns: var(--col) var(--span-2);
@@ -608,7 +734,6 @@
     .for-whom {
       position: relative;
       z-index: 0;
-      --eyebrow-color: var(--c-cream);
       --title-color: var(--c-white);
       padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
       background: var(--c-night);
@@ -887,6 +1012,8 @@
         scrollbar-width: none;
       }
       .why__toc ul::-webkit-scrollbar { display: none; }
+      .why__toc { transition: background-color .25s ease; }
+      .why__toc[data-theme="light"] { background: var(--c-paper); box-shadow: 0 1px 0 rgb(28 38 50 / 0.15); }
       .why__toc a {
         display: block;
         padding-block: 12px; /* 44px touch target */
@@ -910,6 +1037,11 @@
       .why-daat__photo { max-width: 320px; }
       .reasons { grid-template-columns: 1fr; row-gap: 32px; padding-top: 0; }
       .reasons__cta { width: auto; max-width: 480px; margin-top: 40px; }
+
+      .report { padding: 64px 0 80px; }
+      .report__layout { grid-template-columns: 1fr; row-gap: 48px; width: auto; }
+      .report__charts { position: static; order: 2; max-width: 480px; }
+      .report__intro, .report-toc, .report__files, .report__cta { max-width: 640px; }
 
       .for-whom { padding: 64px 0 80px; }
       .scrub::after { height: 64px; }
@@ -997,6 +1129,7 @@
             <li><a href="#why-now" aria-current="true">Чому зараз?</a></li>
             <li><a href="#for-whom">Для кого Atlas?</a></li>
             <li><a href="#deliverables">Що ви отримаєте</a></li>
+            <li><a href="#report">Що всередині звіту</a></li>
             <li><a href="#roadmap">Дорожня карта</a></li>
             <li><a href="#testimonials">Відгуки клієнтів</a></li>
           </ul>
@@ -1005,7 +1138,6 @@
 
     <section class="why" id="why-now">
       <div class="container">
-          <p class="eyebrow">Чому зараз?</p>
           <h2 class="section-title">Що стримує зростання? Рідко ринок. Частіше&nbsp;— <strong>процеси, ролі й рішення всередині компанії.</strong></h2>
 
           <div class="why__intro">
@@ -1096,7 +1228,6 @@
 
     <section class="for-whom" id="for-whom" data-audience="manager">
       <div class="container">
-        <p class="eyebrow">Для кого?</p>
         <h2 class="section-title"><strong>Для кого ATLAS:</strong> оберіть свою ситуацію</h2>
         <p class="for-whom__intro">ATLAS відкалібровано для <span class="nowrap">IT-сервісних</span> і продуктових компаній на <span class="nowrap">50–500 FTE</span>. Одна методологія, одна шкала зрілості&nbsp;— і три погляди на компанію:</p>
 
@@ -1431,7 +1562,6 @@
 
     <section class="why why--gains" id="deliverables">
       <div class="container">
-        <p class="eyebrow">Що ви отримаєте</p>
         <h2 class="section-title"><strong>Що ATLAS дає</strong> власникам і тим, хто ухвалює рішення</h2>
 
         <div class="why__intro">
@@ -1486,8 +1616,86 @@
         </ul>
       </div>
     </section>
+
+    <section class="report" id="report" data-toc-theme="light">
+      <div class="container">
+        <h2 class="section-title"><strong>Що всередині звіту ATLAS</strong>&nbsp;— розділ за розділом</h2>
+        <p class="report__intro">Звіт на <span class="nowrap">60+ сторінок</span> для тих, хто ухвалює рішення: відповідь&nbsp;— на першій сторінці, докази&nbsp;— далі, план зростання з конкретними практиками&nbsp;— наприкінці.</p>
+
+        <div class="report__layout">
+        <div class="report__charts">
+          <button class="chart-zoom" type="button" aria-label="Відкрити графік на весь екран: Приклад зі звіту: зрілість енейблерів за шкалою Ω з довірчими інтервалами">
+            <img src="assets/charts/maturity-scorecard.svg" width="900" height="480" alt="Приклад зі звіту: зрілість енейблерів за шкалою Ω з довірчими інтервалами" loading="lazy" />
+          </button>
+          <button class="chart-zoom" type="button" aria-label="Відкрити графік на весь екран: Приклад зі звіту: пріоритети енейблерів, зрілість × сила доказів">
+            <img src="assets/charts/priority-quadrant.svg" width="820" height="600" alt="Приклад зі звіту: пріоритети енейблерів, зрілість × сила доказів" loading="lazy" />
+          </button>
+          <button class="chart-zoom" type="button" aria-label="Відкрити графік на весь екран: Приклад зі звіту: профіль RADAR-IT для всієї компанії">
+            <img src="assets/charts/radar-it.svg" width="860" height="700" alt="Приклад зі звіту: профіль RADAR-IT для всієї компанії" loading="lazy" />
+          </button>
+        </div>
+
+        <div class="report__content">
+          <ol class="report-toc">
+            <li>
+              <span class="report-toc__num">01</span>
+              <h3>Резюме для керівництва</h3>
+              <p>Головне на одній сторінці: ключові висновки, що працює, пріоритетні ризики, рекомендований шлях.</p>
+            </li>
+            <li>
+              <span class="report-toc__num">02</span>
+              <h3>Аналіз за функціями</h3>
+              <p>CEO, фінанси, delivery, продажі й маркетинг, інженерія&nbsp;— кожна функція крізь сім енейблерів і RADAR-IT.</p>
+            </li>
+            <li>
+              <span class="report-toc__num">03</span>
+              <h3>Синтез по компанії</h3>
+              <p>Ваш індекс зрілості за кожним енейблером із довірчими інтервалами та профіль RADAR-IT для всієї компанії.</p>
+            </li>
+            <li>
+              <span class="report-toc__num">04</span>
+              <h3>Наскрізна аналітика</h3>
+              <p>Ваші проблеми, зіставлені з типовими знахідками наших delivery-аудитів, і ключова петля, яка їх пов’язує.<!-- TODO: link "Приклади — у знахідках аудитів" once #audit-findings exists --></p>
+            </li>
+            <li>
+              <span class="report-toc__num">05</span>
+              <h3>Реєстр ризиків і сильні сторони</h3>
+              <p>Що загрожує зростанню&nbsp;— за ймовірністю та впливом,&nbsp;— і сильні сторони, на які можна спертися під час змін.</p>
+            </li>
+            <li>
+              <span class="report-toc__num">06</span>
+              <h3>Дорожня карта зростання</h3>
+              <p>Практики, які варто впровадити, три горизонти, відповідальні, критерії завершення та прогноз зростання зрілості.<!-- TODO: link "Дивіться нижче ↓" once #roadmap exists --></p>
+            </li>
+          </ol>
+
+          <div class="report__files">
+            <p>А також робочі файли, які залишаються у вас:</p>
+            <ul>
+              <li>Реєстр доказів</li>
+              <li>Scorecard зрілості</li>
+              <li>Реєстр ризиків</li>
+              <li>Мапа тем</li>
+              <li>Дорожня карта трансформації</li>
+              <li>Хартія повторного аудиту</li>
+            </ul>
+          </div>
+
+          <div class="report__cta">
+            <a class="btn btn--primary" href="#contact">Записатися на діагностичний дзвінок</a>
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
     </div>
   </main>
+
+  <!-- Full-size view for the report charts -->
+  <dialog class="lightbox" aria-label="Графік зі звіту">
+    <img class="lightbox__img" alt="" />
+    <button class="lightbox__close" type="button" aria-label="Закрити">×</button>
+  </dialog>
 
   <script>
     // In-page links: mark ones whose target doesn't exist yet as unavailable, and
@@ -1512,11 +1720,17 @@
         link.setAttribute("aria-current", "true");
       }
       // The current section is the last one whose top has passed the upper third of the viewport.
+      const toc = document.querySelector(".why__toc");
+      const scopeSections = [...document.querySelectorAll(".toc-scope > section")];
       function update() {
         const line = innerHeight / 3;
         let current = targets[0][0];
         for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
         setCurrent(current);
+        // Text colour follows the section under the TOC (light sections set data-toc-theme="light")
+        const y = toc.querySelector("nav").getBoundingClientRect().top + 10;
+        const under = scopeSections.find((s) => { const r = s.getBoundingClientRect(); return r.top <= y && r.bottom > y; });
+        toc.dataset.theme = under?.dataset.tocTheme || "dark";
       }
       update();
       addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
@@ -1582,6 +1796,21 @@
           setOpen(item, open);
         });
       }
+    })();
+
+    // Report charts: click to see full size
+    (() => {
+      const dialog = document.querySelector(".lightbox");
+      const img = dialog.querySelector(".lightbox__img");
+      for (const btn of document.querySelectorAll(".chart-zoom")) {
+        btn.addEventListener("click", () => {
+          const src = btn.querySelector("img");
+          img.src = src.src;
+          img.alt = src.alt;
+          dialog.showModal();
+        });
+      }
+      dialog.addEventListener("click", () => dialog.close()); // backdrop, image or close button
     })();
 
     // Scroll-scrubbed frame sequence: frames live in assets/scrub/<width>/f001.webp … f121.webp

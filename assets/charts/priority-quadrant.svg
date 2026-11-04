@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 600">
+<style>
+  text { font-family: 'TT Commons', 'TT Commons Pro', 'Helvetica Neue', Arial, sans-serif; }
+  .tick { stroke: #2C3B4D; }
+  .ticklbl { font-size: 13px; fill: #2C3B4D; }
+  .lbl { font-size: 13px; font-weight: 600; fill: #1B2632; }
+  .quad { font-size: 13px; font-weight: 700; letter-spacing: 0.3px; }
+  .val { font-size: 13px; fill: #1B2632; }
+</style>
+
+<!-- Background: white -->
+
+<!-- Title -->
+<text x="40" y="44" font-size="22" font-weight="700" fill="#1B2632">Enabler Priority — Maturity × Evidence</text>
+<text x="40" y="80" font-size="12" fill="#2C3B4D">Low maturity + strong evidence = act now; low maturity + thin evidence = confirm before acting (bubble colour = confidence)</text>
+
+<!-- Quadrants -->
+<rect x="110" y="96" width="435" height="187" fill="#FFB162" fill-opacity="0.14"/>
+<rect x="545" y="96" width="145" height="187" fill="#2C3B4D" fill-opacity="0.07"/>
+<rect x="110" y="283" width="435" height="187" fill="#C9C1B1" fill-opacity="0.35"/>
+<rect x="545" y="283" width="145" height="187" fill="#FFFFFF"/>
+<rect x="110" y="96" width="580" height="374" fill="none" stroke="#C9C1B1"/>
+
+<!-- Maturity benchmark (3.0) + evidence midline -->
+<line x1="545" y1="96" x2="545" y2="470" stroke="#FFB162" stroke-width="2" stroke-dasharray="5 4"/>
+<line x1="110" y1="283" x2="690" y2="283" stroke="#C9C1B1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+<!-- X axis ticks -->
+<line x1="110" y1="470" x2="110" y2="475" class="tick"/><text x="110" y="490" text-anchor="middle" class="ticklbl">1.5</text>
+<line x1="255" y1="470" x2="255" y2="475" class="tick"/><text x="255" y="490" text-anchor="middle" class="ticklbl">2.0</text>
+<line x1="400" y1="470" x2="400" y2="475" class="tick"/><text x="400" y="490" text-anchor="middle" class="ticklbl">2.5</text>
+<line x1="545" y1="470" x2="545" y2="475" class="tick"/><text x="545" y="490" text-anchor="middle" class="ticklbl">3.0</text>
+<line x1="690" y1="470" x2="690" y2="475" class="tick"/><text x="690" y="490" text-anchor="middle" class="ticklbl">3.5</text>
+
+<!-- Y axis ticks -->
+<line x1="105" y1="423.25" x2="110" y2="423.25" class="tick"/><text x="100" y="427.75" text-anchor="end" class="ticklbl">2</text>
+<line x1="105" y1="329.75" x2="110" y2="329.75" class="tick"/><text x="100" y="334.25" text-anchor="end" class="ticklbl">3</text>
+<line x1="105" y1="236.25" x2="110" y2="236.25" class="tick"/><text x="100" y="240.75" text-anchor="end" class="ticklbl">4</text>
+<line x1="105" y1="142.75" x2="110" y2="142.75" class="tick"/><text x="100" y="147.25" text-anchor="end" class="ticklbl">5</text>
+
+<!-- Quadrant labels -->
+<text x="122" y="118" class="quad" fill="#A35139">ACT NOW — well-evidenced gaps</text>
+<text x="678" y="118" text-anchor="end" class="quad" fill="#2C3B4D">MAINTAIN</text>
+<text x="122" y="458" class="quad" fill="#2C3B4D" fill-opacity="0.75">INVESTIGATE first (thin evidence)</text>
+
+<!-- Bubbles -->
+<circle cx="545.0" cy="142.8" r="13" fill="#1B2632" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="2"/>
+<text x="553.0" y="165.3" text-anchor="start" class="lbl">Structure &amp; Governance</text>
+
+<circle cx="487.0" cy="142.8" r="13" fill="#1B2632" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="2"/>
+<text x="487.0" y="126.8" text-anchor="middle" class="lbl">Leadership &amp; Decision-making</text>
+
+<circle cx="342.0" cy="142.8" r="13" fill="#1B2632" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="2"/>
+<text x="342.0" y="167.3" text-anchor="middle" class="lbl">Delivery Operating System</text>
+
+<circle cx="313.0" cy="142.8" r="13" fill="#1B2632" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="2"/>
+<text x="299.0" y="147.3" text-anchor="end" class="lbl">People &amp; Capacity</text>
+
+<circle cx="342.0" cy="236.3" r="13" fill="#A35139" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="2"/>
+<text x="352.0" y="256.8" text-anchor="start" class="lbl">Capabilities &amp; Competency</text>
+
+<circle cx="545.0" cy="329.8" r="13" fill="#A35139" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="2"/>
+<text x="557.0" y="334.3" text-anchor="start" class="lbl">Strategy &amp; Portfolio</text>
+
+<circle cx="197.0" cy="423.3" r="13" fill="#FFB162" stroke="#A35139" stroke-width="1.5"/>
+<text x="211.0" y="427.8" text-anchor="start" class="lbl">Engineering Culture</text>
+
+<!-- Axis titles -->
+<text x="400" y="514" text-anchor="middle" class="lbl">Organizational Maturity (Ω, 1–5)</text>
+<text x="34" y="283" text-anchor="middle" class="lbl" transform="rotate(-90 34 283)">Evidence strength (sources, of 5)</text>
+
+<!-- Legend -->
+<g transform="translate(110,560)">
+  <circle cx="6" cy="-4" r="6" fill="#1B2632"/>
+  <text x="18" y="0" class="val">Very high</text>
+  <circle cx="92" cy="-4" r="6" fill="#A35139"/>
+  <text x="104" y="0" class="val">High</text>
+  <circle cx="160" cy="-4" r="6" fill="#FFB162" stroke="#A35139" stroke-width="1.5"/>
+  <text x="172" y="0" class="val">Medium confidence</text>
+</g>
+</svg>

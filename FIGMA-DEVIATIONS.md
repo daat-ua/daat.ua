@@ -331,3 +331,26 @@ The pill buttons are replaced with text tabs (following the reference the client
   - Hovering shows a short underline hint.
 - **Sub-labels:** removed ("власник, CEO, керівник delivery" etc.); each panel's intro already says the same.
 - **Mobile:** the tab row scrolls sideways; each tab has a 44px+ touch target.
+
+## Section eyebrows removed
+
+The labels above the section titles ("Чому зараз?", "Для кого?", "Що ви отримаєте") are removed, because they partly repeated the titles. Each section now opens with its H2, 96px below the section top and level with the floating table of contents. The table of contents still uses those names as its links.
+
+## "Що всередині звіту ATLAS" section (new, from the mockup; not in Figma yet)
+
+Placed after "Що ви отримаєте", on a light `#f5f4ed` background, inside the floating table-of-contents area, with its own TOC item "Що всередині звіту" (`#report`). Over light sections (marked `data-toc-theme="light"`) the TOC switches to dark text; on mobile its sticky bar turns cream.
+
+- **Layout:** like "Для кого". The H2 and intro come first, then two columns with the same widths as that section: the three example charts (`assets/charts/maturity-scorecard.svg`, `priority-quadrant.svg`, `radar-it.svg`) in the Venn diagram's column (441 at 1440), pinned while the text scrolls; the numbered list, file chips and CTA in the situations column (480, gap 96). On mobile the charts follow the text.
+- **Charts:** transparent background (the white background rectangle was removed from each SVG copy), no border, and no SDA mentions (the "SDA Delivery Audit · " prefix was removed from two subtitles). Clicking a chart opens it full size in an overlay that closes with Esc, a click or the × button.
+- **Content:**
+  - H2 "**Що всередині звіту ATLAS** — розділ за розділом" and the intro line.
+  - The six report sections as a numbered list (the numbers are kept here because they are page order), separated by 2px dashed lines, with no line above the first or below the last.
+  - The "А також робочі файли…" chips.
+  - The standard CTA "Записатися на діагностичний дзвінок" (replaces the mockup's PDF-sample button and its "або записатися на дзвінок" link).
+- **Dropped:** the "05 · …" label and the "СТА-3 ·" prefix (wireframe annotations), and the highlighted background on row 06.
+- **Chart text:** the charts are images, so their labels use the charts' own font fallback (Helvetica/Arial) rather than the page's TT Commons. Their titles are in English.
+
+TODO:
+- Link "Приклади — у знахідках аудитів" (row 04) once `#audit-findings` exists.
+- Link "Дивіться нижче ↓" (row 06) once `#roadmap` exists.
+- Ukrainian versions of the charts if wanted.
