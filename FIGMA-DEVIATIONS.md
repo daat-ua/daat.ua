@@ -93,7 +93,7 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 | `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
 | `#results` | "Які результати ви отримаєте?" | Results section |
 | `#audit-findings` | "Знахідки аудитів" | Audit findings section |
-| `#testimonials` | Table of contents | The remaining section (`#for-whom`, `#deliverables`, `#report` and `#roadmap` now exist) |
+| `#testimonials` | Table of contents | The remaining section (all other sections now exist, including `#audit-findings`) |
 | Menu button | Header | Menu design and content |
 | Reason card 4 | "Шось четверте" | Real title (also a typo for "Щось") and its own description; it currently repeats card 3 |
 | Problem card 6 | "Команда постійно гасить пожежі…" | A description; it currently repeats the title |
@@ -400,3 +400,22 @@ Placed after "Що всередині звіту ATLAS", in the "Для кого
 
 TODO:
 - Report row 06 can now link "Дивіться нижче ↓" to `#roadmap`.
+
+## "Знахідки аудитів" section (new; a copy of the report section)
+
+Placed after "Дорожня карта", with `id="audit-findings"`, light-themed like the report and inside the floating TOC area. A new TOC item, "Знахідки аудитів", is added after "Дорожня карта". The "Знахідки аудитів" button in "Чому зараз?" now jumps here.
+
+- **H2:** "**Знахідки аудитів:** що ми бачимо в українських IT-компаніях".
+- **Intro:** the mockup's text ("Результати нашої роботи у форматі практичних гайдів на 2–3 тис. слів…").
+- **"Дивитися каталог →":** a link inside the H2, on its own line after "…IT-компаніях.", at the heading's size and weight in blue. It has the same 8px-offset hover underline as "Читати далі", and the arrow (`arrow-right-02`, inline SVG) nudges right on hover. TODO: link it to the all-findings page.
+
+**Findings carousel** (replaces the copied two-column block; layout from the client's reference):
+- **Cards:** 8 teaser cards in a horizontally scrolling, snapping track. Each has a square image with a category tag (blue `#0066de`), a title (24px lead, slate) and a "Читати далі ›" link (blue). Card widths alternate about 30% / 38% / 24%, which gives the staggered heights of the reference.
+- **Categories:** "Люди та ресурси", "Спроможності та компетенції" and "Операційна система delivery" (named as in the roadmap's enabler table).
+- **Images:** eight Unsplash photos chosen by the client (`assets/findings/finding-1…8.webp`, resized to 800px WebP, 408 KB in total; originals in `_source/findings/`), cropped square.
+- **Controls:** page dashes (current page in blue) plus round previous/next buttons that scroll one page and disable at the ends. The track is also swipeable and keyboard-scrollable. On mobile one card shows at a time.
+
+TODO:
+- Real findings: the 8 teaser titles are drafts written from problems named elsewhere on the page.
+- Guide links for "Читати далі" (currently inactive placeholders).
+- Report row 04 can now link "Приклади — у знахідках аудитів" to `#audit-findings`.

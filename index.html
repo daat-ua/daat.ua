@@ -932,6 +932,122 @@
     }
     .report__cta .btn--primary { border-color: var(--c-primary); color: var(--c-white); }
 
+    /* ---------- Audit findings carousel ---------- */
+    .findings { width: var(--span-3); max-width: 100%; margin-top: var(--space-xl); }
+    /* "Дивитися каталог" sits inside the heading, on its own line: heading size and weight, link colour and hover underline */
+    .section-title .findings__all {
+      display: inline;
+      margin: 0;
+      font: inherit;
+      white-space: nowrap;
+    }
+    .findings__all-icon {
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.14em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform .2s var(--ease-out);
+    }
+    .findings__all:hover .findings__all-icon,
+    .findings__all:focus-visible .findings__all-icon { transform: translateX(3px); }
+    .findings__track {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--col-gap);
+      margin: 0;
+      padding: 0 0 calc(16 * var(--px)); /* room for the link underline: the scrolling track clips below its edge */
+      list-style: none;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+    .findings__track::-webkit-scrollbar { display: none; }
+    .findings__track:focus-visible { outline-offset: 6px; }
+    /* varied widths with square images give the staggered heights of the mockup */
+    .finding { flex: none; width: 30%; scroll-snap-align: start; }
+    .finding:nth-child(3n + 2) { width: 38%; }
+    .finding:nth-child(3n) { width: 24%; }
+    .finding__media {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 6px;
+      background: var(--c-night);
+    }
+    .finding__media img { width: 100%; height: 100%; object-fit: cover; }
+    .finding__tag {
+      position: absolute;
+      top: var(--space-sm);
+      left: var(--space-sm);
+      padding: 0.6em 0.75em 0.5em; /* fallback: TT Commons sits high, so a little more on top */
+      background: var(--c-primary);
+      color: var(--c-white);
+      font-size: calc(14 * var(--px));
+      font-weight: 400;
+      line-height: 1.15;
+    }
+    /* where supported, trim the text box to cap height + baseline so equal padding centres it exactly */
+    @supports (text-box: trim-both cap alphabetic) {
+      .finding__tag { padding: 0.55em 0.75em; text-box: trim-both cap alphabetic; }
+    }
+    .finding__title {
+      margin: var(--space-md) 0 0;
+      color: var(--c-hero);
+      font-size: var(--text-lead);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .finding__more {
+      display: inline-block;
+      margin-top: var(--space-sm);
+      color: var(--c-primary);
+      font-size: var(--text-body);
+      font-weight: 500;
+      text-decoration: underline transparent;
+      text-decoration-thickness: 1px;
+      text-underline-offset: calc(8 * var(--px)); /* like Tailwind's underline-offset-8 */
+      transition: text-decoration-color .2s ease;
+    }
+    .finding__more:hover,
+    .finding__more:focus-visible { text-decoration-color: currentColor; }
+    .findings__controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-xl);
+    }
+    .findings__pages { display: flex; gap: var(--space-xs); margin-right: var(--space-lg); }
+    .findings__pages span {
+      width: calc(48 * var(--px));
+      height: 3px;
+      border-radius: 2px;
+      background: rgb(0 102 222 / 0.2);
+      transition: background-color .25s ease;
+    }
+    .findings__pages span.is-current { background: var(--c-primary); }
+    .findings__nav {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0 0 0.12em;
+      border: 1.5px solid var(--c-hero);
+      border-radius: 50%;
+      background: none;
+      color: var(--c-hero);
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      transition: opacity .2s ease, background-color .2s ease, color .2s ease;
+    }
+    .findings__nav:hover:not(:disabled) { background: var(--c-hero); color: var(--c-paper); }
+    .findings__nav:disabled { opacity: 0.3; cursor: default; }
+
     .why-daat {
       display: grid;
       grid-template-columns: var(--col) var(--span-2);
@@ -1280,6 +1396,9 @@
       .report__layout { grid-template-columns: 1fr; row-gap: 48px; width: auto; }
       .report__charts { position: static; order: 2; max-width: 480px; }
       .report__intro, .report-toc, .report__files, .report__cta { max-width: 640px; }
+      .finding, .finding:nth-child(3n + 2), .finding:nth-child(3n) { width: 78%; }
+      .findings__pages span { width: 32px; }
+      .finding__tag { font-size: 13px; }
 
       .for-whom { padding: 64px 0 80px; }
       .scrub::after { height: 64px; }
@@ -1376,6 +1495,7 @@
             <li><a href="#deliverables">Що ви отримаєте</a></li>
             <li><a href="#report">Що всередині звіту</a></li>
             <li><a href="#roadmap">Дорожня карта</a></li>
+            <li><a href="#audit-findings">Знахідки аудитів</a></li>
             <li><a href="#testimonials">Відгуки клієнтів</a></li>
           </ul>
         </nav>
@@ -2152,6 +2272,89 @@
         </div>
       </div>
     </section>
+
+    <section class="report" id="audit-findings" data-toc-theme="light">
+      <div class="container">
+        <!-- TODO: link "Дивитися каталог" to the page with all findings -->
+        <h2 class="section-title"><strong>Знахідки аудитів:</strong> що ми бачимо в українських <span class="nowrap">IT-компаніях.</span><br /><a class="finding__more findings__all" href="#">Дивитися&nbsp;каталог&nbsp;<svg class="findings__all-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.5 12L4.99997 12" /><path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" /></svg></a></h2>
+        <p class="report__intro">Результати нашої роботи у форматі практичних гайдів на <span class="nowrap">2–3 тис.</span> слів. Кожна знахідка&nbsp;— реальна проблема, яку ми виявили під час аудитів українських <span class="nowrap">IT-компаній</span>: як вона проявляється, звідки береться і як її вирішують команди.</p>
+
+        <!-- TODO content: draft teaser titles; link each card to its guide once published -->
+        <div class="findings" role="region" aria-roledescription="carousel" aria-label="Знахідки аудитів">
+          <ul class="findings__track" tabindex="0">
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-1.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Люди та ресурси</span>
+              </div>
+              <h3 class="finding__title">Коли все тримається на трьох людях: як героїзм стає системним ризиком</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-2.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Операційна система delivery</span>
+              </div>
+              <h3 class="finding__title">Fixed-price без Discovery: чому прибуткові угоди стають збитковими</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-3.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Спроможності та компетенції</span>
+              </div>
+              <h3 class="finding__title">Матриця компетенцій, якої ніхто не відкриває: що замінює довільне оцінювання</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-4.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Операційна система delivery</span>
+              </div>
+              <h3 class="finding__title">Code review, що зник: як якість просідає непомітно&nbsp;— і як її повернути</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-5.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Люди та ресурси</span>
+              </div>
+              <h3 class="finding__title">Керівники без часу на керування: як CTO повертає <span class="nowrap">60%</span> свого тижня</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-6.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Спроможності та компетенції</span>
+              </div>
+              <h3 class="finding__title">AI-код без гейтів якості: що перевіряти, перш ніж зливати</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-7.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Операційна система delivery</span>
+              </div>
+              <h3 class="finding__title">Один SDLC замість п’яти: як компанія перестала винаходити процес заново</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+            <li class="finding">
+              <div class="finding__media">
+                <img src="assets/findings/finding-8.webp" alt="" loading="lazy" />
+                <span class="finding__tag">Люди та ресурси</span>
+              </div>
+              <h3 class="finding__title">Утилізація проти вигорання: де межа, після якої команда перестає рости</h3>
+              <a class="finding__more" href="#">Читати далі <span aria-hidden="true">›</span></a>
+            </li>
+          </ul>
+          <div class="findings__controls">
+            <div class="findings__pages" aria-hidden="true"></div>
+            <button class="findings__nav" type="button" data-dir="-1" aria-label="Попередні знахідки">‹</button>
+            <button class="findings__nav" type="button" data-dir="1" aria-label="Наступні знахідки">›</button>
+          </div>
+        </div>
+      </div>
+    </section>
     </div>
   </main>
 
@@ -2406,6 +2609,37 @@
 
       resize();
       addEventListener("resize", resize);
+    })();
+
+    // Audit findings carousel: prev/next by a page, page dashes follow the scroll position
+    (() => {
+      const root = document.querySelector(".findings");
+      if (!root) return;
+      const track = root.querySelector(".findings__track");
+      const pagesEl = root.querySelector(".findings__pages");
+      const [prev, next] = root.querySelectorAll(".findings__nav");
+      function pageCount() {
+        if (!track.clientWidth) return 1; // not laid out yet
+        return Math.max(1, Math.ceil(track.scrollWidth / track.clientWidth - 0.05));
+      }
+      function update() {
+        const n = pageCount();
+        if (pagesEl.children.length !== n) pagesEl.innerHTML = "<span></span>".repeat(n);
+        const max = track.scrollWidth - track.clientWidth;
+        const ratio = max > 0 ? track.scrollLeft / max : 0;
+        const current = Math.round(ratio * (n - 1));
+        [...pagesEl.children].forEach((s, i) => s.classList.toggle("is-current", i === current));
+        prev.disabled = track.scrollLeft <= 2;
+        next.disabled = track.scrollLeft >= max - 2;
+      }
+      for (const btn of [prev, next]) {
+        btn.addEventListener("click", () => track.scrollBy({ left: Number(btn.dataset.dir) * track.clientWidth * 0.9 }));
+      }
+      // TODO: point each "Читати далі" at its guide; until then the placeholder links don't jump
+      for (const a of document.querySelectorAll('.finding__more[href="#"]')) a.addEventListener("click", (e) => e.preventDefault());
+      track.addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+      addEventListener("resize", update);
+      update();
     })();
 
     // Report charts: click to see full size
