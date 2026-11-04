@@ -93,7 +93,7 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 | `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
 | `#results` | "Які результати ви отримаєте?" | Results section |
 | `#audit-findings` | "Знахідки аудитів" | Audit findings section |
-| `#roadmap`, `#testimonials` | Table of contents | The two remaining sections (`#for-whom` and `#deliverables` now exist) |
+| `#testimonials` | Table of contents | The remaining section (`#for-whom`, `#deliverables`, `#report` and `#roadmap` now exist) |
 | Menu button | Header | Menu design and content |
 | Reason card 4 | "Шось четверте" | Real title (also a typo for "Щось") and its own description; it currently repeats card 3 |
 | Problem card 6 | "Команда постійно гасить пожежі…" | A description; it currently repeats the title |
@@ -354,3 +354,32 @@ TODO:
 - Link "Приклади — у знахідках аудитів" (row 04) once `#audit-findings` exists.
 - Link "Дивіться нижче ↓" (row 06) once `#roadmap` exists.
 - Ukrainian versions of the charts if wanted.
+
+## "Чому зараз?" top padding +20
+
+The section's top padding is 116 at 1440 (was 96) and 84 on mobile (was 64). The floating TOC starts 20px lower too, so it stays level with this section's title; once pinned it still sits at 96.
+
+## "Дорожня карта" section (new, from the mockup; not in Figma yet)
+
+Placed after "Що всередині звіту ATLAS", in the "Для кого" style (dark `#0e151b` background), inside the floating TOC area with `id="roadmap"`, so the "Дорожня карта" TOC link works and highlights.
+
+- **H2:** "**Ваша дорожня карта зростання:** горизонти 0–3, 3–9 і 9–18 місяців".
+- **Intro:** the mockup's explainer, with "DA'AT" written as "Daat".
+- **Tabs:** "0–3 місяці", "3–9 місяців", "9–18 місяців" (the mockup doesn't name the tabs; these are the three horizons from the heading). They switch like the "Для кого" tabs (click, ← → Home End), using the same underline style.
+
+**Horizon animation (full width, under the tabs):**
+- **Source:** a 121-frame clip with three stops: point A (frame 0, beam at the start), point B (frame 60, beam reaches the centre node) and point C (frame 120, beam reaches the right-hand component).
+- **Behaviour:** selecting a tab plays from the current frame to that tab's stop, forwards or backwards, at 67.5fps (2.25× the clip's speed; A → C in about 1.8s). A click mid-animation re-targets from wherever it is, so any order works. With reduced motion it jumps straight to the stop.
+- **Implementation:** a canvas image sequence like the scroll clip. Frames are in `assets/roadmap/{800,1440,2042}/`, and only the set the screen needs is downloaded (1.2–3.2 MB). The stop frames load first, and loading starts when the section is near.
+- **Display:** edge to edge. Fader bands in the section colour blend it into the background: 220px at the top, 360px at the bottom (64px each on mobile). Each band is solid `#0e151b` for its outer 60%, then eases to transparent, stopping short of the beam, which runs through the middle. They reach past the 200px overlaps into the circuit detail, because the clip's outer 200px is empty dark board.
+- **Overlaps:** it has a −200px top margin (scaled; −64px on mobile), so it rises under the tabs and the end of the explainer, which stay on top. The floating TOC stays visible over it.
+
+**Horizon columns (under the animation, from the mockup):**
+- **Columns:** one per tab ("H1 · 0–3 місяці", "H2 · 3–9 місяців", "H3 · 9–18 місяців"). Each has a title, a lead sentence and three actions with "Відповідальні: … · Готово, коли: …".
+- **Position:** −200px top margin (scaled; −64px on mobile), so the columns rise over the bottom of the animation, layered above it.
+- **Linked to the tabs:** they are the tabs' panels. All three stay visible: the selected horizon's column is at full strength and the others fade to 50%. Clicking a column selects its tab, which also plays the animation to that horizon's point; inactive columns show a pointer and brighten slightly on hover.
+- **Separators:** no boxes and no horizontal lines; only pale vertical lines between columns (none on mobile, where the columns stack).
+- **Copy:** "DA'AT" written as "Daat".
+
+TODO:
+- Report row 06 can now link "Дивіться нижче ↓" to `#roadmap`.
