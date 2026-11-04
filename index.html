@@ -620,46 +620,48 @@
       line-height: var(--leading-body);
     }
 
-    /* Audience tabs: overlapping pills, the selected one blue with a white border */
+    /* Audience tabs: large text labels on a thin baseline; the selected one is underlined in orange */
     .audience-tabs {
       display: flex;
+      gap: var(--space-xl);
+      width: var(--span-3);
+      max-width: 100%;
       margin-top: var(--space-xl);
+      border-bottom: 1px solid rgb(237 233 222 / 0.2);
     }
     .audience-tab {
-      --tab-overlap: var(--space-2xl);
       position: relative;
-      display: grid;
-      padding: var(--space-sm) var(--space-xl);
-      border: 2px solid var(--c-night);
-      border-radius: 999px;
-      background: var(--c-surface);
-      color: var(--c-white);
-      font: inherit;
+      padding: 0 0 var(--space-sm);
       text-align: left;
-      cursor: pointer;
-      transition: background-color .2s ease;
-    }
-    .audience-tab + .audience-tab {
-      margin-left: calc(-1 * var(--tab-overlap));
-      padding-left: calc(var(--tab-overlap) + var(--space-xl));
-    }
-    .audience-tab:nth-child(1) { z-index: 3; }
-    .audience-tab:nth-child(2) { z-index: 2; }
-    .audience-tab:nth-child(3) { z-index: 1; background: var(--c-ink); }
-    .audience-tab:hover { background: var(--c-surface-hover); }
-    .audience-tab[aria-selected="true"] {
-      border-color: var(--c-white);
-      background: var(--c-primary);
-    }
-    .audience-tab__title {
-      font-size: var(--text-body);
-      font-weight: 700;
+      border: 0;
+      background: none;
+      color: rgb(237 233 222 / 0.6); /* dimmed cream, ≈7:1 on the night background */
+      font: inherit;
+      font-size: var(--text-lead);
+      font-weight: 500; /* same weight for all tabs, so labels don't shift when the selection changes */
       line-height: 1.2;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color .2s ease;
     }
-    .audience-tab__sub {
-      font-size: var(--text-small);
-      line-height: 1.3;
+    .audience-tab::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px; /* sits on the baseline */
+      height: 2px;
+      background: var(--c-primary);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .35s var(--ease-out);
     }
+    .audience-tab:hover { color: var(--c-cream); }
+    .audience-tab:hover::after { transform: scaleX(0.25); }
+    /* Selected: title and underline in the diagram's blue (3.5:1, fine for the 24px title) */
+    .audience-tab[aria-selected="true"] .audience-tab__title { color: var(--c-primary); }
+    .audience-tab[aria-selected="true"]::after { transform: scaleX(1); }
+    .audience-tab:focus-visible { outline-offset: 6px; border-radius: 4px; }
 
     .for-whom__layout {
       display: grid;
@@ -913,9 +915,9 @@
       .scrub::after { height: 64px; }
       .pillars { --pillar-size: clamp(68px, 17vw, 121.5px); --pillar-font: clamp(10px, 2.3vw, 17px); }
       .for-whom__intro { max-width: 640px; margin-top: 32px; }
-      .audience-tabs { flex-direction: column; max-width: 480px; margin-top: 32px; }
-      .audience-tab + .audience-tab { margin: 12px 0 0; padding-left: var(--space-xl); }
-      .audience-tab { padding-block: 14px; }
+      .audience-tabs { gap: 24px; margin-top: 32px; overflow-x: auto; scrollbar-width: none; }
+      .audience-tabs::-webkit-scrollbar { display: none; }
+      .audience-tab { padding-block: 12px; } /* 44px+ touch target */
       .for-whom__layout { grid-template-columns: 1fr; row-gap: 48px; width: auto; margin-top: 48px; }
       .venn { position: static; max-width: 400px; }
       .situation { padding-bottom: 24px; }
@@ -1101,15 +1103,12 @@
         <div class="audience-tabs" role="tablist" aria-label="Оберіть свою ситуацію">
             <button class="audience-tab" type="button" role="tab" id="tab-manager" aria-controls="panel-manager" aria-selected="true" tabindex="0" data-audience="manager">
               <span class="audience-tab__title">Я керую компанією</span>
-              <span class="audience-tab__sub">власник, CEO, керівник delivery</span>
             </button>
             <button class="audience-tab" type="button" role="tab" id="tab-investor" aria-controls="panel-investor" aria-selected="false" tabindex="-1" data-audience="investor">
               <span class="audience-tab__title">Я інвестую або купую</span>
-              <span class="audience-tab__sub">фонд, борд, покупець</span>
             </button>
             <button class="audience-tab" type="button" role="tab" id="tab-contractor" aria-controls="panel-contractor" aria-selected="false" tabindex="-1" data-audience="contractor">
               <span class="audience-tab__title">Я обираю підрядника</span>
-              <span class="audience-tab__sub">клієнт, відділ закупівель</span>
             </button>
         </div>
 

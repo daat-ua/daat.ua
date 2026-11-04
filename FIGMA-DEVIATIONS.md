@@ -157,9 +157,8 @@ Placed after the animated clip. Uses the same tokens as the rest of the page rat
 | H2 | DemiBold "Для кого ATLAS:" + Regular rest, 50 | Medium + Light, 48 (the page's heading pattern; no extra font weight to load) |
 | Intro, accordion text, list | 20.865 / 19 | Body 20 / 1.42 |
 | Accordion titles | 26 DemiBold | Lead 24, SemiBold |
-| Venn caption, tab sub-labels | 16–19.8 | Small 17 |
-| Tabs | Overlap ~118, padding 135.5 / 53.5–88.5 | Overlap 64, padding 112 / 48 (same overlapping-pill pattern as the hero buttons) |
-| Selected tab | Blue, 4 (2×) white border | Blue, 2px white border (same as hero buttons) |
+| Venn caption | 16 | Small 17 |
+| Tabs | Overlapping pills with two-line labels | Underline-style text tabs: one-line labels at the 24px lead size on a thin cream baseline (see below) |
 | Inactive Venn labels | `#2c3b4e` on `#0e151b` (≈1.6:1, unreadable) | Cream at 50% (≈4.5:1) |
 | Layout | Venn 446 + accordion 483 at x = 658.5 | Venn and accordion across the 1017 content width (accordion 480, gap 96), right edge on the grid |
 | Spacing | 41–125 measured | 24 / 48 / 96 scale; accordion rows 32 above and below |
@@ -320,3 +319,15 @@ The benefit line has no "Дає змогу:" label. The idea is phrased into the
 Each benefit line is led by an orange "idea" icon (`assets/icon-idea.svg`, hugeicons stroke-rounded, drawn as a CSS mask) on its first line, with one line of space above it.
 
 The "Приклад" examples are concrete evidence ("загальний індекс зрілості — 2,5 з 5…") and could come back later. The wireframe styles them as left-stripe callouts, which the critique flagged as a generic pattern, so they would need a different treatment.
+
+## "Для кого" tabs: underline style
+
+The pill buttons are replaced with text tabs (following the reference the client provided):
+
+- **Labels:** title ("Я керую компанією", "Я інвестую або купую", "Я обираю підрядника") at the 24px lead size, all the same weight, on a thin cream baseline (20% opacity) spanning the content width.
+- **States:**
+  - Unselected tabs are dimmed cream (60%, about 7:1 contrast).
+  - The selected tab's title and its 2px underline use the Venn diagram's blue (`#0066de`, 3.5:1, fine for 24px text). The underline grows in from the left when selected.
+  - Hovering shows a short underline hint.
+- **Sub-labels:** removed ("власник, CEO, керівник delivery" etc.); each panel's intro already says the same.
+- **Mobile:** the tab row scrolls sideways; each tab has a 44px+ touch target.
