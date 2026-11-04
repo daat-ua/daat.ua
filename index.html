@@ -174,12 +174,14 @@
 
     /* ---------- Hero ---------- */
     .hero {
+      --hero-gap: calc(20 * var(--px)); /* margin below the hero */
       position: relative;
+      margin-bottom: var(--hero-gap);
       z-index: 3; /* buttons overhang onto the blue section below */
     }
     .hero__photo-clip {
       position: absolute;
-      inset: 0 0 var(--overhang) 0; /* the dark band stops where the buttons start to overhang */
+      inset: 0 0 calc(var(--overhang) - var(--hero-gap)) 0; /* the dark band runs to where the blue section starts */
       overflow: hidden;
       background: var(--c-hero);
       pointer-events: none;
@@ -395,7 +397,7 @@
     .why__toc {
       position: absolute;
       z-index: 1;
-      top: calc(var(--space-3xl) + 20 * var(--px)); /* level with the first section title */
+      top: var(--space-3xl); /* level with the first section title */
       bottom: 0;
       left: calc(var(--gutter) + var(--span-3) + var(--col-gap) + 15 * var(--px)); /* a fourth column, right of the content, nudged 15 right */
       width: calc(184 * var(--px));
@@ -538,7 +540,6 @@
 
     /* "Що ви отримаєте": same section pattern; cards have a third row (the benefit) */
     .why--gains { margin-top: 0; } /* nothing overhangs this one */
-    #why-now { padding-top: calc(var(--space-3xl) + 20 * var(--px)); } /* 20 more at the top */
     /* Titles align across a row (subgrid); description and benefit flow together beneath */
     .card__body > p:first-child { margin-top: var(--space-sm); }
     /* Benefit line: one line of space above, an orange "idea" icon on its first line */
@@ -569,11 +570,12 @@
       position: relative;
       z-index: 0;
       aspect-ratio: 2042 / 1020;
-      margin-top: calc(-200 * var(--px)); /* rises under the tabs and the end of the explainer */
+      margin-top: calc(-200 * var(--px)); /* rises under the end of the explainer */
       pointer-events: none;
     }
     /* Faders: bands in the section colour blend the clip into the background at top and bottom.
-       Top 220px, bottom 360px (the beam runs at ~350px into the 720px clip, so the bottom band stops at its line). */
+       Each is solid where text overlaps the clip (the explainer above, the tabs below; 200px each),
+       then fades over the visible part, stopping at the beam (~350px into the 720px clip): top 340px, bottom 360px. */
     .roadmap__fader {
       position: absolute;
       left: 0;
@@ -583,7 +585,7 @@
       pointer-events: none;
     }
     /* solid section colour for the outer 60%, then an eased fade to clear (stops short of the beam) */
-    .roadmap__fader--top { --fader-h: var(--fader-top, calc(220 * var(--px))); }
+    .roadmap__fader--top { --fader-h: var(--fader-top, calc(340 * var(--px))); }
     .roadmap__fader--bottom { --fader-h: var(--fader-bottom, calc(360 * var(--px))); }
     .roadmap__fader--top { top: 0; background: linear-gradient(to bottom, var(--c-night) 60%, rgb(14 21 27 / 0.5) 80%, rgb(14 21 27 / 0)); }
     .roadmap__fader--bottom { bottom: 0; background: linear-gradient(to top, var(--c-night) 60%, rgb(14 21 27 / 0.5) 80%, rgb(14 21 27 / 0)); }
@@ -591,9 +593,10 @@
     .roadmap > .horizons-wrap {
       position: relative;
       z-index: 3;
-      margin-top: calc(-200 * var(--px)); /* rises over the bottom of the animation */
+      margin-top: calc(-200 * var(--px)); /* tabs and columns rise over the bottom of the animation */
     }
     .horizons {
+      margin-top: var(--space-xl);
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       width: var(--span-3);
@@ -680,7 +683,7 @@
     }
     .impact th,
     .impact td {
-      padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+      padding: var(--space-xs) var(--space-md) var(--space-xs) 0; /* compact rows */
       text-align: left;
       vertical-align: top;
       border-bottom: 1px solid rgb(237 233 222 / 0.12);
@@ -691,7 +694,7 @@
       font-weight: 400;
       white-space: nowrap;
     }
-    .impact thead th:first-child { width: 24%; }
+    .impact thead th:first-child { width: 32%; } /* wide enough that labels stay on one line */
     .impact tbody th {
       color: var(--c-cream);
       font-weight: 400;
@@ -740,16 +743,48 @@
       width: 2px;
       background: var(--c-night);
     }
-    .impact__summary {
-      margin: var(--space-lg) 0 0;
-      padding: var(--space-sm) var(--space-md);
-      border-radius: 6px;
-      background: var(--c-paper);
-      color: var(--c-hero);
+    /* Enabler forecast: a merged sub-header row, then the enablers and a total */
+    .impact .impact__group th {
+      padding-top: var(--space-md);
+      color: var(--c-white);
       font-size: var(--text-body);
-      line-height: var(--leading-body);
+      font-weight: 600;
     }
-    .impact__summary strong { font-weight: 700; }
+    .impact__toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .impact__toggle:hover { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+    .impact__icon { flex: none; width: 1.3em; height: 1.3em; overflow: visible; }
+    .impact__icon path {
+      fill: none;
+      stroke: var(--c-peach);
+      stroke-width: 2px;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform .4s var(--ease-out);
+    }
+    .impact__toggle[aria-expanded="true"] .chev--a { transform: translateY(-7.5px) scaleY(0.83); }
+    .impact__toggle[aria-expanded="true"] .chev--b { transform: translateY(20px) scaleY(-0.83); }
+    .impact__enabler.is-revealed { animation: impact-reveal .35s var(--ease-out) both; }
+    @keyframes impact-reveal { from { opacity: 0; } to { opacity: 1; } }
+
+    .impact__total :is(th, td) {
+      border-top: 2px solid rgb(237 233 222 / 0.35);
+      color: var(--c-cream);
+      font-weight: 600;
+    }
+
 
     .roadmap__poster,
     .roadmap__canvas {
@@ -1180,6 +1215,7 @@
       }
       .logo { top: 16px; width: 84.8px; }
       .menu-btn img { width: 25.6px; height: 25.6px; }
+      .hero { --hero-gap: 20px; }
       .hero .container { padding-top: 120px; padding-bottom: 40px; }
       .hero__title { max-width: 640px; }
       .hero__lead { margin-top: 40px; }
@@ -1195,7 +1231,6 @@
       .btn--secondary { margin: 12px 0 0; padding-inline: 32px; }
 
       .why { padding: 64px 0 80px; }
-      #why-now { padding-top: 84px; }
       /* Table of contents becomes a compact bar that sticks while the section scrolls */
       .why__toc {
         position: sticky;
@@ -1904,6 +1939,16 @@
         <h2 class="section-title"><strong>Ваша дорожня карта зростання:</strong> горизонти <span class="nowrap">0–3</span>, <span class="nowrap">3–9</span> і <span class="nowrap">9–18</span> місяців</h2>
         <p class="for-whom__intro">ATLAS не зупиняється на діагнозі. Кожну рекомендовану практику&nbsp;— від delivery до технічної досконалості&nbsp;— пріоритизовано за впливом на зрілість, ризиком, вартістю й залежностями та вибудовано так, щоб спершу знімалися базові обмеження, а потім&nbsp;— усе, що від них залежить. Ви отримуєте терміни, відповідальних і вимірювану фінішну лінію для кожного кроку, а Daat може супроводжувати впровадження на кожному горизонті.</p>
 
+      </div>
+
+      <!-- Full-width horizon animation: A (start) → B → C (finish), driven by the tabs below -->
+      <div class="roadmap__stage" aria-hidden="true">
+        <img class="roadmap__poster" src="assets/roadmap/1440/f001.webp" width="1440" height="720" alt="" />
+        <canvas class="roadmap__canvas"></canvas>
+        <div class="roadmap__fader roadmap__fader--top"></div>
+        <div class="roadmap__fader roadmap__fader--bottom"></div>
+      </div>
+      <div class="container horizons-wrap">
         <div class="audience-tabs" role="tablist" aria-label="Горизонти дорожньої карти">
           <button class="audience-tab" type="button" role="tab" id="tab-h1" aria-controls="panel-h1" aria-selected="true" tabindex="0">
             <span class="audience-tab__title"><span class="nowrap">0–3 місяці</span></span>
@@ -1916,16 +1961,6 @@
           </button>
         </div>
 
-      </div>
-
-      <!-- Full-width horizon animation: A (start) → B → C (finish), driven by the tabs above -->
-      <div class="roadmap__stage" aria-hidden="true">
-        <img class="roadmap__poster" src="assets/roadmap/1440/f001.webp" width="1440" height="720" alt="" />
-        <canvas class="roadmap__canvas"></canvas>
-        <div class="roadmap__fader roadmap__fader--top"></div>
-        <div class="roadmap__fader roadmap__fader--bottom"></div>
-      </div>
-      <div class="container horizons-wrap">
         <div class="horizons">
           <div class="horizon is-active" role="tabpanel" id="panel-h1" aria-labelledby="tab-h1">
             <p class="horizon__label">H1 · <span class="nowrap">0–3 місяці</span></p>
@@ -2046,9 +2081,74 @@
                 <td>Нові та enterprise-клієнти; засновник&nbsp;— у продажах</td>
               </tr>
               </tbody>
+              <tbody class="impact__enablers" id="impact-enablers">
+                <tr class="impact__group">
+                  <th scope="colgroup" colspan="5">
+                    <button class="impact__toggle" type="button" aria-expanded="false" aria-controls="impact-enablers">
+                      <svg class="impact__icon" viewBox="0 0 73 73" aria-hidden="true"><path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /><path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" /></svg>
+                      Прогноз за енейблерами (індекс зрілості, цільові значення)
+                    </button>
+                  </th>
+                </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Операційна система delivery</th>
+                <td>2,3</td>
+                <td>2,6</td>
+                <td>3,0</td>
+                <td>3,4</td>
+              </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Люди та ресурси</th>
+                <td>2,2</td>
+                <td>2,7</td>
+                <td>3,0</td>
+                <td>3,3</td>
+              </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Спроможності та компетенції</th>
+                <td>2,3</td>
+                <td>2,5</td>
+                <td>2,9</td>
+                <td>3,3</td>
+              </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Інженерна культура й культура delivery</th>
+                <td>1,8</td>
+                <td>2,0</td>
+                <td>2,6</td>
+                <td>3,1</td>
+              </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Структура та управління</th>
+                <td>3,0</td>
+                <td>3,0</td>
+                <td>3,2</td>
+                <td>3,5</td>
+              </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Лідерство та ухвалення рішень</th>
+                <td>2,8</td>
+                <td>2,8</td>
+                <td>3,0</td>
+                <td>3,4</td>
+              </tr>
+              <tr class="impact__enabler" hidden>
+                <th scope="row">Стратегія та портфель</th>
+                <td>3,1</td>
+                <td>3,1</td>
+                <td>3,1</td>
+                <td>3,4</td>
+              </tr>
+              <tr class="impact__total">
+                <th scope="row">Загальний індекс зрілості</th>
+                <td>2,5</td>
+                <td>2,7</td>
+                <td>3,0</td>
+                <td>3,4</td>
+              </tr>
+              </tbody>
             </table>
           </div>
-          <p class="impact__summary"><strong><span class="nowrap">+$725 тис.</span></strong> додаткової виручки за 18 місяців · <span class="nowrap">run-rate $3,0 → $4,0 млн</span> · валовий прибуток <span class="nowrap">$660 тис.</span> → <span class="nowrap">$1,16 млн</span> на рік</p>
         </div>
       </div>
     </section>
@@ -2189,6 +2289,20 @@
         });
         // clicking a horizon column selects its tab (keyboard users have the tabs themselves)
         document.getElementById(tab.getAttribute("aria-controls")).addEventListener("click", () => select(tab));
+      }
+      // the enabler forecast folds under its sub-header (the total row stays visible)
+      const toggle = document.querySelector(".impact__toggle");
+      if (toggle) {
+        const rows = [...document.querySelectorAll(".impact__enabler")];
+        toggle.addEventListener("click", () => {
+          const open = toggle.getAttribute("aria-expanded") !== "true";
+          toggle.setAttribute("aria-expanded", String(open));
+          rows.forEach((r, i) => {
+            r.hidden = !open;
+            r.classList.toggle("is-revealed", open);
+            r.style.animationDelay = open ? `${i * 30}ms` : "";
+          });
+        });
       }
       // the revenue table's H1–H3 columns select their horizon too (cells 2–4 → tabs 0–2)
       const table = document.querySelector(".impact table");

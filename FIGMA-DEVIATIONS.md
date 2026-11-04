@@ -355,9 +355,9 @@ TODO:
 - Link "Дивіться нижче ↓" (row 06) once `#roadmap` exists.
 - Ukrainian versions of the charts if wanted.
 
-## "Чому зараз?" top padding +20
+## Hero bottom margin +20
 
-The section's top padding is 116 at 1440 (was 96) and 84 on mobile (was 64). The floating TOC starts 20px lower too, so it stays level with this section's title; once pinned it still sits at 96.
+The hero has a 20px bottom margin (scaled on desktop, 20px on mobile). Its dark background extends into it, so it still meets the blue section edge to edge. "Чому зараз?" is back to its regular 96px top padding (64 on mobile), level with the floating TOC. The hero buttons now overlap the blue section by about 13px instead of 33px.
 
 ## "Дорожня карта" section (new, from the mockup; not in Figma yet)
 
@@ -367,12 +367,14 @@ Placed after "Що всередині звіту ATLAS", in the "Для кого
 - **Intro:** the mockup's explainer, with "DA'AT" written as "Daat".
 - **Tabs:** "0–3 місяці", "3–9 місяців", "9–18 місяців" (the mockup doesn't name the tabs; these are the three horizons from the heading). They switch like the "Для кого" tabs (click, ← → Home End), using the same underline style.
 
-**Horizon animation (full width, under the tabs):**
+**Section order:** heading → explainer → horizon animation → tabs → horizon columns → revenue table.
+
+**Horizon animation (full width, between the explainer and the tabs):**
 - **Source:** a 121-frame clip with three stops: point A (frame 0, beam at the start), point B (frame 60, beam reaches the centre node) and point C (frame 120, beam reaches the right-hand component).
 - **Behaviour:** selecting a tab plays from the current frame to that tab's stop, forwards or backwards, at 67.5fps (2.25× the clip's speed; A → C in about 1.8s). A click mid-animation re-targets from wherever it is, so any order works. With reduced motion it jumps straight to the stop.
 - **Implementation:** a canvas image sequence like the scroll clip. Frames are in `assets/roadmap/{800,1440,2042}/`, and only the set the screen needs is downloaded (1.2–3.2 MB). The stop frames load first, and loading starts when the section is near.
-- **Display:** edge to edge. Fader bands in the section colour blend it into the background: 220px at the top, 360px at the bottom (64px each on mobile). Each band is solid `#0e151b` for its outer 60%, then eases to transparent, stopping short of the beam, which runs through the middle. They reach past the 200px overlaps into the circuit detail, because the clip's outer 200px is empty dark board.
-- **Overlaps:** it has a −200px top margin (scaled; −64px on mobile), so it rises under the tabs and the end of the explainer, which stay on top. The floating TOC stays visible over it.
+- **Display:** edge to edge. Fader bands in the section colour blend it into the background: 340px at the top, 360px at the bottom (64px each on mobile). Each is solid where text overlaps the clip and fades over the visible part, stopping at the beam. Each band is solid `#0e151b` for its outer 60%, then eases to transparent, stopping short of the beam, which runs through the middle. They reach past the 200px overlaps into the circuit detail, because the clip's outer 200px is empty dark board.
+- **Overlaps:** it has a −200px top margin (scaled; −64px on mobile), so it rises under the end of the explainer, which stays on top; the tabs and columns rise 200px over its faded bottom. The floating TOC stays visible over it.
 
 **Horizon columns (under the animation, from the mockup):**
 - **Columns:** one per tab ("H1 · 0–3 місяці", "H2 · 3–9 місяців", "H3 · 9–18 місяців"). Each has a title, a lead sentence and three actions with "Відповідальні: … · Готово, коли: …".
@@ -387,7 +389,13 @@ Placed after "Що всередині звіту ATLAS", in the "Для кого
 - **Linked to the tabs:** the column for the selected horizon is bold and full white, with its revenue bar in the active blue (`#0066de`), and the others are muted. The mockup shows H3 bold as its static version.
 - **Clickable:** clicking any cell in the H1–H3 columns (header included) selects that horizon, the same as its tab. Inactive columns show a pointer and brighten on hover; "Зараз" isn't clickable.
 - **Separators:** thin pale lines between rows, no outer box.
-- **Summary:** "+$725 тис. … → $1,16 млн на рік" on a light paper strip below the table.
+- **Enabler forecast (second mockup, appended to the same table):** "Прогноз за енейблерами (індекс зрілості, цільові значення)" is a merged sub-header row across all columns. It is followed by seven enabler rows (Зараз / end of H1 / H2 / H3) and a bold "Загальний індекс зрілості" total row with a stronger line above it. The mockup's own column header (Енейблер / Зараз / Кінець H1…) isn't repeated, because the table's columns already match. These rows follow the horizon highlight and are clickable like the rest.
+- **Compact layout:**
+  - Rows have 8px vertical padding (was 16), and the label column is 32% wide so labels stay on one line.
+  - The enabler forecast is folded by default. Its merged sub-header row is a toggle with the same animated chevron as the "Для кого" accordions, and the revealed rows fade in.
+  - The "Загальний індекс зрілості" total row is always visible.
+  - Height at 1440: about 830px before, 435px folded, 709px open.
+- **Summary line removed:** the mockup's "+$725 тис. … → $1,16 млн на рік" strip below the table isn't used.
 - **Mobile:** the table scrolls sideways (min width 720px).
 
 TODO:
