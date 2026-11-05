@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sanity Studio v4 for daat.ua — a content backend for delivery-audit findings, blog posts, and author profiles. There is no frontend in this repo; this is the editing/admin studio only. The consuming site lives elsewhere and reads from the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`).
+Sanity Studio v6 for daat.ua — a content backend for delivery-audit findings, blog posts, and author profiles. It lives in `studio/` of the website repo (imported with its history) as a standalone app with its own `package.json`; the website at the repo root reads the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`) at build time.
 
 ## Commands
 
@@ -12,6 +12,7 @@ Sanity Studio v4 for daat.ua — a content backend for delivery-audit findings, 
 - `npm run build` — production build
 - `npm run deploy` — deploy hosted studio to Sanity
 - `npm run deploy-graphql` — (re)deploy the GraphQL API for the dataset; run this after any schema change consumers depend on
+- `npm run typegen` — extract the schema to `schema.json` and generate the website's query types (`../src/sanity/sanity.types.ts`, configured in `sanity.cli.ts`); run after any schema change, then rebuild the site
 
 There is no test runner, linter script, or formatter script wired into npm. Lint/format are configured (ESLint via `@sanity/eslint-config-studio`, Prettier inline in `package.json`) but must be invoked directly (`npx eslint .`, `npx prettier --check .`).
 
@@ -22,7 +23,7 @@ Everything meaningful in this repo is the content model in `schemaTypes/`. Each 
 
 ### Schema name vs. file name mismatch (gotcha)
 The exported variable name, the file name, and the `name:` field of the document do not all match. The file/export name is for humans; references between documents must use the **schema `name`**:
-- `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI)
+- `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI; the website renders these at `/uk-UA/atlas/findings/<slug>`, `tag` labels its carousel card)
 - `author.ts` → `name: 'authors'` (plural)
 - `blogPost.ts` → `name: 'blogPost'`
 

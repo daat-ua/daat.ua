@@ -94,6 +94,15 @@ export const post = defineType({
         }),
 
         defineField({
+            name: 'tag',
+            title: 'Tag',
+            description: 'Short label on the teaser card in the findings carousel (e.g. «Люди та ресурси»)',
+            type: 'string',
+            validation: (rule) => rule.max(40),
+            group: 'meta',
+        }),
+
+        defineField({
             name: 'image',
             type: 'image',
             options: {
