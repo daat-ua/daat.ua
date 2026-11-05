@@ -1,16 +1,21 @@
-// Visual parity: screenshots each section of the legacy page (index.html at the repo root) and of the
-// Astro build (dist/), at several widths, and compares them pixel by pixel.
+// Visual parity: screenshots each section of the legacy single-file page and of the Astro build (dist/),
+// at several widths, and compares them pixel by pixel. The legacy page no longer lives in the tree; it's
+// read from git history (--legacy-ref, default: the last commit that had it), so the check stays usable
+// for regressions against the original design.
 //
 //   npm run build && npm run test:visual
 //   npm run test:visual -- --widths=1440 --sections=hero,faq
+//   npm run test:visual -- --legacy-ref=<commit>
 //
 // Sections not yet ported (missing from the build) are skipped. Diff images go to tests/visual/output/.
 // Images are hidden by default (their boxes still count): Astro resizes and re-encodes them, which shifts
 // pixels without changing the design. Pass --images to compare them too.
 // Uses the locally installed Google Chrome (playwright-core, no browser download).
 
+import { execFileSync } from "node:child_process";
 import { createServer } from "node:http";
-import { readFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { existsSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { chromium } from "playwright-core";
@@ -19,6 +24,8 @@ import { PNG } from "pngjs";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const OUT = join(ROOT, "tests/visual/output");
+// The last commit with the legacy page (index.html, assets/, fonts/, public/frames/)
+const LEGACY_REF = "74e078c";
 
 // Each section is found by the same selector on both pages
 const SECTIONS = {
@@ -47,6 +54,7 @@ const widths = (args.widths ?? "1440,1280,1024,500").split(",").map(Number);
 const only = args.sections ? args.sections.split(",") : Object.keys(SECTIONS);
 const threshold = Number(args.threshold ?? 0.005); // share of differing pixels allowed per section
 const compareImages = Boolean(args.images);
+const legacyRef = args["legacy-ref"] ?? LEGACY_REF;
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -124,7 +132,14 @@ if (!existsSync(join(ROOT, "dist/index.html"))) {
 
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
-const legacy = await serve(ROOT);
+// extract the legacy page from git into a temporary folder
+const legacyDir = await mkdtemp(join(tmpdir(), "daat-legacy-"));
+const archive = execFileSync("git", ["archive", legacyRef, "index.html", "assets", "fonts", "public/frames"], {
+  cwd: ROOT,
+  maxBuffer: 1 << 30,
+});
+execFileSync("tar", ["-x", "-C", legacyDir], { input: archive });
+const legacy = await serve(legacyDir);
 const build = await serve(join(ROOT, "dist"));
 const browser = await chromium.launch({ channel: "chrome" });
 const context = await browser.newContext({ deviceScaleFactor: 1, reducedMotion: "reduce" });
@@ -167,6 +182,7 @@ for (const width of widths) {
 await browser.close();
 legacy.close();
 build.close();
+await rm(legacyDir, { recursive: true, force: true });
 console.table(rows);
 if (failed) {
   console.error(`${failed} section(s) differ; see tests/visual/output/`);

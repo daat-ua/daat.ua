@@ -1,5 +1,6 @@
 ---
-import { Font } from "astro:assets";
+import { Font, getImage } from "astro:assets";
+import logo from "../assets/images/logo.webp";
 import "../styles/global.css";
 
 interface Props {
@@ -8,6 +9,10 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+
+// favicons from the logo (PNG for the tab, 180px for iOS home screens)
+const favicon = await getImage({ src: logo, width: 32, height: 32, format: "png", fit: "cover" });
+const touchIcon = await getImage({ src: logo, width: 180, height: 180, format: "png", fit: "cover" });
 ---
 
 <!doctype html>
@@ -17,6 +22,8 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href={favicon.src} />
+    <link rel="apple-touch-icon" href={touchIcon.src} />
     <!-- Preload only what's above the fold: the H1 (Turns Light + Medium) and the hero body (Commons Regular) -->
     <Font cssVariable="--font-turns" preload={[{ weight: 300 }, { weight: 500 }]} />
     <Font cssVariable="--font-commons" preload={[{ weight: 400 }]} />

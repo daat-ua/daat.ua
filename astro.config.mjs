@@ -24,8 +24,8 @@ export default defineConfig({
   trailingSlash: "ignore",
   compressHTML: true,
   build: {
-    // small stylesheets go inline, larger ones stay cacheable files
-    inlineStylesheets: "auto",
+    // one page: inline its CSS (~9 KB gzipped) rather than block rendering on a stylesheet request
+    inlineStylesheets: "always",
   },
   image: {
     // optimised images get srcset/sizes and no-layout-shift styles by default

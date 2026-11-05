@@ -1,5 +1,8 @@
 # Deviations from Figma
 
+> **Implementation note (Astro migration):** the page is now an Astro 7 + Tailwind 4 site; the single-file `index.html` is gone. File paths in the entries below refer to the original layout: images and icons from `assets/` now live in `src/assets/` (`images/`, `icons/`, `clients/`, `charts/`, `dividers/`), the frame sequences in `public/frames/`, and the fonts in `src/assets/fonts/`. Section markup is in `src/components/atlas-landing/sections/`, copy in `src/data/`. The migration changed nothing visible: `npm run test:visual` compares every section with the original page.
+
+
 Changes made in code during the design-critique fixes, so the Figma file can be brought in line.
 Sizes are given at the 1440px desktop width (Figma is drawn at 2×, so double them there).
 

@@ -2,8 +2,6 @@
 
 Astro 7 + Tailwind 4, built as a static site and served by Caddy on Railway.
 
-> Migration in progress: the legacy single-file page (`index.html`, `assets/`, `fonts/`) stays at the root until every section is ported to `src/`, then it's removed.
-
 ## Develop
 
 Requires Node 26 LTS (see `.nvmrc`; Astro 7.4 needs ≥ 22.23.4).
@@ -13,16 +11,14 @@ npm install
 npm run dev       # http://localhost:4321
 npm run build     # astro check + static build into dist/
 npm run preview   # serve dist/ locally
-npm run test:visual  # compare each section of the build with the legacy page (needs a build)
+npm run test:visual  # compare each section of the build with the original single-file page (needs a build)
 ```
 
-`test:visual` screenshots every section of the legacy `index.html` and of `dist/` at 1440, 1280, 1024 and 500px wide and compares them pixel by pixel, using your installed Google Chrome. Options: `--widths=1440,500`, `--sections=hero,faq`, `--threshold=0.005`, `--images` (images are hidden by default, because Astro's resizing shifts their pixels without changing the design; their boxes are still compared). Sections not yet ported are reported as such; diffs are saved to `tests/visual/output/`.
+`test:visual` screenshots every section of the original single-file page (read from git history, `--legacy-ref=<commit>`) and of `dist/` at 1440, 1280, 1024 and 500px wide and compares them pixel by pixel, using your installed Google Chrome. Options: `--widths=1440,500`, `--sections=hero,faq`, `--threshold=0.005`, `--images` (images are hidden by default, because Astro's resizing shifts their pixels without changing the design; their boxes are still compared). Diffs are saved to `tests/visual/output/`.
 
 ## Deploy
 
 Railway builds the `Dockerfile`: Node 26 builds the site, then Caddy (`Caddyfile`) serves it on `$PORT` with compression, long-lived caching for hashed assets and security headers.
-
-While the migration is in progress the image keeps the legacy page live at `/` and serves the Astro build from `/next/`, so merging a migration PR never replaces the live page with a half-ported one. The last migration PR moves the Astro build to `/`.
 
 ## Structure
 

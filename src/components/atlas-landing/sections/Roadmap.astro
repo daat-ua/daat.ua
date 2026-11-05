@@ -19,7 +19,17 @@ import { horizons, impact } from "../../../data/roadmap";
   <!-- Full-width horizon animation: A (start) → B → C (finish), driven by the tabs below.
        Frames live in public/frames/roadmap/<width>/. -->
   <div class="roadmap__stage" aria-hidden="true">
-    <img class="roadmap__poster" src="/frames/roadmap/1440/f001.webp" width="1440" height="720" alt="" />
+    <img
+      class="roadmap__poster"
+      src="/frames/roadmap/1440/f001.webp"
+      srcset="/frames/roadmap/800/f001.webp 800w, /frames/roadmap/1440/f001.webp 1440w, /frames/roadmap/2042/f001.webp 2042w"
+      sizes="100vw"
+      width="1440"
+      height="720"
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
     <canvas class="roadmap__canvas"></canvas>
     <div class="roadmap__fader roadmap__fader--top"></div>
     <div class="roadmap__fader roadmap__fader--bottom"></div>
