@@ -1,14 +1,18 @@
 ---
 import { Font, getImage } from "astro:assets";
 import faviconSource from "../assets/images/favicon.png";
+import GlobalMenu from "../components/GlobalMenu.astro";
+import Header from "../components/Header.astro";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  /** keep the page out of search results (demo and service pages) */
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 const locale = Astro.currentLocale ?? "uk-UA";
 // pages are built as .html files but served without the extension; the 404 page gets no canonical URL
 const path = Astro.url.pathname.replace(/\.html$/, "");
@@ -26,6 +30,7 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     {canonical && (
       <>
         <link rel="canonical" href={canonical} />
@@ -42,7 +47,10 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <a class="skip-link" href="#main">
       Перейти до змісту
     </a>
+    <!-- every page gets the header and the menu its button opens -->
+    <Header />
     <slot />
+    <GlobalMenu />
     <script>
       import "../scripts/in-page-links";
     </script>
