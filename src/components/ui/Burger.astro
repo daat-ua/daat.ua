@@ -1,0 +1,42 @@
+---
+// The menu icon ("fries"), drawn as three round-capped strokes so the menu's close button can morph it into an X.
+// The morph itself is styled in GlobalMenu.astro (`.gmenu.is-open .burger …`).
+---
+
+<svg class="burger" viewBox="0 0 91.25 91.25" aria-hidden="true">
+  <line class="burger__top" x1="7.3" y1="20.45" x2="80.3" y2="20.45"></line>
+  <line class="burger__mid" x1="29.2" y1="46" x2="80.3" y2="46"></line>
+  <line class="burger__bot" x1="7.3" y1="71.55" x2="80.3" y2="71.55"></line>
+</svg>
+
+<style is:global>
+  @layer components {
+    .burger {
+      width: calc(36.5 * var(--px)); /* Figma 45.6, reduced 20% */
+      height: calc(36.5 * var(--px));
+      overflow: visible;
+    }
+    .burger line {
+      stroke: var(--c-white);
+      stroke-width: 14.6;
+      stroke-linecap: round;
+      transform-box: fill-box;
+      transform-origin: center;
+      /* closing: unrotate first, then spread back apart */
+      transition:
+        rotate 0.22s var(--ease-out),
+        translate 0.25s var(--ease-out) 0.18s,
+        scale 0.25s var(--ease-out) 0.2s,
+        opacity 0.15s ease 0.2s;
+    }
+    .burger__mid {
+      transform-origin: right center;
+    }
+    @media (width < 64rem) {
+      .burger {
+        width: 25.6px;
+        height: 25.6px;
+      }
+    }
+  }
+</style>

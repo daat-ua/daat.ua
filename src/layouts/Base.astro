@@ -22,6 +22,12 @@ const { title, description } = Astro.props;
     <Font cssVariable="--font-commons" preload={[{ weight: 400 }]} />
   </head>
   <body>
+    <a class="skip-link" href="#main">
+      Перейти до змісту
+    </a>
     <slot />
+    <script>
+      import "../scripts/in-page-links";
+    </script>
   </body>
 </html>

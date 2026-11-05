@@ -1,0 +1,182 @@
+---
+import { toc } from "../data/navigation";
+---
+
+<!--
+  The area beside the floating table of contents: the TOC plus the sections it lists (the slot).
+  Stacking inside: content sections (0) < TOC (1) < animated clip (2) < hero (3) < header (4).
+-->
+<div class="toc-scope">
+  <aside class="why__toc">
+    <nav aria-label="Зміст">
+      <ul>
+        {toc.map((link, i) => (
+          <li>
+            <a href={link.href} aria-current={i === 0 ? "true" : undefined}>
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+  <slot />
+</div>
+
+<script>
+  // The TOC highlight follows the section in view: the current one is the last whose top has passed the
+  // upper third of the viewport. Over light sections (data-toc-theme="light") the TOC switches to dark text.
+  const toc = document.querySelector<HTMLElement>(".why__toc");
+  if (toc) {
+    const links = [...toc.querySelectorAll<HTMLAnchorElement>("a")];
+    const targets = links.flatMap((a) => {
+      const el = document.getElementById(a.hash.slice(1));
+      return el ? [[a, el] as const] : [];
+    });
+    const scopeSections = [...document.querySelectorAll<HTMLElement>(".toc-scope > section")];
+    const nav = toc.querySelector("nav")!;
+
+    function update() {
+      if (targets.length) {
+        const line = innerHeight / 3;
+        let current = targets[0][0];
+        for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
+        for (const a of links) a.toggleAttribute("aria-current", a === current);
+        current.setAttribute("aria-current", "true");
+      }
+      const y = nav.getBoundingClientRect().top + 10;
+      const under = scopeSections.find((s) => {
+        const r = s.getBoundingClientRect();
+        return r.top <= y && r.bottom > y;
+      });
+      toc!.dataset.theme = under?.dataset.tocTheme || "dark";
+    }
+    update();
+    addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .toc-scope {
+      position: relative;
+    }
+    /* Sections beside the floating TOC run 30px narrower (each column 10px), for more air between content
+       and TOC. The spans are redeclared because they're computed from --col where they're declared. */
+    @media (width >= 64rem) {
+      .toc-scope {
+        --col: calc(304 * var(--px));
+        --span-2: calc(2 * var(--col) + var(--col-gap)); /* 645.5 */
+        --span-3: calc(3 * var(--col) + 2 * var(--col-gap)); /* 987 */
+      }
+    }
+
+    /* Floating table of contents: sticks while the sections scroll past */
+    .why__toc {
+      position: absolute;
+      z-index: 1;
+      top: var(--space-3xl); /* level with the first section title */
+      bottom: 0;
+      /* a fourth column right of the full 1017px content (the TOC stays put while the content beside it is narrower), nudged 15 right */
+      left: calc(var(--gutter) + 1017 * var(--px) + var(--col-gap) + 15 * var(--px));
+      width: calc(184 * var(--px));
+    }
+    .why__toc nav {
+      position: sticky;
+      top: var(--space-3xl);
+    }
+    .why__toc ul {
+      display: grid;
+      row-gap: var(--space-sm);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .why__toc li {
+      position: relative;
+    }
+    .why__toc a {
+      color: var(--c-on-primary-muted);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      transition: color 0.25s ease;
+    }
+    .why__toc a:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+    .why__toc a[aria-current="true"] {
+      color: var(--c-on-primary);
+      font-weight: 600;
+    }
+    /* "You are here" marker: shape + weight, not colour alone */
+    .why__toc a[aria-current="true"]::before {
+      content: "";
+      position: absolute;
+      top: calc(var(--leading-small) * 0.5em - 1px);
+      left: -1.1em;
+      width: 0.7em;
+      height: 2px;
+      background: var(--c-on-primary);
+    }
+    .why__toc a:focus-visible {
+      outline: 2px solid var(--c-on-primary);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+    /* Over light sections the TOC switches to dark text */
+    .why__toc[data-theme="light"] a {
+      color: var(--c-ink);
+    }
+    .why__toc[data-theme="light"] a[aria-current="true"] {
+      color: var(--c-hero);
+    }
+    .why__toc[data-theme="light"] a[aria-current="true"]::before {
+      background: var(--c-hero);
+    }
+
+    @media (width < 64rem) {
+      /* Table of contents becomes a compact bar that sticks while the sections scroll */
+      .why__toc {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        width: auto;
+        margin: 0;
+        background: var(--c-primary);
+        box-shadow: 0 1px 0 rgb(250 248 243 / 0.2);
+        transition: background-color 0.25s ease;
+      }
+      .why__toc nav {
+        position: static;
+      }
+      .why__toc ul {
+        display: flex;
+        gap: 24px;
+        overflow-x: auto;
+        padding-inline: var(--gutter);
+        scrollbar-width: none;
+      }
+      .why__toc ul::-webkit-scrollbar {
+        display: none;
+      }
+      .why__toc[data-theme="light"] {
+        background: var(--c-paper);
+        box-shadow: 0 1px 0 rgb(28 38 50 / 0.15);
+      }
+      .why__toc a {
+        display: block;
+        padding-block: 12px; /* 44px touch target */
+        white-space: nowrap;
+      }
+      .why__toc a[aria-current="true"]::before {
+        content: none;
+      }
+      .why__toc a[aria-current="true"] {
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.35em;
+      }
+    }
+  }
+</style>

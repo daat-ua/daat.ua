@@ -1,18 +1,20 @@
 ---
+import Footer from "../components/Footer.astro";
+import GlobalMenu from "../components/GlobalMenu.astro";
+import Header from "../components/Header.astro";
+import Toc from "../components/Toc.astro";
 import Base from "../layouts/Base.astro";
 ---
 
-<!-- Placeholder while the page is ported section by section from the legacy index.html -->
 <Base
   title="ATLAS — доказова діагностика зростання IT-компаній | Daat"
   description="ATLAS — доказова діагностика зростання IT-компаній від Daat. Перший результат — уже за 4–5 тижнів."
 >
-  <main id="main" class="wrap bg-hero py-96 text-cream">
-    <h1 class="font-display text-display leading-display font-light">
-      Ваша компанія здатна на більше <strong class="font-medium">ATLAS покаже, що стримує її зростання</strong>
-    </h1>
-    <p class="mt-24 max-w-(--span-2) text-body leading-body">
-      Токени, шрифти й базові стилі перенесено; секції з’являться в наступних PR.
-    </p>
+  <Header />
+  <main id="main">
+    <!-- Sections are ported one PR at a time from the legacy index.html -->
+    <Toc />
   </main>
+  <Footer />
+  <GlobalMenu />
 </Base>

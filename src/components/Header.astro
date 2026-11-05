@@ -1,0 +1,71 @@
+---
+import Burger from "./ui/Burger.astro";
+import Logo from "./ui/Logo.astro";
+---
+
+<header class="topbar">
+  <div class="wrap">
+    <Logo class="logo" maxWidth={189} sizes="(width < 64rem) 85px, 9.81vw" eager />
+  </div>
+  <button
+    class="menu-btn"
+    type="button"
+    aria-label="Відкрити меню"
+    aria-haspopup="dialog"
+    aria-controls="gmenu"
+    aria-expanded="false"
+  >
+    <Burger />
+  </button>
+</header>
+
+<style is:global>
+  @layer components {
+    .topbar {
+      position: relative;
+      z-index: 4; /* above the hero: the logo hangs below the header bar */
+      height: var(--header-h);
+      background: var(--c-header);
+    }
+    .topbar .wrap {
+      height: 100%;
+    }
+    .logo {
+      position: absolute;
+      top: calc(36 * var(--px)); /* Figma 45, reduced 20% */
+      left: var(--gutter);
+      width: calc(141.2 * var(--px)); /* Figma 176.5, reduced 20% */
+    }
+    .logo img {
+      width: 100%;
+      height: auto;
+    }
+    .menu-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: grid;
+      place-items: center;
+      width: var(--header-h);
+      height: var(--header-h);
+      padding: 0;
+      border: 0;
+      background: var(--c-accent);
+      cursor: pointer;
+      transition: filter 0.2s ease;
+    }
+    .menu-btn:hover {
+      filter: brightness(1.06);
+    }
+    .menu-btn:focus-visible {
+      outline: 3px solid var(--c-white);
+      outline-offset: -6px;
+    }
+    @media (width < 64rem) {
+      .logo {
+        top: 16px;
+        width: 84.8px;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,371 @@
+---
+import { directions, menu } from "../data/navigation";
+import Burger from "./ui/Burger.astro";
+import Logo from "./ui/Logo.astro";
+
+const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg>`;
+---
+
+<!--
+  Global menu: a modal dialog opened by the header's menu button. The bar repeats the header (logo, and the
+  menu button turned into a close button); the panel slides in from the right over the dimmed page.
+-->
+<dialog class="gmenu" id="gmenu" aria-label="Меню">
+  <div class="gmenu__bar">
+    <div class="wrap">
+      <Logo class="logo" maxWidth={189} sizes="(width < 64rem) 85px, 9.81vw" decorative />
+    </div>
+    <button class="menu-btn gmenu__close" type="button" aria-label="Закрити меню" autofocus>
+      <Burger />
+    </button>
+  </div>
+  <div class="gmenu__panel">
+    <nav aria-label="Головне меню">
+      <ul class="gmenu__main">
+        {menu.map((item, i) =>
+          "items" in item ? (
+            <li>
+              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls={`gmenu-sub-${i}`}>
+                {item.label}
+                <Fragment set:html={CHEV} />
+              </button>
+              <div class="gmenu__sub" id={`gmenu-sub-${i}`}>
+                <ul>
+                  {item.items.map((sub) => (
+                    <li>
+                      <a href={sub.href}>{sub.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          ) : (
+            <li>
+              <a class="gmenu__link" href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          ),
+        )}
+      </ul>
+    </nav>
+    <p class="gmenu__eyebrow">Наші напрями</p>
+    <ul class="gmenu__minor">
+      {directions.map((link) => (
+        <li>
+          <a href={link.href}>{link.label}</a>
+        </li>
+      ))}
+    </ul>
+    <a class="gmenu__lang" href="#">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5"></circle>
+        <path d="M2.5 12h19M12 2.5c2.5 2.6 3.8 5.8 3.8 9.5s-1.3 6.9-3.8 9.5c-2.5-2.6-3.8-5.8-3.8-9.5s1.3-6.9 3.8-9.5z"></path>
+      </svg>
+      Україна (українська)
+    </a>
+  </div>
+</dialog>
+
+<script>
+  // Opens as a modal dialog (focus stays inside, Esc closes). .is-open runs the slide-in, the burger→X morph
+  // and the item cascade; closing reverses them and closes the dialog once the panel has slid out.
+  const dialog = document.querySelector<HTMLDialogElement>("#gmenu")!;
+  const openBtn = document.querySelector<HTMLButtonElement>(".topbar .menu-btn")!;
+  const panel = dialog.querySelector<HTMLElement>(".gmenu__panel")!;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+  function open() {
+    dialog.showModal();
+    openBtn.setAttribute("aria-expanded", "true");
+    requestAnimationFrame(() => requestAnimationFrame(() => dialog.classList.add("is-open")));
+  }
+  function close(then?: () => void) {
+    if (!dialog.open) return;
+    dialog.classList.remove("is-open");
+    openBtn.setAttribute("aria-expanded", "false");
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      dialog.close();
+      then?.();
+    };
+    if (reduced.matches) return finish();
+    // the items' own transitions bubble up too: wait for the panel's
+    const onEnd = (e: TransitionEvent) => {
+      if (e.target !== panel) return;
+      panel.removeEventListener("transitionend", onEnd);
+      finish();
+    };
+    panel.addEventListener("transitionend", onEnd);
+    setTimeout(finish, 600); // in case the transition doesn't run
+  }
+
+  openBtn.addEventListener("click", open);
+  dialog.querySelector(".gmenu__close")!.addEventListener("click", () => close());
+  dialog.addEventListener("cancel", (e) => {
+    e.preventDefault();
+    close();
+  });
+  dialog.addEventListener("click", (e) => e.target === dialog && close()); // the dimmed page
+
+  // cascade order: main items, the directions label and links, then the language
+  dialog
+    .querySelectorAll<HTMLElement>(".gmenu__main > li, .gmenu__eyebrow, .gmenu__minor > li, .gmenu__lang")
+    .forEach((el, i) => {
+      el.dataset.cascade = "";
+      el.style.setProperty("--i", String(i));
+    });
+  for (const sub of dialog.querySelectorAll(".gmenu__sub")) {
+    sub.querySelectorAll<HTMLElement>("li").forEach((li, j) => li.style.setProperty("--j", String(j)));
+  }
+  for (const t of dialog.querySelectorAll(".gmenu__toggle")) {
+    t.addEventListener("click", () =>
+      t.setAttribute("aria-expanded", String(t.getAttribute("aria-expanded") !== "true")),
+    );
+  }
+  // in-page links close the menu first, then scroll once the page is unlocked
+  for (const a of dialog.querySelectorAll<HTMLAnchorElement>('a[href^="#"]:not([href="#"])')) {
+    a.addEventListener("click", (e) => {
+      const target = document.getElementById(a.hash.slice(1));
+      if (!target) return;
+      e.preventDefault();
+      close(() => target.scrollIntoView({ behavior: reduced.matches ? "auto" : "smooth" }));
+    });
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    /* ---------- Global menu: a modal dialog. The bar repeats the header (logo, actions, a close button where
+       the menu button is); the panel slides in from the right over the dimmed page. ---------- */
+    .gmenu {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      background: rgb(14 21 27 / 0);
+      color: var(--c-hero);
+      transition: background-color 0.35s ease;
+    }
+    .gmenu::backdrop {
+      background: transparent;
+    }
+    .gmenu.is-open {
+      background: rgb(14 21 27 / 0.92);
+    } /* the page all but disappears; the logo and button stay on top */
+    html:has(.gmenu[open]) {
+      overflow: hidden;
+    } /* the page behind doesn't scroll */
+    .gmenu__bar {
+      position: relative;
+      z-index: 1;
+      height: var(--header-h);
+      pointer-events: none; /* only its logo and button take clicks; the rest is overlay */
+    }
+    .gmenu__bar .wrap {
+      height: 100%;
+    }
+    .gmenu__bar :is(.logo, .menu-btn) {
+      pointer-events: auto;
+    }
+    .gmenu__panel {
+      position: absolute;
+      top: var(--header-h);
+      right: 0;
+      bottom: 0;
+      width: calc(640 * var(--px));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: var(--space-2xl) var(--space-2xl) var(--space-3xl) calc(80 * var(--px));
+      background: var(--c-paper);
+      transform: translateX(100%);
+      transition: transform 0.45s var(--ease-out);
+    }
+    .gmenu.is-open .gmenu__panel {
+      transform: none;
+    }
+    /* Item cascade (as on tieto.com): each entry fades in and drops 8px into place, 50ms after the one
+       before it (--i is set by the script); on closing they just fade out together. */
+    .gmenu [data-cascade] {
+      opacity: 0;
+      translate: 0 -8px;
+      transition:
+        opacity 0.22s ease,
+        translate 0.22s ease;
+    }
+    .gmenu.is-open [data-cascade] {
+      opacity: 1;
+      translate: none;
+      transition-delay: calc(100ms + var(--i, 0) * 50ms);
+    }
+    .gmenu a {
+      color: inherit;
+    }
+    .gmenu ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .gmenu__eyebrow {
+      margin: 0;
+      color: var(--c-primary);
+      font-size: var(--text-small);
+      font-weight: 500;
+    }
+    .gmenu__main {
+      width: min(100%, calc(340 * var(--px)));
+    }
+    .gmenu__toggle,
+    .gmenu__link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: var(--space-xs) 0;
+      border: 0;
+      background: none;
+      color: var(--c-hero);
+      font: inherit;
+      font-family: var(--font-display);
+      font-size: var(--text-title);
+      font-weight: 500;
+      line-height: var(--leading-title);
+      text-align: left;
+      cursor: pointer;
+    }
+    .gmenu__toggle:hover,
+    .gmenu__link:hover {
+      color: var(--c-primary);
+    }
+    .gmenu__chev {
+      flex: none;
+      width: 0.8em;
+      height: 0.8em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.3s var(--ease-out);
+    }
+    .gmenu__toggle[aria-expanded="true"] .gmenu__chev {
+      transform: rotate(180deg);
+    }
+    /* sub-items unfold by animating the row height (grid 0fr → 1fr) */
+    .gmenu__sub {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition:
+        grid-template-rows 0.35s var(--ease-out),
+        visibility 0s linear 0.35s;
+      visibility: hidden;
+    }
+    .gmenu__toggle[aria-expanded="true"] + .gmenu__sub {
+      grid-template-rows: 1fr;
+      visibility: visible;
+      transition:
+        grid-template-rows 0.35s var(--ease-out),
+        visibility 0s;
+    }
+    .gmenu__sub ul {
+      display: grid;
+      row-gap: var(--space-xs);
+      min-height: 0;
+      overflow: hidden;
+    }
+    .gmenu__sub li:first-child {
+      padding-top: var(--space-xs);
+    }
+    .gmenu__sub li:last-child {
+      padding-bottom: var(--space-sm);
+    }
+    .gmenu__sub a {
+      font-size: var(--text-body);
+      color: rgb(28 38 50 / 0.75);
+    }
+    /* sub-items cascade the same way as their group unfolds */
+    .gmenu__sub li {
+      opacity: 0;
+      translate: 0 -8px;
+      transition:
+        opacity 0.2s ease,
+        translate 0.2s ease;
+    }
+    .gmenu__toggle[aria-expanded="true"] + .gmenu__sub li {
+      opacity: 1;
+      translate: none;
+      transition-delay: calc(80ms + var(--j, 0) * 40ms);
+    }
+    .gmenu__sub a:hover,
+    .gmenu__minor a:hover,
+    .gmenu__lang:hover {
+      color: var(--c-primary);
+    }
+    /* separators between the groups, as in the reference */
+    .gmenu nav + .gmenu__eyebrow,
+    .gmenu__lang {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-xl);
+      border-top: 1px solid rgb(28 38 50 / 0.15);
+    }
+    .gmenu__minor {
+      display: grid;
+      row-gap: var(--space-xs);
+      margin-top: var(--space-md) !important;
+      font-size: var(--text-body);
+      font-weight: 500;
+    }
+    .gmenu__lang {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: var(--text-body);
+      font-weight: 500;
+    }
+    .gmenu__lang svg {
+      width: 1.2em;
+      height: 1.2em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
+
+    /* the close button's icon: the outer bars meet in the middle and turn into an X; the middle bar slides out */
+    .gmenu.is-open .burger line {
+      transition:
+        translate 0.22s var(--ease-out),
+        rotate 0.35s cubic-bezier(0.3, 1.5, 0.5, 1) 0.18s,
+        scale 0.2s var(--ease-out),
+        opacity 0.15s ease;
+    }
+    .gmenu.is-open .burger__top {
+      translate: 0 25.55px;
+      rotate: 45deg;
+    }
+    .gmenu.is-open .burger__bot {
+      translate: 0 -25.55px;
+      rotate: -45deg;
+    }
+    .gmenu.is-open .burger__mid {
+      scale: 0 1;
+      opacity: 0;
+    }
+    @media (width < 64rem) {
+      .gmenu__panel {
+        width: 100%;
+        padding: 72px 24px 64px;
+      } /* clears the logo hanging below the bar */
+      .gmenu__main {
+        width: 100%;
+      }
+    }
+  }
+</style>
