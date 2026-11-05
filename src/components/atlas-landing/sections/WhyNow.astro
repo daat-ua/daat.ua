@@ -88,7 +88,8 @@ import Divider from "../../ui/Divider.astro";
 
 <style is:global>
   /* opens its section, level with the floating TOC */
-  .section-title--daat {
+  /* two classes: these must beat .section-title and .btn from patterns.css whatever the CSS order */
+  .section-title.section-title--daat {
     margin-top: var(--space-xl);
   }
   .section-title--daat strong {
@@ -157,7 +158,7 @@ import Divider from "../../ui/Divider.astro";
     padding: 0;
     list-style: none;
   }
-  .reasons__cta {
+  .btn.reasons__cta {
     display: flex;
     width: fit-content;
     margin-top: var(--space-xl);
@@ -166,7 +167,7 @@ import Divider from "../../ui/Divider.astro";
   @media (width < 64rem) {
     /* "Чому Daat?" follows a divider: 40px, as everything after a divider on phones (patterns.css). Set here
        explicitly because Astro's CSS order differs from the legacy page's, where a later rule decided it. */
-    .section-title--daat {
+    .section-title.section-title--daat {
       margin-top: 40px;
     }
     .example {
@@ -194,7 +195,7 @@ import Divider from "../../ui/Divider.astro";
       row-gap: 32px;
       padding-top: 0;
     }
-    .reasons__cta {
+    .btn.reasons__cta {
       width: auto;
       max-width: 480px;
       margin-top: 40px;

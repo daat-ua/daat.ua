@@ -20,9 +20,12 @@ interface Props {
   more: string;
   prevLabel: string;
   nextLabel: string;
+  /** heading level of the teaser titles, one below the heading the carousel sits under */
+  headingLevel?: 3 | 4;
 }
 
-const { label, items, more, prevLabel, nextLabel } = Astro.props;
+const { label, items, more, prevLabel, nextLabel, headingLevel = 3 } = Astro.props;
+const Title = `h${headingLevel}` as "h3" | "h4";
 ---
 
 <div class="findings" role="region" aria-roledescription="carousel" aria-label={label}>
@@ -39,7 +42,7 @@ const { label, items, more, prevLabel, nextLabel } = Astro.props;
           />
           <span class="finding__tag">{item.tag}</span>
         </div>
-        <h3 class="finding__title" set:html={item.title} />
+        <Title class="finding__title" set:html={item.title} />
         <a class="finding__more" href={item.href}>
           {more} <span aria-hidden="true">›</span>
         </a>
@@ -71,11 +74,15 @@ const { label, items, more, prevLabel, nextLabel } = Astro.props;
       const max = track.scrollWidth - track.clientWidth;
       const current = Math.round((max > 0 ? track.scrollLeft / max : 0) * (n - 1));
       [...pagesEl.children].forEach((s, i) => s.classList.toggle("is-current", i === current));
-      prev.disabled = track.scrollLeft <= 2;
-      next.disabled = track.scrollLeft >= max - 2;
+      // aria-disabled, not disabled: a focused button that reaches the end keeps keyboard focus
+      prev.setAttribute("aria-disabled", String(track.scrollLeft <= 2));
+      next.setAttribute("aria-disabled", String(track.scrollLeft >= max - 2));
     }
     for (const btn of [prev, next]) {
-      btn.addEventListener("click", () => track.scrollBy({ left: Number(btn.dataset.dir) * track.clientWidth * 0.9 }));
+      btn.addEventListener("click", () => {
+        if (btn.getAttribute("aria-disabled") === "true") return;
+        track.scrollBy({ left: Number(btn.dataset.dir) * track.clientWidth * 0.9 });
+      });
     }
     track.addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
     addEventListener("resize", update);

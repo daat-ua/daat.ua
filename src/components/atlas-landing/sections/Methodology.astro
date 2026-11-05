@@ -114,7 +114,8 @@ const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="
       for (const li of items) li.style.setProperty("--dot-delay", `${(DRAW * (li.offsetTop - top + line / 2)) / len}s`);
     }
     measure();
-    addEventListener("resize", measure);
+    // re-measure whenever the card's size changes (viewport, late fonts, text reflow), not only on resize
+    new ResizeObserver(() => measure()).observe(tl);
     tl.classList.add("has-rail", "is-pending");
     const io = new IntersectionObserver(
       (entries) => {

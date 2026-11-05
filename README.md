@@ -14,11 +14,11 @@ npm run preview   # serve dist/ locally
 npm run test:visual  # compare each section of the build with the original single-file page (needs a build)
 ```
 
-`test:visual` screenshots every section of the original single-file page (read from git history, `--legacy-ref=<commit>`) and of `dist/` at 1440, 1280, 1024 and 500px wide and compares them pixel by pixel, using your installed Google Chrome. Options: `--widths=1440,500`, `--sections=hero,faq`, `--threshold=0.005`, `--images` (images are hidden by default, because Astro's resizing shifts their pixels without changing the design; their boxes are still compared). Diffs are saved to `tests/visual/output/`.
+`test:visual` screenshots every section of the original single-file page (read from git history, `--legacy-ref=<commit>`) and of `dist/` at 1440, 1280, 1024 and 500px wide and compares them pixel by pixel, using your installed Google Chrome. Options: `--widths=1440,500`, `--sections=hero,faq`, `--threshold=0.005`, `--allow-missing` (skip sections absent on either side instead of failing), `--images` (images are hidden by default, because Astro's resizing shifts their pixels without changing the design; their boxes are still compared). Diffs are saved to `tests/visual/output/`.
 
 ## Locales and URLs
 
-Astro i18n with one locale, `uk-UA`, always in the URL. The ATLAS page lives at `/uk-UA/atlas`; `/` and `/uk-UA` redirect there (302 from Caddy in production, static redirect pages elsewhere). New locales go in `astro.config.mjs` (`i18n.locales`) with their pages under `src/pages/<locale>/`.
+Astro i18n with one locale, `uk-UA`, always in the URL. The ATLAS page lives at `/uk-UA/atlas`; `/` and `/uk-UA` redirect there (302 from Caddy in production, static redirect pages elsewhere). Pages are built as `.html` files (`dist/uk-UA/atlas.html`) and linked without the extension, so any other host must serve `/path` from `/path.html`: Caddy does it with `try_files {path} {path}.html`; on Netlify, Cloudflare Pages or Vercel this is the default ("pretty URLs"); nginx needs `try_files $uri $uri.html $uri/ =404`. A plain static server (e.g. `python -m http.server`) returns 404 for `/uk-UA/atlas`; use `npm run preview` locally. New locales go in `astro.config.mjs` (`i18n.locales`) with their pages under `src/pages/<locale>/`.
 
 ## Deploy
 

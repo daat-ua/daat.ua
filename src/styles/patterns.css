@@ -322,11 +322,11 @@
     background-color 0.2s ease,
     color 0.2s ease;
 }
-.findings__nav:hover:not(:disabled) {
+.findings__nav:hover:not([aria-disabled="true"]) {
   background: var(--c-hero);
   color: var(--c-paper);
 }
-.findings__nav:disabled {
+.findings__nav[aria-disabled="true"] {
   opacity: 0.3;
   cursor: default;
 }

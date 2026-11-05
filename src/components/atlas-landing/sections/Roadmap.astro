@@ -1,4 +1,5 @@
 ---
+import ChevronMorph from "../../../assets/icons/chevron-morph.svg";
 import { horizons, impact } from "../../../data/roadmap";
 ---
 
@@ -60,6 +61,7 @@ import { horizons, impact } from "../../../data/roadmap";
           role="tabpanel"
           id={`panel-${h.id}`}
           aria-labelledby={`tab-${h.id}`}
+          aria-hidden={i === 0 ? undefined : "true"}
         >
           <p class="horizon__label" set:html={h.label} />
           <h3 set:html={h.title} />
@@ -115,12 +117,9 @@ import { horizons, impact } from "../../../data/roadmap";
           </tbody>
           <tbody class="impact__enablers" id="impact-enablers">
             <tr class="impact__group">
-              <th scope="colgroup" colspan="5">
+              <th scope="rowgroup" colspan="5">
                 <button class="impact__toggle" type="button" aria-expanded="false" aria-controls="impact-enablers">
-                  <svg class="impact__icon" viewBox="0 0 73 73" aria-hidden="true">
-                    <path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" />
-                    <path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" />
-                  </svg>
+                  <ChevronMorph class="impact__icon" aria-hidden="true" />
                   {impact.enablers.label}
                 </button>
               </th>
@@ -162,6 +161,9 @@ import { horizons, impact } from "../../../data/roadmap";
       t.setAttribute("aria-selected", String(on));
       t.tabIndex = on ? 0 : -1;
       panelOf(t).classList.toggle("is-active", on);
+      // all columns stay visible, but only the selected one is exposed as the tab's panel
+      if (on) panelOf(t).removeAttribute("aria-hidden");
+      else panelOf(t).setAttribute("aria-hidden", "true");
     }
     if (impactEl) impactEl.dataset.active = tab.getAttribute("aria-controls")!.replace("panel-", "");
     if (focus) tab.focus();
@@ -269,11 +271,13 @@ import { horizons, impact } from "../../../data/roadmap";
     (entries, observer) => {
       if (!entries.some((e) => e.isIntersecting)) return;
       observer.disconnect();
-      for (const i of loadOrder(FRAME_COUNT, STOPS, [16, 8, 4, 2, 1])) {
+      // reduced motion jumps straight to the stops, so they're all it needs
+      for (const i of reducedMotion ? STOPS : loadOrder(FRAME_COUNT, STOPS, [16, 8, 4, 2, 1])) {
         const img = new Image();
         img.decoding = "async";
         img.onload = () => {
-          if (Math.round(current) === i || i === target) draw();
+          // a newly loaded frame may be closer than the fallback on screen; while animating, step() redraws
+          if (!raf) draw();
         };
         img.src = src(i);
         frames[i] = img;
@@ -589,6 +593,11 @@ import { horizons, impact } from "../../../data/roadmap";
   }
   .impact__enabler.is-revealed {
     animation: impact-reveal 0.35s var(--ease-out) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .impact__enabler.is-revealed {
+      animation: none;
+    }
   }
   @keyframes impact-reveal {
     from {

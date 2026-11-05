@@ -7,7 +7,8 @@
 //   npm run test:visual -- --widths=1440 --sections=hero,faq
 //   npm run test:visual -- --legacy-ref=<commit>
 //
-// Sections not yet ported (missing from the build) are skipped. Diff images go to tests/visual/output/.
+// A section missing on either side fails the run (--allow-missing skips it instead, for partial ports).
+// Diff images go to tests/visual/output/.
 // Images are hidden by default (their boxes still count): Astro resizes and re-encodes them, which shifts
 // pixels without changing the design. Pass --images to compare them too.
 // Uses the locally installed Google Chrome (playwright-core, no browser download).
@@ -55,6 +56,8 @@ const only = args.sections ? args.sections.split(",") : Object.keys(SECTIONS);
 const threshold = Number(args.threshold ?? 0.005); // share of differing pixels allowed per section
 const compareImages = Boolean(args.images);
 const legacyRef = args["legacy-ref"] ?? LEGACY_REF;
+const allowMissing = Boolean(args["allow-missing"]);
+const HOST = "127.0.0.1"; // servers listen on loopback only
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -83,7 +86,7 @@ function serve(dir) {
     res.writeHead(200, { "Content-Type": TYPES[extname(file)] ?? "application/octet-stream" });
     res.end(await readFile(file));
   });
-  return new Promise((done) => server.listen(0, () => done(server)));
+  return new Promise((done) => server.listen(0, HOST, () => done(server)));
 }
 
 /** Freeze the page: no motion, everything loaded, one-time animations finished */
@@ -103,11 +106,14 @@ async function settle(page) {
 
 async function shoot(page, url, width, selector) {
   await page.setViewportSize({ width, height: 900 });
-  await page.goto(url, { waitUntil: "networkidle" });
+  const response = await page.goto(url, { waitUntil: "networkidle" });
+  if (!response?.ok()) throw new Error(`${url} answered ${response?.status() ?? "nothing"}`);
   await settle(page);
   const el = page.locator(selector).first();
   if ((await el.count()) === 0) return null;
   await el.scrollIntoViewIfNeeded();
+  // scrolling starts lazy loads (the canvas clips fetch their frames in view): let them land
+  await page.waitForLoadState("networkidle");
   await page.waitForTimeout(150);
   return PNG.sync.read(await el.screenshot({ animations: "disabled" }));
 }
@@ -123,10 +129,12 @@ function compare(a, b) {
   };
   const diff = new PNG({ width, height });
   const pixels = pixelmatch(pad(a).data, pad(b).data, diff.data, width, height, { threshold: 0.1 });
-  return { ratio: pixels / (width * height), diff, sizeMatch: a.width === b.width && a.height === b.height };
+  // a 1px size difference is screenshot rounding at fractional positions, not a layout change
+  const sizeMatch = Math.abs(a.width - b.width) <= 1 && Math.abs(a.height - b.height) <= 1;
+  return { ratio: pixels / (width * height), diff, sizeMatch };
 }
 
-if (!existsSync(join(ROOT, "dist/index.html"))) {
+if (!existsSync(join(ROOT, "dist/uk-UA/atlas.html"))) {
   console.error("No build found: run `npm run build` first.");
   process.exit(1);
 }
@@ -135,57 +143,61 @@ await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
 // extract the legacy page from git into a temporary folder
 const legacyDir = await mkdtemp(join(tmpdir(), "daat-legacy-"));
-const archive = execFileSync("git", ["archive", legacyRef, "index.html", "assets", "fonts", "public/frames"], {
-  cwd: ROOT,
-  maxBuffer: 1 << 30,
-});
-execFileSync("tar", ["-x", "-C", legacyDir], { input: archive });
-const legacy = await serve(legacyDir);
-const build = await serve(join(ROOT, "dist"));
-const browser = await chromium.launch({ channel: "chrome" });
-const context = await browser.newContext({ deviceScaleFactor: 1, reducedMotion: "reduce" });
-const page = await context.newPage();
-
 const rows = [];
 let failed = 0;
-for (const width of widths) {
-  for (const name of only) {
-    const selector = SECTIONS[name];
-    const before = await shoot(page, `http://localhost:${legacy.address().port}/index.html`, width, selector);
-    const after = await shoot(page, `http://localhost:${build.address().port}/uk-UA/atlas`, width, selector);
-    if (!before) {
-      rows.push({ width, section: name, result: "missing in legacy" });
-      continue;
+let legacy, build, browser;
+try {
+  const archive = execFileSync("git", ["archive", legacyRef, "index.html", "assets", "fonts", "public/frames"], {
+    cwd: ROOT,
+    maxBuffer: 1 << 30,
+  });
+  execFileSync("tar", ["-x", "-C", legacyDir], { input: archive });
+  legacy = await serve(legacyDir);
+  build = await serve(join(ROOT, "dist"));
+  browser = await chromium.launch({ channel: "chrome" });
+  const context = await browser.newContext({ deviceScaleFactor: 1, reducedMotion: "reduce" });
+  const page = await context.newPage();
+
+  for (const width of widths) {
+    for (const name of only) {
+      const selector = SECTIONS[name];
+      const before = await shoot(page, `http://${HOST}:${legacy.address().port}/index.html`, width, selector);
+      const after = await shoot(page, `http://${HOST}:${build.address().port}/uk-UA/atlas`, width, selector);
+      if (!before || !after) {
+        if (!allowMissing) failed++;
+        rows.push({ width, section: name, result: !before ? "missing in legacy" : "missing in build" });
+        continue;
+      }
+      const { ratio, diff, sizeMatch } = compare(before, after);
+      const ok = ratio <= threshold && sizeMatch;
+      if (!ok) {
+        failed++;
+        const base = join(OUT, `${name}-${width}`);
+        await writeFile(`${base}-legacy.png`, PNG.sync.write(before));
+        await writeFile(`${base}-astro.png`, PNG.sync.write(after));
+        await writeFile(`${base}-diff.png`, PNG.sync.write(diff));
+      }
+      rows.push({
+        width,
+        section: name,
+        result: ok ? "ok" : "DIFF",
+        "diff %": (ratio * 100).toFixed(2),
+        size:
+          before.width === after.width && before.height === after.height
+            ? "same"
+            : `${before.width}×${before.height} → ${after.width}×${after.height}`,
+      });
     }
-    if (!after) {
-      rows.push({ width, section: name, result: "not ported" });
-      continue;
-    }
-    const { ratio, diff, sizeMatch } = compare(before, after);
-    const ok = ratio <= threshold && sizeMatch;
-    if (!ok) {
-      failed++;
-      const base = join(OUT, `${name}-${width}`);
-      await writeFile(`${base}-legacy.png`, PNG.sync.write(before));
-      await writeFile(`${base}-astro.png`, PNG.sync.write(after));
-      await writeFile(`${base}-diff.png`, PNG.sync.write(diff));
-    }
-    rows.push({
-      width,
-      section: name,
-      result: ok ? "ok" : "DIFF",
-      "diff %": (ratio * 100).toFixed(2),
-      size: sizeMatch ? "same" : `${before.width}×${before.height} → ${after.width}×${after.height}`,
-    });
   }
+} finally {
+  await browser?.close();
+  legacy?.close();
+  build?.close();
+  await rm(legacyDir, { recursive: true, force: true });
 }
 
-await browser.close();
-legacy.close();
-build.close();
-await rm(legacyDir, { recursive: true, force: true });
 console.table(rows);
 if (failed) {
-  console.error(`${failed} section(s) differ; see tests/visual/output/`);
+  console.error(`${failed} section(s) differ or are missing; see tests/visual/output/`);
   process.exit(1);
 }
