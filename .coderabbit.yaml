@@ -22,8 +22,7 @@ reviews:
   path_filters:
     - "!_source/**"
     - "!fonts/**"
-    - "!assets/scrub/**"
-    - "!assets/roadmap/**"
+    - "!public/frames/**"
     - "!**/*.webp"
     - "!**/*.jpg"
     - "!**/*.png"

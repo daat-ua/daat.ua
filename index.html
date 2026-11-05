@@ -2220,7 +2220,7 @@
     </section>
 
     <section class="scrub" aria-label="Business strategy, technical excellence та delivery&nbsp;— з'єднані в одну систему">
-      <img class="scrub__poster" src="assets/scrub/1440/f001.webp" width="1440" height="720" alt="" />
+      <img class="scrub__poster" src="public/frames/scrub/1440/f001.webp" width="1440" height="720" alt="" />
       <canvas class="scrub__canvas" aria-hidden="true"></canvas>
       <ul class="pillars" aria-hidden="true">
         <li class="pillar pillar--technical"><span>Технологічна<br />досконалість</span></li>
@@ -2701,7 +2701,7 @@
 
       <!-- Full-width horizon animation: A (start) → B → C (finish), driven by the tabs below -->
       <div class="roadmap__stage" aria-hidden="true">
-        <img class="roadmap__poster" src="assets/roadmap/1440/f001.webp" width="1440" height="720" alt="" />
+        <img class="roadmap__poster" src="public/frames/roadmap/1440/f001.webp" width="1440" height="720" alt="" />
         <canvas class="roadmap__canvas"></canvas>
         <div class="roadmap__fader roadmap__fader--top"></div>
         <div class="roadmap__fader roadmap__fader--bottom"></div>
@@ -3556,7 +3556,7 @@
 
       const needed = stage.clientWidth * Math.min(devicePixelRatio || 1, 2);
       const setWidth = SET_WIDTHS.find((w) => w >= needed) ?? SET_WIDTHS.at(-1);
-      const src = (i) => `assets/roadmap/${setWidth}/f${String(i + 1).padStart(3, "0")}.webp`;
+      const src = (i) => `public/frames/roadmap/${setWidth}/f${String(i + 1).padStart(3, "0")}.webp`;
       const frames = new Array(FRAME_COUNT);
 
       let current = 0;      // frame on screen (fractional while animating)
@@ -3771,7 +3771,7 @@
       dialog.addEventListener("click", () => dialog.close()); // backdrop, image or close button
     })();
 
-    // Scroll-scrubbed frame sequence: frames live in assets/scrub/<width>/f001.webp … f121.webp
+    // Scroll-scrubbed frame sequence: frames live in public/frames/scrub/<width>/f001.webp … f121.webp
     (() => {
       const FRAME_COUNT = 121;
       const SET_WIDTHS = [800, 1440, 2042];
@@ -3785,7 +3785,7 @@
       // Smallest frame set that covers the canvas at the device's pixel density.
       const needed = section.clientWidth * Math.min(devicePixelRatio || 1, 2);
       const setWidth = SET_WIDTHS.find((w) => w >= needed) ?? SET_WIDTHS.at(-1);
-      const src = (i) => `assets/scrub/${setWidth}/f${String(i + 1).padStart(3, "0")}.webp`;
+      const src = (i) => `public/frames/scrub/${setWidth}/f${String(i + 1).padStart(3, "0")}.webp`;
 
       const frames = new Array(FRAME_COUNT);
       let current = -1;
