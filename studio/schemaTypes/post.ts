@@ -94,12 +94,25 @@ export const post = defineType({
         }),
 
         defineField({
-            name: 'tag',
-            title: 'Tag',
-            description: 'Short label on the teaser card in the findings carousel (e.g. «Люди та ресурси»)',
+            name: 'enabler',
+            title: 'Enabler',
+            description:
+                'The ATLAS enabler this finding belongs to; shown (in Ukrainian) as the tag on its teaser card',
             type: 'string',
-            validation: (rule) => rule.max(40),
             group: 'meta',
+            options: {
+                layout: 'radio',
+                // values are keys the website maps to Ukrainian names (src/data/enablers.ts): keep them stable
+                list: [
+                    {value: 'strategy-portfolio', title: 'Strategy & Portfolio'},
+                    {value: 'structure-governance', title: 'Structure & Governance'},
+                    {value: 'delivery-operating-system', title: 'Delivery Operating System'},
+                    {value: 'engineering-delivery-culture', title: 'Engineering & Delivery Culture'},
+                    {value: 'leadership-decision-making', title: 'Leadership & Decision-making'},
+                    {value: 'people-capacity', title: 'People & Capacity'},
+                    {value: 'capabilities-competency', title: 'Capabilities & Competency'},
+                ],
+            },
         }),
 
         defineField({
