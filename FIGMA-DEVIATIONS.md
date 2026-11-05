@@ -92,7 +92,7 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 |---|---|---|
 | `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
 | `#audit-findings` | "Знахідки аудитів" | Audit findings section |
-| `#testimonials` | Table of contents | The remaining section (all other sections now exist, including `#audit-findings`) |
+| `#testimonials-and-case-studies` "Дивитися кейс" and "Читати кейс" | Testimonials and case studies | The case study pages |
 | Menu button | Header | Menu design and content |
 | Reason card 4 | "Шось четверте" | Real title (also a typo for "Щось") and its own description; it currently repeats card 3 |
 | Problem card 6 | "Команда постійно гасить пожежі…" | A description; it currently repeats the title |
@@ -469,3 +469,13 @@ The FAQ questions (`dt`) use TT Commons Medium (500) instead of SemiBold (600), 
 ## Roadmap tabs aligned to the horizon columns
 
 On desktop the three roadmap tabs share the horizon columns' grid. Each title starts where its column's text starts, and its underline spans that column's width. Below 1024px they stay a scrolling row.
+
+## Testimonials and case studies section
+
+- New section `#testimonials-and-case-studies` ("Відгуки клієнтів і кейси") under the roadmap. It copies the audit findings section without the heading link: heading, a two-sentence explainer, video testimonials, then a carousel under the subheading "Кейси: як це виглядає зсередини".
+- The table of contents item "Відгуки й кейси" follows "Дорожня карта" and replaces the "Відгуки клієнтів" placeholder (`#testimonials`).
+- Up to four case teasers, each with a photo chosen by the client (`assets/cases/case-1…4.webp`: Unsplash, cropped square to 800px WebP, 211 KB in total; originals in `_source/cases/`) and the segment as its blue tag ("Аутсорс · 120 людей").
+- **TODO content:** all four cases are placeholders (segments and titles). Replace them with real, client-approved cases, confirm the explainer's claims (real data, anonymised with consent) and add the testimonials themselves.
+- Video testimonials (no heading) sit between the explainer and the case carousel, following the client's mockup. There are two teasers in a row. The open one is 70% wide (16:10) with a "Дивитися відео" pill, a TT Commons Medium headline (20px, 18px on phones) over a bottom shade, and a caption below it: logo, one-line description and "Дивитися кейс ↗". The other is a blurred slice the same height, with a right-arrow button in its centre and only its logo below. On phones the split is 82/18 with 4:5 posters.
+- Clicking the blurred slice (or its arrow button) swaps the teasers: the columns animate 70/30 ↔ 30/70 (0.6s), the poster blurs or sharpens, and the details fade out at once on the closing teaser and fade in on the opening one once its column has mostly grown. A slice on the left points its arrow left.
+- **TODO:** the video players; real posters (now crops of the case photos), the clients' logos (now Stripe and HubSpot borrowed from the hero, darkened with a filter) and copy.
