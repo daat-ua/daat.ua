@@ -13,11 +13,16 @@
     "check": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:visual": "node tests/visual/compare.mjs"
+    "test:visual": "node tests/visual/compare.mjs",
+    "typegen": "npm --prefix studio run typegen"
   },
   "dependencies": {
+    "@sanity/client": "^8.14.1",
+    "@sanity/image-url": "^2.1.1",
     "@tailwindcss/vite": "^4.3.4",
     "astro": "^7.4.5",
+    "astro-portabletext": "^1.0.1",
+    "groq": "^6.22.0",
     "tailwindcss": "^4.3.4"
   },
   "devDependencies": {

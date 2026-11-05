@@ -1,6 +1,9 @@
 ---
-import { findings } from "../../../data/findings";
-import Carousel from "../../ui/Carousel.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { sanityClient } from "../../../sanity/client";
+import { srcsetFor, urlFor } from "../../../sanity/image";
+import { FINDING_TEASERS_QUERY } from "../../../sanity/queries";
+import Carousel, { type Teaser } from "../../ui/Carousel.astro";
 
 interface Props {
   /** plain-text heading; the ATLAS page's "Знахідки аудитів: …" by default */
@@ -9,14 +12,32 @@ interface Props {
   catalogLink?: boolean;
   /** the explainer paragraph under the heading */
   intro?: boolean;
+  /** slug of a finding to leave out (the one whose page this is) */
+  exclude?: string;
 }
 
-const { title, catalogLink = true, intro = true } = Astro.props;
+const { title, catalogLink = true, intro = true, exclude } = Astro.props;
+
+// The teasers come from the Sanity "Delivery audit findings" collection, newest first; each links to its page.
+// Card titles are passed to the carousel as HTML, so the plain-text titles are escaped.
+const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const locale = Astro.currentLocale ?? "uk-UA";
+const findings: Teaser[] = (await sanityClient.fetch(FINDING_TEASERS_QUERY))
+  .filter((f) => f.slug !== exclude && f.image?.asset)
+  .map((f) => ({
+    image: {
+      src: urlFor(f.image!).width(640).height(640).fit("crop").url(),
+      srcset: srcsetFor(f.image!, [320, 480, 640, 800], 1),
+    },
+    tag: f.tag,
+    title: escape(f.title),
+    href: getRelativeLocaleUrl(locale, `atlas/findings/${f.slug}`, { normalizeLocale: false }),
+  }));
 ---
 
 <section class="report" id="audit-findings" data-toc-theme="light">
   <div class="wrap">
-    <!-- TODO: link "Дивитися каталог" to the page with all findings -->
+    <!-- TODO (DAA-223): link "Дивитися каталог" to the findings catalogue, /uk-UA/atlas/findings -->
     <h2 class="section-title">
       {title ?? (
         <>
@@ -44,7 +65,6 @@ const { title, catalogLink = true, intro = true } = Astro.props;
       </p>
     )}
 
-    <!-- TODO content: draft teaser titles; link each card to its guide once published -->
     <Carousel
       label="Знахідки аудитів"
       items={findings}

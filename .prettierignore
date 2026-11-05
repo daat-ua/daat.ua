@@ -6,3 +6,5 @@ public/
 package-lock.json
 FIGMA-DEVIATIONS.md
 .impeccable.md
+studio/
+src/sanity/sanity.types.ts
