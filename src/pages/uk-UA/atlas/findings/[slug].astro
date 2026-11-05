@@ -254,7 +254,11 @@ const sectors = (efforts ?? []).map(({ name, value }, i) => {
     const line = innerHeight / 3;
     let current: HTMLAnchorElement | undefined;
     for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
-    for (const a of links) a.toggleAttribute("aria-current", a === current);
+    // an explicit token: an empty aria-current reads as "false" to assistive technology
+    for (const a of links) {
+      if (a === current) a.setAttribute("aria-current", "location");
+      else a.removeAttribute("aria-current");
+    }
   }
   update();
   addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
