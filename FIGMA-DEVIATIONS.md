@@ -489,3 +489,17 @@ On desktop the three roadmap tabs share the horizon columns' grid. Each title st
 - Under the lists, "Як проходить проєкт — 7 фаз, кожна з артефактом, який лишається у вас" (TT Turns, title size: "Як проходить проєкт" DemiBold, the rest Light, like the section titles) sits in the first column with the project timeline across the other two, on the lists' grid. The timeline follows the client's reference: a card a step lighter than the section (`--c-surface`, the 6px radius of the teaser images, lifted by a large, very soft night-tinted shadow) with a blue rail (20px; 16px on phones) and a white dot per phase (8px; 7px on phones). The rail ends just past the last dot, as far below it as it starts above the first. Each phase shows its name ("Рамка", body size Medium, no number) with what happens under it (small size, dimmed cream); the artifact it leaves sits on the right, centred on the row, with a file-export icon (small size, cream Medium). The artifacts share one column, so their icons line up on the left. Phase 1 gives its duration in the description ("…, 1–2 тижні"). On phones the title sits above the card and the right-hand part drops under the description.
 - The timeline's rail draws itself once: until 80% of the card is in view (or 80% of the viewport, for a card taller than that), the rail is a dark track (`--c-night`) with dimmed dots. Then a rounded blue bar grows over it from the first dot to the last (2s, its growing end stays round), lighting each dot as it passes. With reduced motion or no JavaScript the rail is simply blue.
 - Under the timeline title, three notes in the small size (a step below the lists above): "Конфіденційність: …", "Що потрібно від вас: …" and "10 годин часу вашої команди на всю діагностику — решту робимо ми", each with a bold lead-in and an orange "info" icon (`assets/icon-info.svg`) whose top is level with the top of the first line's capitals. The mockup showed the hours as a large figure.
+
+## Narrower content beside the table of contents
+
+On desktop every section beside the floating TOC is 30px narrower: columns are 304px instead of 314px (gaps unchanged), so full width is 987px instead of 1017px and the reading width is 645.5px instead of 665.5px. The TOC stays where it was, so the space between content and TOC grows by 30px. The hero keeps the original grid.
+
+## Footer
+
+A full-width footer below the TOC zone, following the client's reference layout, on the light paper background (`--c-paper`). It has:
+- the language switch at the top right ("UA | EN", current in bold)
+- one row of the Daat logo (half the header logo's size, plus 15%), the legal links ("Політика конфіденційності", "Умови використання", "Налаштування cookie", "Карта сайту", underlined) and "Ми в соцмережах" with LinkedIn, Facebook, Instagram and YouTube icons (simple stroke drawings, 44px touch targets)
+- a legal note about Daat and ATLAS, a note that figures are illustrative and, where an NDA applies, client names are hidden (the two notes on consecutive lines), and "© 2026 Daat"
+
+The links and the social line share one top, and together they are centred on the logo. The notes sit in the links' column (same start and width), so nothing sits under the logo (on phones everything is left-aligned). Everything is in the small size, in sentence case rather than the reference's capitals. On phones the row stacks.
+- **TODO:** the legal pages, social profiles (and which networks), the English version, and the legal copy.

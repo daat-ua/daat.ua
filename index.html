@@ -401,6 +401,15 @@
     /* ---------- Why now / Why Daat ---------- */
     /* Stacking: content sections (0) < table of contents (1) < animated clip (2) < hero (3) < header (4) */
     .toc-scope { position: relative; }
+    /* Sections beside the floating TOC run 30px narrower (each column 10px), for more air between content
+       and TOC. The spans are redeclared because they're computed from --col where they're declared. */
+    @media (min-width: 1024px) {
+      .toc-scope {
+        --col: calc(304 * var(--px));
+        --span-2: calc(2 * var(--col) + var(--col-gap)); /* 645.5 */
+        --span-3: calc(3 * var(--col) + 2 * var(--col-gap)); /* 987 */
+      }
+    }
     .why {
       position: relative;
       z-index: 0;
@@ -415,7 +424,7 @@
       z-index: 1;
       top: var(--space-3xl); /* level with the first section title */
       bottom: 0;
-      left: calc(var(--gutter) + var(--span-3) + var(--col-gap) + 15 * var(--px)); /* a fourth column, right of the content, nudged 15 right */
+      left: calc(var(--gutter) + 1017 * var(--px) + var(--col-gap) + 15 * var(--px)); /* a fourth column right of the full 1017px content (the TOC stays put while the content beside it is narrower), nudged 15 right */
       width: calc(184 * var(--px));
     }
     .why__toc nav {
@@ -1734,6 +1743,60 @@
       background: var(--c-peach);
     }
 
+
+    /* ---------- Footer: full width, below the TOC zone ---------- */
+    .footer {
+      --footer-logo: calc(81.19 * var(--px)); /* half the header logo, then 15% larger */
+      --footer-gap: var(--space-2xl);
+      padding: var(--space-2xl) 0;
+      background: var(--c-paper);
+      color: var(--c-hero);
+      font-size: var(--text-small);
+      line-height: var(--leading-body);
+    }
+    .footer a { color: inherit; }
+    .footer__lang { display: flex; justify-content: flex-end; gap: var(--space-xs); margin: 0; }
+    .footer__lang a[aria-current] { font-weight: 600; }
+    .footer__lang span { color: rgb(28 38 50 / 0.4); }
+    .footer__main {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center; /* the links + social row is centred on the logo */
+      column-gap: var(--footer-gap);
+      margin-top: var(--space-md);
+    }
+    .footer__logo { display: block; width: var(--footer-logo); }
+    /* links and the social line share one top; together they span the last two columns */
+    .footer__row { display: grid; grid-column: 2 / -1; grid-template-columns: subgrid; align-items: start; }
+    .footer__logo img { width: 100%; height: auto; }
+    .footer ul { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+    .footer__nav ul { gap: var(--space-xs) var(--space-lg); }
+    .footer__nav a {
+      font-weight: 500;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.25em;
+      text-decoration-color: rgb(28 38 50 / 0.35);
+      transition: text-decoration-color .2s ease;
+    }
+    .footer__nav a:hover,
+    .footer__nav a:focus-visible { text-decoration-color: currentColor; }
+    .footer__social {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-top: calc((var(--text-small) * var(--leading-body) - 44px) / 2); /* the 44px icon targets overhang, so the text lines up with the links */
+    }
+    .footer__social ul { gap: var(--space-sm); }
+    .footer__social a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; transition: background-color .2s ease; }
+    .footer__social a:hover { background: rgb(28 38 50 / 0.06); }
+    .footer__social svg { width: calc(24 * var(--px)); min-width: 22px; height: auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    /* the notes sit in the links' column: same start, same width, nothing under the logo */
+    .footer__legal { grid-column: 2; margin-top: var(--space-xl); color: rgb(28 38 50 / 0.75); }
+    .footer__legal p { margin: 0; }
+    .footer__legal p + p { margin-top: 0; } /* the two notes run on as consecutive lines */
+    .footer__legal p:last-child { margin-top: var(--space-md); }
+
     /* ---------- Mobile (< 1024px) ---------- */
     @media (max-width: 1023.98px) {
       :root {
@@ -1821,6 +1884,13 @@
       .findings__pages span { width: 32px; }
       .finding__tag { font-size: 13px; }
       .cases__title { margin-top: 48px; }
+      .footer { padding: 48px 0; }
+      .footer__main { grid-template-columns: 1fr; row-gap: 32px; justify-items: start; }
+      .footer { --footer-logo: 48.76px; }
+      .footer__legal { grid-column: auto; margin-top: 0; }
+      .footer__row { grid-column: auto; grid-template-columns: 1fr; row-gap: 32px; }
+      .footer__social { flex-wrap: wrap; gap: 8px 16px; margin-top: 0; }
+      .footer__social ul { gap: 0; margin-left: -10px; }
       .method__process { grid-template-columns: 1fr; row-gap: 32px; margin-top: 80px; }
       .timeline { --rail: 16px; --dot: 7px; --timeline-gap: 24px; padding: 20px; }
       .timeline { grid-template-columns: 1fr; }
@@ -1985,7 +2055,7 @@
 
           <div class="example">
             <p><strong>Приклад із практики:</strong> у компанії на ~50 людей п’ятеро керівників, кожен в окремому інтерв’ю, назвали ту саму головну перешкоду зростанню. Клієнт почав її усувати ще до фінального звіту.</p>
-            <a class="btn btn--light" href="#audit-findings">Знахідки аудитів</a>
+            <a class="btn btn--light" href="#audit-findings">Знахідки аудитів <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></a>
           </div>
 
           <img class="why__divider" src="assets/divider-full.svg" width="2092" height="4" alt="" />
@@ -3061,6 +3131,40 @@
     </div>
   </main>
 
+  <!-- TODO links: legal pages, social profiles and the English version -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer__lang"><a href="#" aria-current="true" lang="uk">UA</a> <span aria-hidden="true">|</span> <a href="#" lang="en">EN</a></p>
+      <div class="footer__main">
+        <a class="footer__logo" href="/"><img src="assets/logo.webp" width="706" height="795" alt="Daat&nbsp;— IT business strategy" loading="lazy" /></a>
+        <div class="footer__row">
+        <nav class="footer__nav" aria-label="Правова інформація">
+          <ul>
+            <li><a href="#">Політика конфіденційності</a></li>
+            <li><a href="#">Умови використання</a></li>
+            <li><a href="#">Налаштування cookie</a></li>
+            <li><a href="#">Карта сайту</a></li>
+          </ul>
+        </nav>
+        <div class="footer__social">
+          <span>Ми в соцмережах</span>
+          <ul>
+              <li><a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" /><path d="M8 11v5M8 8v.01M12 16v-5M12 13.5c0-1.5 1-2.5 2.5-2.5S17 12 17 13.5V16" /></svg></a></li>
+              <li><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3.5H14a4 4 0 0 0-4 4V10H7.5v3H10v7.5h3V13h2.5l.5-3h-3V7.8c0-.6.4-1.3 1.2-1.3h1.3z" /></svg></a></li>
+              <li><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5v.01" /></svg></a></li>
+              <li><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4" /><path d="M10 9.5v5l4.5-2.5z" /></svg></a></li>
+          </ul>
+        </div>
+        </div>
+        <div class="footer__legal">
+          <p>Daat&nbsp;— консалтинг зі стратегії та розвитку <span class="nowrap">IT-компаній</span>. ATLAS&nbsp;— методологія діагностики зростання, розроблена Daat.</p>
+          <p>Цифри в кейсах і сценаріях на цій сторінці ілюстративні, якщо не зазначено інше. У&nbsp;випадках використання NDA, назви компаній клієнтів приховано за їхньою згодою.</p>
+          <p>©&nbsp;2026 Daat</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <!-- Full-size view for the report charts -->
   <dialog class="lightbox" aria-label="Графік зі звіту">
     <img class="lightbox__img" alt="" />
@@ -3341,7 +3445,7 @@
       update();
     }
     // TODO: point each "Читати далі" / "Читати кейс" at its page; until then the placeholder links don't jump
-    for (const a of document.querySelectorAll('.finding__more[href="#"], .vt__case[href="#"]')) a.addEventListener("click", (e) => e.preventDefault());
+    for (const a of document.querySelectorAll('.finding__more[href="#"], .vt__case[href="#"], .footer a[href="#"]')) a.addEventListener("click", (e) => e.preventDefault());
 
     // Video testimonials: clicking the blurred slice opens it and closes the other one (CSS animates the swap).
     // Details of a closed teaser are inert, so keyboard and screen-reader users only meet the open one's.
