@@ -1,0 +1,84 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+
+// Horizontal teaser carousel (audit findings, case studies): scroll-snapping track, prev/next by a page,
+// page dashes that follow the scroll position. Styles are in patterns.css (.findings, .finding…).
+
+export interface Teaser {
+  image: ImageMetadata;
+  tag: string;
+  /** may hold HTML (&nbsp;, nowrap spans) */
+  title: string;
+  href: string;
+}
+
+interface Props {
+  label: string;
+  items: Teaser[];
+  /** link text under each teaser, e.g. "Читати далі" */
+  more: string;
+  prevLabel: string;
+  nextLabel: string;
+}
+
+const { label, items, more, prevLabel, nextLabel } = Astro.props;
+---
+
+<div class="findings" role="region" aria-roledescription="carousel" aria-label={label}>
+  <ul class="findings__track" tabindex="0">
+    {items.map((item) => (
+      <li class="finding">
+        <div class="finding__media">
+          <Image
+            src={item.image}
+            alt=""
+            widths={[320, 480, 640, 800]}
+            sizes="(width < 64rem) 78vw, 26vw"
+            layout="none"
+          />
+          <span class="finding__tag">{item.tag}</span>
+        </div>
+        <h3 class="finding__title" set:html={item.title} />
+        <a class="finding__more" href={item.href}>
+          {more} <span aria-hidden="true">›</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+  <div class="findings__controls">
+    <div class="findings__pages" aria-hidden="true"></div>
+    <button class="findings__nav" type="button" data-dir="-1" aria-label={prevLabel}>
+      ‹
+    </button>
+    <button class="findings__nav" type="button" data-dir="1" aria-label={nextLabel}>
+      ›
+    </button>
+  </div>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll(".findings")) {
+    const track = root.querySelector<HTMLElement>(".findings__track")!;
+    const pagesEl = root.querySelector<HTMLElement>(".findings__pages")!;
+    const [prev, next] = root.querySelectorAll<HTMLButtonElement>(".findings__nav");
+
+    const pageCount = () =>
+      track.clientWidth ? Math.max(1, Math.ceil(track.scrollWidth / track.clientWidth - 0.05)) : 1; // 1 until laid out
+    function update() {
+      const n = pageCount();
+      if (pagesEl.children.length !== n) pagesEl.innerHTML = "<span></span>".repeat(n);
+      const max = track.scrollWidth - track.clientWidth;
+      const current = Math.round((max > 0 ? track.scrollLeft / max : 0) * (n - 1));
+      [...pagesEl.children].forEach((s, i) => s.classList.toggle("is-current", i === current));
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max - 2;
+    }
+    for (const btn of [prev, next]) {
+      btn.addEventListener("click", () => track.scrollBy({ left: Number(btn.dataset.dir) * track.clientWidth * 0.9 }));
+    }
+    track.addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+    addEventListener("resize", update);
+    update();
+  }
+</script>

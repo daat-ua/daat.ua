@@ -1,0 +1,365 @@
+---
+import { Image } from "astro:assets";
+import { cases, testimonials } from "../../../data/testimonials";
+import Carousel from "../../ui/Carousel.astro";
+---
+
+<section class="report cases" id="testimonials-and-case-studies" data-toc-theme="light">
+  <div class="wrap">
+    <h2 class="section-title">
+      <strong>Відгуки клієнтів і кейси</strong>
+    </h2>
+    <!-- TODO content: confirm the explainer's claims (real clients, consent to anonymise) -->
+    <p class="report__intro">
+      Що змінилося в компаніях, які пройшли ATLAS: з чого почали, що показав аудит і яких результатів досягли на кожному
+      горизонті. Цифри взято з даних клієнтів, а назви компаній приховано за їхньою згодою.
+    </p>
+
+    <!-- Video testimonials: the open one takes 70% of the row, the other waits as a blurred slice; clicking it
+         swaps them. TODO: the video players -->
+    <ul class="vt" aria-label="Відеовідгуки клієнтів" data-open="1">
+      {testimonials.map((t, i) => (
+        <li class:list={["vt__item", { "is-open": i === 0 }]}>
+          <div class="vt__media">
+            <Image
+              class="vt__poster"
+              src={t.poster}
+              alt=""
+              widths={[480, 720, 1000, 1400]}
+              sizes="(width < 64rem) 82vw, 48vw"
+              layout="none"
+            />
+            <button class="vt__watch" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5.5v13l10.5-6.5z" />
+              </svg>
+              <span>Дивитися відео</span>
+            </button>
+            <p class="vt__headline" set:html={t.headline} />
+            <button class="vt__open" type="button" aria-label="Відкрити відеовідгук">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18.5 12L4.99997 12" />
+                <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
+              </svg>
+            </button>
+          </div>
+          <div class="vt__caption">
+            <Image class="vt__logo" src={t.logo} alt={t.company} layout="none" />
+            <p class="vt__text" set:html={t.text} />
+            <a class="vt__case" href={t.href}>
+              Дивитися кейс <span aria-hidden="true">›</span>
+            </a>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <h3 class="cases__title">Кейси: як це виглядає зсередини</h3>
+    <Carousel
+      label="Кейси клієнтів"
+      items={cases}
+      more="Читати кейс"
+      prevLabel="Попередні кейси"
+      nextLabel="Наступні кейси"
+    />
+  </div>
+</section>
+
+<script>
+  // Clicking the blurred slice opens it and closes the other one (CSS animates the swap). Details of a closed
+  // teaser are inert, so keyboard and screen-reader users only meet the open one's.
+  for (const list of document.querySelectorAll<HTMLElement>(".vt")) {
+    const items = [...list.children] as HTMLElement[];
+    function open(item: HTMLElement, focus = false) {
+      items.forEach((it, i) => {
+        const on = it === item;
+        it.classList.toggle("is-open", on);
+        for (const el of it.querySelectorAll<HTMLElement>(".vt__watch, .vt__headline, .vt__text, .vt__case"))
+          el.inert = !on;
+        it.querySelector<HTMLElement>(".vt__open")!.inert = on;
+        if (on) list.dataset.open = String(i + 1);
+      });
+      if (focus) item.querySelector<HTMLElement>(".vt__watch")!.focus({ preventScroll: true });
+    }
+    for (const item of items) {
+      item.querySelector(".vt__media")!.addEventListener("click", (e) => {
+        // a keyboard "click" (detail 0) keeps focus in the teaser
+        if (!item.classList.contains("is-open")) open(item, (e as MouseEvent).detail === 0);
+      });
+    }
+    open(items.find((it) => it.classList.contains("is-open")) ?? items[0]);
+  }
+</script>
+
+<style is:global>
+  /* ---------- Testimonials and case studies: video testimonials, then the findings carousel with a subheading ---------- */
+  /* Two video teasers in one row: the open one takes 70%, the other waits as a blurred slice. Clicking the slice
+         swaps them: the columns, the blur and the details animate. Everything inside a teaser is sized to the open
+         width (--vt-open) and clipped, so nothing reflows while a column grows or shrinks. */
+  .vt {
+    --vt-gap: var(--space-md);
+    --vt-share: 0.7;
+    --vt-ratio: 10 / 16;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--vt-gap);
+    width: var(--span-3);
+    max-width: 100%;
+    margin: var(--space-xl) 0 0;
+    padding: 0;
+    list-style: none;
+    container-type: inline-size;
+    transition: grid-template-columns 0.6s var(--ease-out);
+  }
+  .vt[data-open="2"] {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+  }
+  .vt__item {
+    --vt-open: calc((100cqw - var(--vt-gap)) * var(--vt-share));
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-md);
+    min-width: 0;
+    overflow-x: clip;
+  }
+  .vt__media {
+    position: relative;
+    height: calc(var(--vt-open) * var(--vt-ratio));
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--c-hero);
+  }
+  .vt__item:not(.is-open) .vt__media {
+    cursor: pointer;
+  }
+  /* the poster keeps the open width and stays centred, so a closing teaser crops it rather than squeezing it */
+  .vt__poster {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--vt-open);
+    max-width: none;
+    height: 100%;
+    object-fit: cover;
+    translate: -50% 0;
+    transition:
+      filter 0.5s var(--ease-out),
+      scale 0.5s var(--ease-out);
+  }
+  .vt__item:not(.is-open) .vt__poster {
+    filter: blur(14px);
+    scale: 1.15;
+  }
+  /* scaled so the blur has no pale edge */
+  /* shade at the bottom for the headline */
+  .vt__media::after {
+    content: "";
+    position: absolute;
+    inset: 40% 0 0;
+    background: linear-gradient(to top, rgb(14 21 27 / 0.7), rgb(14 21 27 / 0));
+    pointer-events: none;
+  }
+  /* Details of the open teaser fade in once its column has mostly grown; on the closing one they fade out at once */
+  .vt__media::after,
+  .vt__watch,
+  .vt__headline,
+  .vt__text,
+  .vt__case {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.2s ease,
+      visibility 0s linear 0.2s,
+      background-color 0.2s ease,
+      text-decoration-color 0.2s ease;
+  }
+  .vt__item.is-open :is(.vt__watch, .vt__headline, .vt__text, .vt__case),
+  .vt__item.is-open .vt__media::after {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.35s ease 0.35s,
+      visibility 0s,
+      background-color 0.2s ease,
+      text-decoration-color 0.2s ease;
+  }
+  .vt__watch {
+    position: absolute;
+    z-index: 1;
+    top: var(--space-md);
+    left: var(--space-md);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0.68em 1em 0.52em 0.8em; /* fallback: TT Commons sits high, so a little more on top */
+    border: 0;
+    border-radius: 999px;
+    background: rgb(14 21 27 / 0.6);
+    color: var(--c-white);
+    font: inherit;
+    font-size: var(--text-small);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  /* where supported, trim the label to cap height + baseline so equal padding centres it with the icon */
+  @supports (text-box: trim-both cap alphabetic) {
+    .vt__watch {
+      padding: 0.6em 1em 0.6em 0.8em;
+    }
+    .vt__watch span {
+      text-box: trim-both cap alphabetic;
+    }
+  }
+  .vt__watch:hover {
+    background: rgb(14 21 27 / 0.85);
+  }
+  .vt__watch svg {
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+  }
+  .vt__headline {
+    position: absolute;
+    z-index: 1;
+    left: var(--space-lg);
+    bottom: var(--space-lg);
+    width: calc(var(--vt-open) - 2 * var(--space-lg));
+    margin: 0;
+    color: var(--c-white);
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+  /* the slice's button: centred, pointing towards the open teaser's side it will take */
+  .vt__open {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1.5px solid rgb(255 255 255 / 0.8);
+    border-radius: 50%;
+    background: none;
+    color: var(--c-white);
+    translate: -50% -50%;
+    cursor: pointer;
+    transition:
+      opacity 0.35s ease 0.3s,
+      visibility 0s,
+      background-color 0.2s ease;
+  }
+  .vt__item.is-open .vt__open {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.15s ease,
+      visibility 0s linear 0.15s;
+  }
+  .vt__open:hover {
+    background: rgb(255 255 255 / 0.15);
+  }
+  .vt__open svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* the "Дивитися каталог" arrow */
+  .vt__item:first-child .vt__open svg {
+    scale: -1 1;
+  }
+  /* a slice on the left points left */
+  .vt__caption {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: var(--space-lg);
+    width: var(--vt-open);
+    color: var(--c-hero);
+  }
+  /* hero client logos, which are cream: darkened to near the heading ink */
+  .vt__logo {
+    width: auto;
+    height: calc(40 * var(--px));
+    filter: brightness(0.13);
+  }
+  .vt__case {
+    color: var(--c-primary); /* same as "Читати кейс" */
+    font-size: var(--text-body);
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: underline transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: calc(8 * var(--px));
+  }
+  .vt__case:hover,
+  .vt__case:focus-visible {
+    text-decoration-color: currentColor;
+  }
+  .vt__text {
+    margin: 0;
+    max-width: 32ch;
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .cases__title {
+    margin: var(--space-2xl) 0 0;
+    color: var(--c-hero);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+
+  @media (width < 64rem) {
+    .cases__title {
+      margin-top: 48px;
+    }
+    .vt {
+      --vt-gap: 12px;
+      --vt-share: 0.82;
+      --vt-ratio: 5 / 4;
+      grid-template-columns: minmax(0, 82fr) minmax(0, 18fr);
+      margin-top: 32px;
+    }
+    .vt[data-open="2"] {
+      grid-template-columns: minmax(0, 18fr) minmax(0, 82fr);
+    }
+    .vt__headline {
+      left: 16px;
+      bottom: 16px;
+      width: calc(var(--vt-open) - 32px);
+      font-size: 18px;
+    }
+    .vt__watch {
+      top: 12px;
+      left: 12px;
+    }
+    .vt__caption {
+      grid-template-columns: 1fr;
+      justify-items: start;
+      align-items: start;
+      row-gap: 12px;
+    }
+    .vt__logo {
+      height: 32px;
+      transition: opacity 0.2s ease;
+    }
+    .vt__item:not(.is-open) .vt__logo {
+      opacity: 0;
+    }
+  }
+</style>
