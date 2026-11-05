@@ -493,6 +493,7 @@
     /* card and list titles in "Чому зараз?", "Що ви отримаєте", the report, the roadmap and the FAQ are Medium, lighter than the DemiBold elsewhere */
     #why-now .card h3,
     #deliverables .card h3,
+    #methodology .card h3,
     #report .report-toc h3,
     #roadmap .horizon h4,
     #faq .faq__item dt { font-weight: 500; }
@@ -1272,12 +1273,9 @@
     /* hero client logos, which are cream: darkened to near the heading ink */
     .vt__logo { width: auto; height: calc(40 * var(--px)); filter: brightness(0.13); }
     .vt__case {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3em;
-      color: var(--c-hero);
+      color: var(--c-primary); /* same as "Читати кейс" */
       font-size: var(--text-body);
-      font-weight: 600;
+      font-weight: 500;
       white-space: nowrap;
       text-decoration: underline transparent;
       text-decoration-thickness: 1px;
@@ -1285,7 +1283,6 @@
     }
     .vt__case:hover,
     .vt__case:focus-visible { text-decoration-color: currentColor; }
-    .vt__arrow { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
     .vt__text { margin: 0; max-width: 32ch; font-size: var(--text-body); font-weight: 500; line-height: 1.35; }
     .cases__title {
       margin: var(--space-2xl) 0 0;
@@ -1538,6 +1535,162 @@
       line-height: var(--leading-body);
     }
     .situation__body p { margin: 0; }
+    /* "Як працює ATLAS": three lists in the card grid; the maturity scale counts down from 5 */
+    .why#methodology { background: var(--c-hero); } /* the hero's navy, not the blue */
+    .card .method__list { margin-top: var(--space-md); } /* a step more than the gap between points, so the title reads as the head of its list */
+    .method__list {
+      font-size: var(--text-body);
+      line-height: var(--leading-body);
+    }
+    .method__list strong { font-weight: 600; }
+    .method__scale {
+      display: grid;
+      row-gap: var(--space-xs);
+      margin-bottom: 0;
+      padding-left: 1.4em;
+    }
+    .method__scale li::marker { color: var(--c-peach); font-weight: 600; }
+    /* Project timeline: a blue rail with a white dot per phase; what the phase does on the left,
+       its number and the artifact it leaves you on the right */
+    /* title in the first column, timeline across the other two (the lists' grid above) */
+    .method__process {
+      display: grid;
+      grid-template-columns: var(--col) var(--span-2);
+      column-gap: var(--col-gap);
+      align-items: start;
+      margin-top: var(--space-3xl);
+    }
+    .method__subtitle {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-title);
+      font-weight: 300; /* like the section titles: a DemiBold lead-in, the rest Light */
+      line-height: var(--leading-title);
+    }
+    .method__subtitle strong { font-weight: 600; }
+    /* notes under the timeline title: a size smaller than the lists above */
+    .method__notes {
+      display: grid;
+      row-gap: var(--space-md);
+      margin: var(--space-lg) 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: var(--text-small);
+      line-height: var(--leading-body);
+    }
+    .method__notes li {
+      display: grid;
+      grid-template-columns: 1.2em 1fr;
+      column-gap: 0.5em;
+    }
+    /* "info" icon, its top level with the top of the first line's text (like the "idea" icon on benefit lines) */
+    .method__notes li::before {
+      content: "";
+      width: 1.2em;
+      height: 1.2em;
+      margin-top: -0.12em; /* the icon's square starts 0.125em into its box; this lifts it to the capitals' top */
+      background: var(--c-accent);
+      -webkit-mask: url("assets/icon-info.svg") center / contain no-repeat;
+              mask: url("assets/icon-info.svg") center / contain no-repeat;
+    }
+    .method__notes strong { font-weight: 600; }
+    .timeline {
+      --rail: calc(20 * var(--px));
+      --dot: calc(8 * var(--px));
+      --timeline-gap: var(--space-lg);
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto; /* the artifacts share one column, so their icons line up on the left */
+      row-gap: var(--timeline-gap);
+      margin: 0;
+      padding: var(--space-lg);
+      list-style: none;
+      border-radius: 6px; /* as the teaser images */
+      background: var(--c-surface); /* a step lighter than the section's navy */
+      /* a deep, very soft shadow (night-tinted) that lifts the card off the section */
+      box-shadow:
+        0 calc(80 * var(--px)) calc(160 * var(--px)) calc(-20 * var(--px)) rgb(6 10 14 / 0.35),
+        0 calc(24 * var(--px)) calc(64 * var(--px)) rgb(6 10 14 / 0.2);
+    }
+    .timeline li {
+      position: relative;
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      column-gap: var(--space-lg);
+      padding-left: calc(var(--rail) + var(--space-lg));
+    }
+    /* the rail is drawn per phase, down to the next one; the last stops just past its dot,
+       as far below it as the rail starts above the first */
+    .timeline li::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: calc(-1 * var(--timeline-gap));
+      left: 0;
+      width: var(--rail);
+      background: var(--c-primary);
+    }
+    /* One-time draw (the script adds .has-rail, measuring the rail into --rail-*): the per-phase rail becomes
+       a dark track, and one rounded blue bar over it is revealed top to bottom with clip-path, so its growing
+       end stays round. .is-pending holds it empty with dimmed dots; .is-drawn reveals it once 80% of the card
+       is in view, lighting each dot as the bar passes it (--dot-delay). */
+    .timeline.has-rail li::before { background: var(--c-night); }
+    .timeline.has-rail::after {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      top: var(--rail-top);
+      left: var(--rail-left);
+      width: var(--rail);
+      height: var(--rail-len);
+      border-radius: 999px;
+      background: var(--c-primary);
+      clip-path: inset(0 0 0 0 round calc(var(--rail) / 2));
+    }
+    .timeline.is-pending::after { clip-path: inset(0 0 100% 0 round calc(var(--rail) / 2)); }
+    .timeline.is-pending li::after { background: rgb(237 233 222 / 0.3); }
+    .timeline.is-drawn::after { transition: clip-path var(--rail-draw) linear; }
+    .timeline.is-drawn li::after { transition: background-color .2s ease var(--dot-delay, 0s); }
+    .timeline li:first-child::before { border-radius: 999px 999px 0 0; }
+    .timeline li:last-child::before { bottom: auto; height: calc(var(--text-body) * 1.3); border-radius: 0 0 999px 999px; }
+    .timeline li::after {
+      content: "";
+      position: absolute;
+      z-index: 2;
+      left: calc((var(--rail) - var(--dot)) / 2);
+      top: calc((var(--text-body) * 1.3 - var(--dot)) / 2); /* centred on the title's first line */
+      width: var(--dot);
+      height: var(--dot);
+      border-radius: 50%;
+      background: var(--c-white);
+    }
+    .timeline p { margin: 0; }
+    .timeline__title {
+      margin: 0;
+      color: var(--c-white);
+      font-size: var(--text-body);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .timeline__text {
+      margin-top: var(--space-xs);
+      color: rgb(237 233 222 / 0.6); /* dimmed cream, as on the roadmap tabs */
+      font-size: var(--text-small);
+      line-height: 1.35;
+    }
+    .timeline__side { align-self: center; }
+    .timeline__artifact {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      color: var(--c-cream);
+      font-size: var(--text-small);
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .timeline__icon { flex: none; width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
     /* Dotted list: medium peach dots centred on the first line of each point */
     .dots {
       display: grid;
@@ -1648,6 +1801,11 @@
       .findings__pages span { width: 32px; }
       .finding__tag { font-size: 13px; }
       .cases__title { margin-top: 48px; }
+      .method__process { grid-template-columns: 1fr; row-gap: 32px; margin-top: 80px; }
+      .timeline { --rail: 16px; --dot: 7px; --timeline-gap: 24px; padding: 20px; }
+      .timeline { grid-template-columns: 1fr; }
+      .timeline li { padding-left: calc(var(--rail) + 16px); }
+      .timeline__artifact { margin-top: var(--space-xs); }
       .vt { --vt-gap: 12px; --vt-share: 0.82; --vt-ratio: 5 / 4; grid-template-columns: minmax(0, 82fr) minmax(0, 18fr); margin-top: 32px; }
       .vt[data-open="2"] { grid-template-columns: minmax(0, 18fr) minmax(0, 82fr); }
       .vt__headline { left: 16px; bottom: 16px; width: calc(var(--vt-open) - 32px); font-size: 18px; }
@@ -1757,6 +1915,7 @@
             <li><a href="#report">Що всередині звіту</a></li>
             <li><a href="#roadmap">Дорожня карта</a></li>
             <li><a href="#testimonials-and-case-studies">Відгуки й кейси</a></li>
+            <li><a href="#methodology">Як працює ATLAS</a></li>
             <li><a href="#audit-findings">Знахідки аудитів</a></li>
             <li><a href="#faq">Часті питання</a></li>
           </ul>
@@ -2555,7 +2714,7 @@
             <div class="vt__caption">
               <img class="vt__logo" src="assets/client-stripe.svg" width="129.384" height="77.6303" alt="Stripe" />
               <p class="vt__text">Діагностика ATLAS і дорожня карта для продуктової компанії на <span class="nowrap">60 людей</span></p>
-              <a class="vt__case" href="#">Дивитися кейс<svg class="vt__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 7.5L6 18" /><path d="M8 6.18791C8 6.18791 16.0479 5.50949 17.2692 6.73079C18.4906 7.95209 17.812 16 17.812 16" /></svg></a>
+              <a class="vt__case" href="#">Дивитися кейс <span aria-hidden="true">›</span></a>
             </div>
           </li>
           <li class="vt__item">
@@ -2568,7 +2727,7 @@
             <div class="vt__caption">
               <img class="vt__logo" src="assets/client-hubspot.svg" width="184.372" height="77.6303" alt="HubSpot" />
               <p class="vt__text">Діагностика ATLAS і дорожня карта для аутсорс-компанії на <span class="nowrap">250 людей</span></p>
-              <a class="vt__case" href="#">Дивитися кейс<svg class="vt__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 7.5L6 18" /><path d="M8 6.18791C8 6.18791 16.0479 5.50949 17.2692 6.73079C18.4906 7.95209 17.812 16 17.812 16" /></svg></a>
+              <a class="vt__case" href="#">Дивитися кейс <span aria-hidden="true">›</span></a>
             </div>
           </li>
         </ul>
@@ -2615,6 +2774,135 @@
             <button class="findings__nav" type="button" data-dir="-1" aria-label="Попередні кейси">‹</button>
             <button class="findings__nav" type="button" data-dir="1" aria-label="Наступні кейси">›</button>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="why why--gains" id="methodology">
+      <div class="container">
+        <h2 class="section-title"><strong>Як працює ATLAS:</strong> що ми оцінюємо і як проходять <span class="nowrap">4–5 тижнів</span></h2>
+
+        <div class="why__intro">
+          <p><strong>ATLAS</strong> поєднує діагностичну ясність McKinsey&nbsp;7S, доказову дисципліну EFQM і оцінювання зрілості з Baldrige Excellence Framework&nbsp;— мовою IT delivery та технічної досконалості.</p>
+        </div>
+
+        <img class="why__divider" src="assets/divider-dark.svg" width="2092" height="4" alt="" />
+
+        <ul class="problems method">
+            <li class="card">
+              <h3>7 енейблерів&nbsp;— що оцінюємо</h3>
+              <div class="card__body">
+                <ul class="dots method__list">
+                  <li>Стратегія та портфель</li>
+                  <li>Структура та управління</li>
+                  <li>Операційна система delivery</li>
+                  <li>Інженерна культура й культура delivery</li>
+                  <li>Лідерство та ухвалення рішень</li>
+                  <li>Люди та ресурси</li>
+                  <li>Спроможності та компетенції</li>
+                </ul>
+              </div>
+            </li>
+            <li class="card">
+              <h3>RADAR-IT&nbsp;— як читаємо кожен</h3>
+              <div class="card__body">
+                <ul class="dots method__list">
+                  <li><strong>Результати</strong>&nbsp;— чого ви досягаєте</li>
+                  <li><strong>Підхід</strong>&nbsp;— чи є визначений спосіб</li>
+                  <li><strong>Впровадження</strong>&nbsp;— чи застосовується послідовно</li>
+                  <li><strong>Оцінка</strong>&nbsp;— чи вимірюється й удосконалюється</li>
+                  <li><strong>Ризик</strong>&nbsp;— скільки коштуватиме бездіяльність</li>
+                </ul>
+              </div>
+            </li>
+            <li class="card">
+              <h3>Шкала зрілості <span class="nowrap">1–5</span>&nbsp;— спільна мова</h3>
+              <div class="card__body">
+                <ol class="method__list method__scale" reversed>
+                  <li><strong>Оптимізований</strong>&nbsp;— взірець для ринку</li>
+                  <li><strong>Вимірюваний</strong>&nbsp;— удосконалюється на даних</li>
+                  <li><strong>Визначений</strong>&nbsp;— стандарт усюди</li>
+                  <li><strong>Формується</strong>&nbsp;— подекуди, непослідовно</li>
+                  <li><strong>Ad hoc</strong>&nbsp;— підходу немає</li>
+                </ol>
+              </div>
+            </li>
+        </ul>
+
+        <div class="method__process">
+        <div class="method__aside">
+          <h3 class="method__subtitle"><strong>Як проходить проєкт</strong>&nbsp;— <span class="nowrap">7 фаз</span>, кожна з артефактом, який лишається у вас</h3>
+          <ul class="method__notes">
+            <li><span><strong>Конфіденційність:</strong> NDA підписуємо у фазі&nbsp;0&nbsp;— до передачі будь-яких даних.</span></li>
+            <li><span><strong>Що потрібно від вас:</strong> інтерв’ю з керівниками й ключовими ролями та доступ на читання до даних, які ви вже збираєте.</span></li>
+            <li><span><strong>10&nbsp;годин</strong> часу вашої команди на всю діагностику&nbsp;— решту робимо ми</span></li>
+          </ul>
+        </div>
+        <ol class="timeline">
+          <li>
+            <div>
+              <h4 class="timeline__title">Рамка</h4>
+              <p class="timeline__text">Скоуп, доступи, NDA</p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Хартія проєкту</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h4 class="timeline__title">Докази</h4>
+              <p class="timeline__text">Документи, інтерв’ю, дані систем, <span class="nowrap">1–2 тижні</span></p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Реєстр доказів</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h4 class="timeline__title">Оцінювання</h4>
+              <p class="timeline__text">28 клітинок за рубриками</p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Scorecard зрілості</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h4 class="timeline__title">Синтез</h4>
+              <p class="timeline__text">Групування за першопричинами</p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Мапа тем</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h4 class="timeline__title">Ризики</h4>
+              <p class="timeline__text">Імовірність × вплив</p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Реєстр ризиків</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h4 class="timeline__title">Дорожня карта</h4>
+              <p class="timeline__text">Пріоритети, 3 горизонти</p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Дорожня карта зростання</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h4 class="timeline__title">Валідація</h4>
+              <p class="timeline__text">Ви перевіряєте факти</p>
+            </div>
+            <div class="timeline__side">
+              <p class="timeline__artifact"><svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>Звіт + сесія з керівництвом</p>
+            </div>
+          </li>
+        </ol>
         </div>
       </div>
     </section>
@@ -3055,6 +3343,38 @@
         });
       }
       open(items.find((it) => it.classList.contains("is-open")) ?? items[0]);
+    }
+
+    // Project timeline: the blue rail draws itself once, when 80% of the card is in view (or 80% of the
+    // viewport, if the card is taller than that)
+    for (const tl of document.querySelectorAll(".timeline")) {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) continue;
+      const DRAW = 2; // seconds, first dot to last
+      const items = [...tl.children];
+      function measure() {
+        const first = items[0];
+        const top = first.offsetTop;
+        const line = parseFloat(getComputedStyle(first.querySelector(".timeline__title")).lineHeight);
+        const len = items.at(-1).offsetTop + line - top; // the last phase's rail ends with its title line
+        tl.style.setProperty("--rail-top", `${top}px`);
+        tl.style.setProperty("--rail-left", `${first.offsetLeft}px`);
+        tl.style.setProperty("--rail-len", `${len}px`);
+        tl.style.setProperty("--rail-draw", `${DRAW}s`);
+        for (const li of items) li.style.setProperty("--dot-delay", `${(DRAW * (li.offsetTop - top + line / 2)) / len}s`);
+      }
+      measure();
+      addEventListener("resize", measure);
+      tl.classList.add("has-rail", "is-pending");
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          const enough = e.intersectionRatio >= 0.8 || e.intersectionRect.height >= 0.8 * (e.rootBounds?.height ?? innerHeight);
+          if (!enough) continue;
+          io.disconnect();
+          tl.classList.add("is-drawn");
+          requestAnimationFrame(() => requestAnimationFrame(() => tl.classList.remove("is-pending")));
+        }
+      }, { threshold: Array.from({ length: 21 }, (_, k) => k / 20) });
+      io.observe(tl);
     }
 
     // Report charts: click to see full size
