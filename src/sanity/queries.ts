@@ -41,6 +41,6 @@ export const FINDING_TEASERS_QUERY = defineQuery(`*[_type == "post" && defined(s
   _id,
   title,
   "slug": slug.current,
-  tag,
+  enabler,
   image{ hotspot, crop, asset->{ _id } }
 }`);

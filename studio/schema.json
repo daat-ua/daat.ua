@@ -1463,10 +1463,40 @@
         },
         "optional": true
       },
-      "tag": {
+      "enabler": {
         "type": "objectAttribute",
         "value": {
-          "type": "string"
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "strategy-portfolio"
+            },
+            {
+              "type": "string",
+              "value": "structure-governance"
+            },
+            {
+              "type": "string",
+              "value": "delivery-operating-system"
+            },
+            {
+              "type": "string",
+              "value": "engineering-delivery-culture"
+            },
+            {
+              "type": "string",
+              "value": "leadership-decision-making"
+            },
+            {
+              "type": "string",
+              "value": "people-capacity"
+            },
+            {
+              "type": "string",
+              "value": "capabilities-competency"
+            }
+          ]
         },
         "optional": true
       },
