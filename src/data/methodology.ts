@@ -1,15 +1,9 @@
 // "Як працює ATLAS": what ATLAS assesses (enablers, RADAR-IT, the 1–5 scale), how a project runs (seven
 // phases, each leaving an artifact) and the notes beside the timeline. Strings may hold HTML (set:html).
 
-export const enablers = [
-  "Стратегія та портфель",
-  "Структура та управління",
-  "Операційна система delivery",
-  "Інженерна культура й культура delivery",
-  "Лідерство та ухвалення рішень",
-  "Люди та ресурси",
-  "Спроможності та компетенції",
-];
+import { enablerNames } from "./enablers";
+
+export const enablers = Object.values(enablerNames);
 
 export const radar = [
   "<strong>Результати</strong>&nbsp;— чого ви досягаєте",

@@ -23,7 +23,7 @@ Everything meaningful in this repo is the content model in `schemaTypes/`. Each 
 
 ### Schema name vs. file name mismatch (gotcha)
 The exported variable name, the file name, and the `name:` field of the document do not all match. The file/export name is for humans; references between documents must use the **schema `name`**:
-- `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI; the website renders these at `/uk-UA/atlas/findings/<slug>`, `tag` labels its carousel card)
+- `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI; the website renders these at `/uk-UA/atlas/findings/<slug>`, `enabler` — one of the seven ATLAS enablers, stored as a stable key — labels its carousel card in Ukrainian via `src/data/enablers.ts`)
 - `author.ts` → `name: 'authors'` (plural)
 - `blogPost.ts` → `name: 'blogPost'`
 
