@@ -1,1 +1,211 @@
-@import "tailwindcss";
+/*
+  Tailwind 4 without its preflight reset: the page's own base styles (below) are kept as they were in the
+  legacy index.html, so the port stays pixel-identical. Component CSS lives in @layer components, so
+  Tailwind utilities can still override it.
+*/
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/*
+  Theme values are `static`: every token is emitted, since the component CSS reads them directly.
+
+  Desktop (>= 1024px): the 1440px design scales with the viewport.
+  Every size is `calc(N * var(--px))`, where N is the size in the 1440 layout; Tailwind's spacing unit is
+  --px too, so `p-24` is 24 design pixels. Mobile (< 1024px): --px is 1px and the phone sizes below apply.
+  There is one breakpoint: `desk` (1024px); phone overrides use the `max-desk:` variant.
+*/
+@theme static {
+  --breakpoint-*: initial;
+  --breakpoint-desk: 64rem;
+
+  --spacing: var(--px);
+
+  --color-*: initial;
+  --color-header: #2c3b4e;
+  --color-hero: #1c2632;
+  --color-surface: #2c3b4d;
+  --color-accent: #feb161;
+  --color-primary: #0066de;
+  --color-cream: #ede9de;
+  --color-white: #ffffff;
+  /* Text on the brand blue: the orange and cream fail AA there, so use warm off-whites */
+  --color-on-primary: #faf8f3; /* 5.0:1 on #0066de */
+  --color-on-primary-muted: #f4f1ea; /* 4.7:1 on #0066de */
+  --color-ink: #33475b; /* text on cream */
+  --color-primary-hover: #0a59bb;
+  --color-surface-hover: #374a60;
+  --color-cream-hover: #fffaf0;
+  --color-night: #0e151b; /* "for whom", roadmap, FAQ */
+  --color-peach: #f7d8bc; /* diagram strokes and icons */
+  --color-paper: #f5f4ed; /* light sections */
+
+  --font-*: initial;
+  --font-display: var(--font-turns); /* TT Turns, from the Fonts API (astro.config.mjs) */
+  --font-body: var(--font-commons); /* TT Commons */
+
+  /* Type scale (sizes at 1440): 64 / 48 / 30 / 24 / 20 / 17; headings reduced 15% */
+  --text-*: initial;
+  --text-display: calc(64 * var(--heading-scale) * var(--px)); /* 54.4 */
+  --text-heading: calc(48 * var(--heading-scale) * var(--px)); /* 40.8 */
+  --text-title: calc(30 * var(--heading-scale) * var(--px)); /* 25.5 */
+  --text-lead: calc(24 * var(--px));
+  --text-body: calc(20 * var(--px));
+  --text-small: calc(17 * var(--px));
+
+  --leading-display: 1.05;
+  --leading-heading: 1.08;
+  --leading-title: 1.1;
+  --leading-body: 1.42; /* light text on dark/saturated grounds wants a little extra */
+  --leading-small: 1.3;
+
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1); /* ease-out-quart */
+}
+
+:root {
+  --px: calc(100vw / 1440);
+  --heading-scale: 0.85;
+  --weight-emphasis: 500; /* the bold half of a Light/Medium display heading */
+
+  /* Short names used throughout the component CSS (carried over from the legacy page) */
+  --c-header: var(--color-header);
+  --c-hero: var(--color-hero);
+  --c-surface: var(--color-surface);
+  --c-accent: var(--color-accent);
+  --c-primary: var(--color-primary);
+  --c-cream: var(--color-cream);
+  --c-white: var(--color-white);
+  --c-on-primary: var(--color-on-primary);
+  --c-on-primary-muted: var(--color-on-primary-muted);
+  --c-ink: var(--color-ink);
+  --c-primary-hover: var(--color-primary-hover);
+  --c-surface-hover: var(--color-surface-hover);
+  --c-cream-hover: var(--color-cream-hover);
+  --c-night: var(--color-night);
+  --c-peach: var(--color-peach);
+  --c-paper: var(--color-paper);
+
+  --gutter: calc(121 * var(--px)); /* page margin; every content block starts here */
+
+  /* Column module shared by all sections: 314 columns, 37.5 gutters */
+  --col: calc(314 * var(--px));
+  --col-gap: calc(37.5 * var(--px));
+  --span-2: calc(2 * var(--col) + var(--col-gap)); /* 665.5: reading width */
+  --span-3: calc(3 * var(--col) + 2 * var(--col-gap)); /* 1017: full content width */
+
+  /* Spacing scale (sizes at 1440) */
+  --space-xs: calc(8 * var(--px));
+  --space-sm: calc(16 * var(--px));
+  --space-md: calc(24 * var(--px));
+  --space-lg: calc(32 * var(--px));
+  --space-xl: calc(48 * var(--px));
+  --space-2xl: calc(64 * var(--px));
+  --space-3xl: calc(96 * var(--px));
+  --header-h: calc(132 * var(--px)); /* Figma 165, reduced 20% */
+  --overhang: calc(32.88 * var(--px)); /* how far the buttons hang below the dark hero */
+}
+
+@media (width < 64rem) {
+  :root {
+    --px: 1px;
+    --gutter: 24px;
+    --header-h: 76.8px;
+    --overhang: 0px; /* no overhang on mobile: the image is too short to share with the buttons */
+
+    /* Phone sizes, growing gently from 390px to 1023px */
+    --text-display: calc(var(--heading-scale) * clamp(2.125rem, calc(1.9vw + 1.66rem), 2.875rem)); /* 34–46, less 15% */
+    --text-heading: calc(
+      var(--heading-scale) * clamp(1.875rem, calc(0.95vw + 1.645rem), 2.25rem)
+    ); /* 30–36, less 15% */
+    --text-title: calc(var(--heading-scale) * clamp(1.375rem, calc(0.32vw + 1.297rem), 1.5rem)); /* 22–24, less 15% */
+    --text-lead: clamp(1.125rem, calc(0.32vw + 1.047rem), 1.25rem); /* 18–20 */
+    --text-body: 1.0625rem; /* 17 */
+    --text-small: 1rem; /* 16 */
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html,
+  body {
+    margin: 0;
+  }
+  html {
+    scroll-behavior: smooth; /* in-page links glide; turned off for reduced motion below */
+  }
+  body {
+    background: var(--c-white);
+    color: var(--c-white);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  img {
+    display: block;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  /* In-page links whose target section isn't built yet (see FIGMA-DEVIATIONS.md, TODO list) */
+  a[aria-disabled="true"] {
+    cursor: default;
+  }
+  a[aria-disabled="true"]:hover {
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .nowrap {
+    white-space: nowrap;
+  }
+  /* the page's container: full width with the gutters (named `wrap` because Tailwind's `container` is a max-width box) */
+  .wrap {
+    position: relative;
+    padding-inline: var(--gutter);
+  }
+  .skip-link {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: var(--c-white);
+    color: var(--c-hero);
+    font-size: var(--text-small);
+    font-weight: 600;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus {
+    transform: none;
+  }
+}

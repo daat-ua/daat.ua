@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import "../styles/global.css";
 
 interface Props {
@@ -16,6 +17,9 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <!-- Preload only what's above the fold: the H1 (Turns Light + Medium) and the hero body (Commons Regular) -->
+    <Font cssVariable="--font-turns" preload={[{ weight: 300 }, { weight: 500 }]} />
+    <Font cssVariable="--font-commons" preload={[{ weight: 400 }]} />
   </head>
   <body>
     <slot />
