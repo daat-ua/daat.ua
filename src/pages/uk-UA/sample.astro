@@ -1,0 +1,98 @@
+---
+import Base from "../../layouts/Base.astro";
+import Footer from "../../components/Footer.astro";
+---
+
+<!--
+  Layout demo: what any page gets from Base (the header with its hanging logo, the menu) plus the footer,
+  around placeholder content. Not linked from anywhere and kept out of search results.
+-->
+<Base title="Зразок сторінки | Daat" description="Демонстрація макета сторінки Daat." noindex>
+  <main id="main">
+    <section class="sample-intro">
+      <div class="wrap">
+        <p class="sample-eyebrow">Зразок сторінки</p>
+        <h1 class="sample-title">Заголовок сторінки</h1>
+        <p class="sample-lead">
+          Шапка з логотипом і кнопкою меню приходить із макета Base, тож вона однакова на всіх сторінках. Логотип звисає
+          нижче шапки, тому вміст сторінки починається з відступом.
+        </p>
+      </div>
+    </section>
+
+    <section class="sample-body">
+      <div class="wrap">
+        <h2>Розділ сторінки</h2>
+        <p>
+          Тут буде вміст сторінки. Прокрутіть донизу, щоб побачити підвал, або натисніть кнопку меню праворуч угорі, щоб
+          відкрити глобальне меню.
+        </p>
+        <h2>Ще один розділ</h2>
+        <p>
+          Текст-заповнювач, щоб сторінка мала висоту справжньої: шапка не фіксована, тож вона прокручується разом зі
+          сторінкою.
+        </p>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  /* the whole page sits on the light ground, right below the header bar */
+  main {
+    background: var(--c-paper);
+    color: var(--c-hero);
+  }
+  .sample-intro .wrap {
+    /* clears the logo hanging below the header bar (as the hero does) */
+    padding-top: calc(var(--space-3xl) + var(--space-lg));
+  }
+  .sample-eyebrow {
+    margin: 0;
+    color: var(--c-primary); /* the orange accent is too faint on the light ground */
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+  .sample-title {
+    max-width: calc(832 * var(--px));
+    margin: var(--space-sm) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    font-weight: 300;
+  }
+  .sample-lead {
+    max-width: var(--span-2);
+    margin: var(--space-xl) 0 0;
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+  .sample-body {
+    padding-block: var(--space-3xl);
+  }
+  .sample-body .wrap {
+    max-width: calc(var(--span-2) + 2 * var(--gutter));
+  }
+  .sample-body h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-heading);
+    line-height: var(--leading-title);
+    font-weight: 500;
+  }
+  .sample-body p {
+    margin: var(--space-md) 0 var(--space-2xl);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .sample-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (width < 64rem) {
+    .sample-intro .wrap {
+      padding-top: 120px;
+    }
+  }
+</style>
