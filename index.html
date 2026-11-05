@@ -1543,13 +1543,33 @@
       line-height: var(--leading-body);
     }
     .method__list strong { font-weight: 600; }
+    /* the maturity levels carry a signal-strength icon instead of a number: full bars at 5, one bar at 1 */
     .method__scale {
       display: grid;
       row-gap: var(--space-xs);
       margin-bottom: 0;
-      padding-left: 1.4em;
+      padding: 0;
+      list-style: none;
     }
-    .method__scale li::marker { color: var(--c-peach); font-weight: 600; }
+    .method__scale li {
+      display: grid;
+      grid-template-columns: 1.2em 1fr;
+      column-gap: 0.5em;
+    }
+    .method__scale li::before {
+      content: "";
+      width: 1.2em;
+      height: 1.2em;
+      margin-top: calc((var(--leading-body) * 1em - 1.2em) / 2); /* centred on the first line */
+      background: var(--c-peach);
+      -webkit-mask: var(--signal) center / contain no-repeat;
+              mask: var(--signal) center / contain no-repeat;
+    }
+    .method__scale li:nth-child(1) { --signal: url("assets/icon-signal-5.svg"); }
+    .method__scale li:nth-child(2) { --signal: url("assets/icon-signal-4.svg"); }
+    .method__scale li:nth-child(3) { --signal: url("assets/icon-signal-3.svg"); }
+    .method__scale li:nth-child(4) { --signal: url("assets/icon-signal-2.svg"); }
+    .method__scale li:nth-child(5) { --signal: url("assets/icon-signal-1.svg"); }
     /* Project timeline: a blue rail with a white dot per phase; what the phase does on the left,
        its number and the artifact it leaves you on the right */
     /* title in the first column, timeline across the other two (the lists' grid above) */
@@ -2818,12 +2838,12 @@
             <li class="card">
               <h3>Шкала зрілості <span class="nowrap">1–5</span>&nbsp;— спільна мова</h3>
               <div class="card__body">
-                <ol class="method__list method__scale" reversed>
-                  <li><strong>Оптимізований</strong>&nbsp;— взірець для ринку</li>
-                  <li><strong>Вимірюваний</strong>&nbsp;— удосконалюється на даних</li>
-                  <li><strong>Визначений</strong>&nbsp;— стандарт усюди</li>
-                  <li><strong>Формується</strong>&nbsp;— подекуди, непослідовно</li>
-                  <li><strong>Ad hoc</strong>&nbsp;— підходу немає</li>
+                <ol class="method__list method__scale">
+                  <li><span><strong>Оптимізований</strong>&nbsp;— взірець для ринку</span></li>
+                  <li><span><strong>Вимірюваний</strong>&nbsp;— удосконалюється на даних</span></li>
+                  <li><span><strong>Визначений</strong>&nbsp;— стандарт усюди</span></li>
+                  <li><span><strong>Формується</strong>&nbsp;— подекуди, непослідовно</span></li>
+                  <li><span><strong>Ad hoc</strong>&nbsp;— підходу немає</span></li>
                 </ol>
               </div>
             </li>
