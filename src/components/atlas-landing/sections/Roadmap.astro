@@ -1,0 +1,662 @@
+---
+import { horizons, impact } from "../../../data/roadmap";
+---
+
+<section class="for-whom roadmap" id="roadmap">
+  <div class="wrap">
+    <h2 class="section-title">
+      <strong>Ваша дорожня карта зростання:</strong> горизонти <span class="nowrap">0–3</span>,{" "}
+      <span class="nowrap">3–9</span> і <span class="nowrap">9–18</span> місяців
+    </h2>
+    <p class="for-whom__intro">
+      ATLAS не зупиняється на діагнозі. Кожну рекомендовану практику&nbsp;— від delivery до технічної
+      досконалості&nbsp;— пріоритизовано за впливом на зрілість, ризиком, вартістю й залежностями та вибудовано так, щоб
+      спершу знімалися базові обмеження, а потім&nbsp;— усе, що від них залежить. Ви отримуєте терміни, відповідальних і
+      вимірювану фінішну лінію для кожного кроку, а Daat може супроводжувати впровадження на кожному горизонті.
+    </p>
+  </div>
+
+  <!-- Full-width horizon animation: A (start) → B → C (finish), driven by the tabs below.
+       Frames live in public/frames/roadmap/<width>/. -->
+  <div class="roadmap__stage" aria-hidden="true">
+    <img class="roadmap__poster" src="/frames/roadmap/1440/f001.webp" width="1440" height="720" alt="" />
+    <canvas class="roadmap__canvas"></canvas>
+    <div class="roadmap__fader roadmap__fader--top"></div>
+    <div class="roadmap__fader roadmap__fader--bottom"></div>
+    <div class="roadmap__fader roadmap__fader--right"></div>
+  </div>
+
+  <div class="wrap horizons-wrap">
+    <div class="audience-tabs" role="tablist" aria-label="Горизонти дорожньої карти">
+      {horizons.map((h, i) => (
+        <button
+          class="audience-tab"
+          type="button"
+          role="tab"
+          id={`tab-${h.id}`}
+          aria-controls={`panel-${h.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          <span class="audience-tab__title" set:html={h.tab} />
+        </button>
+      ))}
+    </div>
+
+    <div class="horizons">
+      {horizons.map((h, i) => (
+        <div
+          class:list={["horizon", { "is-active": i === 0 }]}
+          role="tabpanel"
+          id={`panel-${h.id}`}
+          aria-labelledby={`tab-${h.id}`}
+        >
+          <p class="horizon__label" set:html={h.label} />
+          <h3 set:html={h.title} />
+          <p class="horizon__lead" set:html={h.lead} />
+          <ul>
+            {h.actions.map((a) => (
+              <li>
+                <h4 set:html={a.title} />
+                <p set:html={a.text} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="wrap impact-wrap">
+    <div class="impact" data-active="h1">
+      <h3 class="impact__title">Вплив на виручку: ілюстративний сценарій</h3>
+      <p class="impact__caption" set:html={impact.caption} />
+      <div class="impact__scroll">
+        <table>
+          <thead>
+            <tr>
+              {impact.columns.map((c) => (
+                <th scope="col" set:html={c} />
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="impact__row--revenue">
+              <th scope="row" set:html={impact.revenue.label} />
+              {impact.revenue.values.map((v) => (
+                <td>
+                  <span class="impact__value">
+                    <span class="nowrap">{v.text}</span>
+                  </span>
+                  <span class="impact__track" aria-hidden="true">
+                    <span class="impact__fill" style={`--v: ${v.bar.toFixed(4)}`} />
+                  </span>
+                </td>
+              ))}
+            </tr>
+            {impact.rows.map((row) => (
+              <tr class:list={[{ "impact__row--drivers": row.drivers }]}>
+                <th scope="row" set:html={row.label} />
+                {row.cells.map((c) => (
+                  <td set:html={c} />
+                ))}
+              </tr>
+            ))}
+          </tbody>
+          <tbody class="impact__enablers" id="impact-enablers">
+            <tr class="impact__group">
+              <th scope="colgroup" colspan="5">
+                <button class="impact__toggle" type="button" aria-expanded="false" aria-controls="impact-enablers">
+                  <svg class="impact__icon" viewBox="0 0 73 73" aria-hidden="true">
+                    <path class="chev--a" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" />
+                    <path class="chev--b" d="M18 27C24 35 31 45.6 36.5 45.6S49 35 55 27" />
+                  </svg>
+                  {impact.enablers.label}
+                </button>
+              </th>
+            </tr>
+            {impact.enablers.rows.map((row) => (
+              <tr class="impact__enabler" hidden>
+                <th scope="row" set:html={row.label} />
+                {row.cells.map((c) => (
+                  <td set:html={c} />
+                ))}
+              </tr>
+            ))}
+            <tr class="impact__total">
+              <th scope="row" set:html={impact.enablers.total.label} />
+              {impact.enablers.total.cells.map((c) => (
+                <td set:html={c} />
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { frameSet, loadOrder, nearestLoaded } from "../../../scripts/frames";
+
+  // Horizon tabs (arrow keys move between them). All three columns stay visible; the selected one is at full
+  // strength, the revenue table highlights its column, and the clip plays to the horizon's stop.
+  const section = document.querySelector<HTMLElement>("#roadmap")!;
+  const tabs = [...section.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const impactEl = section.querySelector<HTMLElement>(".impact");
+  const panelOf = (tab: HTMLButtonElement) => document.getElementById(tab.getAttribute("aria-controls")!)!;
+
+  function select(tab: HTMLButtonElement, focus = false) {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      panelOf(t).classList.toggle("is-active", on);
+    }
+    if (impactEl) impactEl.dataset.active = tab.getAttribute("aria-controls")!.replace("panel-", "");
+    if (focus) tab.focus();
+    goTo(tabs.indexOf(tab));
+  }
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (e) => {
+      const i = tabs.indexOf(tab);
+      const next = ({ ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 } as Record<string, number>)[
+        e.key
+      ];
+      if (next === undefined) return;
+      e.preventDefault();
+      select(tabs[(next + tabs.length) % tabs.length], true);
+    });
+    // clicking a horizon column selects its tab (keyboard users have the tabs themselves)
+    panelOf(tab).addEventListener("click", () => select(tab));
+  }
+
+  // the enabler forecast folds under its sub-header (the total row stays visible)
+  const toggle = section.querySelector<HTMLButtonElement>(".impact__toggle");
+  if (toggle) {
+    const rows = [...section.querySelectorAll<HTMLElement>(".impact__enabler")];
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      rows.forEach((r, i) => {
+        r.hidden = !open;
+        r.classList.toggle("is-revealed", open);
+        r.style.animationDelay = open ? `${i * 30}ms` : "";
+      });
+    });
+  }
+
+  // the revenue table's H1–H3 columns select their horizon too (cells 2–4 → tabs 0–2)
+  const table = section.querySelector("table");
+  if (table) {
+    const colOf = (e: Event) => (e.target as Element).closest<HTMLTableCellElement>("td, th")?.cellIndex;
+    table.addEventListener("click", (e) => {
+      const col = colOf(e);
+      if (col !== undefined && col >= 2 && col <= 4) select(tabs[col - 2]);
+    });
+    let hoverCol = -1;
+    const setHover = (col: number) => {
+      if (col === hoverCol) return;
+      hoverCol = col;
+      for (const row of table.rows)
+        [...row.cells].forEach((c, i) => c.classList.toggle("is-hover", i === col && i >= 2));
+    };
+    table.addEventListener("pointermove", (e) => setHover(colOf(e) ?? -1));
+    table.addEventListener("pointerleave", () => setHover(-1));
+  }
+
+  // The clip: each tab plays it to its stop (A, B or C), forwards or backwards from wherever it is,
+  // so any order of clicks works
+  const FRAME_COUNT = 121;
+  const STOPS = [0, 60, 120]; // frames for point A, point B, point C
+  const FPS = 67.5; // 2.25× the clip's natural speed (24fps × 1.5 × 1.5)
+  const stage = section.querySelector<HTMLElement>(".roadmap__stage")!;
+  const canvas = stage.querySelector<HTMLCanvasElement>(".roadmap__canvas")!;
+  const poster = stage.querySelector<HTMLImageElement>(".roadmap__poster")!;
+  const ctx = canvas.getContext("2d")!;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const src = frameSet("roadmap", stage.clientWidth);
+  const frames: HTMLImageElement[] = new Array(FRAME_COUNT);
+
+  let current = 0; // frame on screen (fractional while animating)
+  let target = 0;
+  let raf = 0;
+  let last = 0;
+
+  function draw() {
+    const i = nearestLoaded(frames, Math.round(current));
+    if (i < 0) return;
+    ctx.drawImage(frames[i], 0, 0, canvas.width, canvas.height);
+    poster.hidden = true;
+  }
+  function step(now: number) {
+    const dt = last ? (now - last) / 1000 : 0;
+    last = now;
+    current += Math.sign(target - current) * Math.min(Math.abs(target - current), FPS * dt);
+    draw();
+    if (current !== target) raf = requestAnimationFrame(step);
+    else raf = last = 0;
+  }
+  function goTo(index: number) {
+    target = STOPS[index] ?? 0;
+    if (reducedMotion) {
+      current = target;
+      draw();
+      return;
+    }
+    if (!raf) raf = requestAnimationFrame(step);
+  }
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(stage.clientWidth * dpr);
+    canvas.height = Math.round(stage.clientHeight * dpr);
+    draw();
+  }
+
+  // stops first, then coarse-to-fine, so any jump has nearby frames early
+  new IntersectionObserver(
+    (entries, observer) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      observer.disconnect();
+      for (const i of loadOrder(FRAME_COUNT, STOPS, [16, 8, 4, 2, 1])) {
+        const img = new Image();
+        img.decoding = "async";
+        img.onload = () => {
+          if (Math.round(current) === i || i === target) draw();
+        };
+        img.src = src(i);
+        frames[i] = img;
+      }
+    },
+    { rootMargin: "200% 0px" },
+  ).observe(stage);
+
+  resize();
+  addEventListener("resize", resize);
+</script>
+
+<style is:global>
+  /* ---------- Roadmap horizon animation ---------- */
+  /* No stacking context here, so the stage can sit between the section background and the floating TOC */
+  .for-whom.roadmap {
+    z-index: auto;
+    padding-bottom: var(--space-3xl);
+  }
+  /* Stacking here: animation (0) < floating TOC (1) < heading, explainer, tabs and columns (3) */
+  .roadmap > .wrap {
+    position: relative;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .roadmap > .wrap > * {
+    pointer-events: auto;
+  }
+  .roadmap__stage {
+    position: relative;
+    z-index: 0;
+    aspect-ratio: 2042 / 1020;
+    margin-top: calc(-200 * var(--px)); /* rises under the end of the explainer */
+    pointer-events: none;
+  }
+  /* Faders: bands in the section colour blend the clip into the background at top and bottom.
+         Each is solid where text overlaps the clip (the explainer above, the tabs below; 200px each),
+         then fades over the visible part, stopping at the beam (~350px into the 720px clip): top 340px, bottom 360px. */
+  .roadmap__fader {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: var(--fader-h);
+    pointer-events: none;
+  }
+  /* solid section colour for the outer 60%, then an eased fade to clear (stops short of the beam) */
+  .roadmap__fader--top {
+    --fader-h: var(--fader-top, calc(340 * var(--px)));
+  }
+  .roadmap__fader--bottom {
+    --fader-h: var(--fader-bottom, calc(360 * var(--px)));
+  }
+  .roadmap__fader--top {
+    top: 0;
+    background: linear-gradient(to bottom, var(--c-night) 60%, rgb(14 21 27 / 0.5) 80%, rgb(14 21 27 / 0));
+  }
+  .roadmap__fader--bottom {
+    bottom: 0;
+    background: linear-gradient(to top, var(--c-night) 60%, rgb(14 21 27 / 0.5) 80%, rgb(14 21 27 / 0));
+  }
+  /* Three horizon columns: the one for the selected tab is at full strength, the others pale */
+  .roadmap > .horizons-wrap {
+    position: relative;
+    z-index: 3;
+    margin-top: calc(-235 * var(--px)); /* tabs and columns rise over the bottom of the animation */
+  }
+  /* Tabs on the columns' grid: each title starts where its column's text starts, and its underline spans that column */
+  .roadmap .audience-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .roadmap .audience-tab {
+    margin: 0 var(--col-gap);
+  }
+  .roadmap .audience-tab:first-child {
+    margin-left: 0;
+  }
+  .roadmap .audience-tab:last-child {
+    margin-right: 0;
+  }
+  .horizons {
+    margin-top: var(--space-xl);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: var(--span-3);
+    max-width: 100%;
+  }
+  .horizon {
+    padding: 0 var(--col-gap);
+    opacity: 0.5;
+    transition: opacity 0.35s var(--ease-out);
+  }
+  .horizon:first-child {
+    padding-left: 0;
+  }
+  .horizon:last-child {
+    padding-right: 0;
+  }
+  .horizon + .horizon {
+    border-left: 1px solid rgb(237 233 222 / 0.15);
+  }
+  .horizon.is-active {
+    opacity: 1;
+  }
+  /* Columns are clickable too: an inactive one hints on hover */
+  .horizon:not(.is-active) {
+    cursor: pointer;
+  }
+  .horizon:not(.is-active):hover {
+    opacity: 0.75;
+  }
+  .horizon__label {
+    margin: 0;
+    color: var(--c-cream);
+    font-size: var(--text-small);
+    letter-spacing: 0.04em;
+  }
+  .horizon h3 {
+    margin: var(--space-sm) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .horizon__lead {
+    margin: var(--space-sm) 0 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .horizon ul {
+    display: grid;
+    row-gap: var(--space-lg);
+    margin: var(--space-xl) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .horizon h4 {
+    margin: 0;
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .horizon ul p {
+    margin: var(--space-xs) 0 0;
+    color: rgb(237 233 222 / 0.75);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .horizon__key {
+    color: var(--c-cream);
+  }
+  /* Revenue impact table; the column for the selected horizon is highlighted */
+  .impact {
+    width: var(--span-3);
+    max-width: 100%;
+    margin-top: var(--space-3xl);
+  }
+  .impact__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .impact__caption {
+    margin: var(--space-xs) 0 0;
+    color: rgb(237 233 222 / 0.75);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .impact__scroll {
+    margin-top: var(--space-lg);
+    overflow-x: auto;
+  }
+  .impact table {
+    width: 100%;
+    table-layout: fixed; /* equal value columns, so the revenue tracks are the same length */
+    border-collapse: collapse;
+    font-size: var(--text-small);
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+  }
+  .impact th,
+  .impact td {
+    padding: var(--space-xs) var(--space-md) var(--space-xs) 0; /* compact rows */
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid rgb(237 233 222 / 0.12);
+    transition: color 0.3s ease;
+  }
+  .impact thead th {
+    color: rgb(237 233 222 / 0.6);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .impact thead th:first-child {
+    width: 32%;
+  }
+  /* wide enough that labels stay on one line */
+  .impact tbody th {
+    color: var(--c-cream);
+    font-weight: 400;
+  }
+  .impact td {
+    color: rgb(237 233 222 / 0.75);
+  }
+  .impact__row--drivers td {
+    font-size: 0.9em;
+  }
+  /* selected horizon: bold, full white */
+  .impact[data-active="h1"] :is(td, thead th):nth-child(3),
+  .impact[data-active="h2"] :is(td, thead th):nth-child(4),
+  .impact[data-active="h3"] :is(td, thead th):nth-child(5) {
+    color: var(--c-white);
+    font-weight: 600;
+  }
+  /* the selected horizon's revenue bar uses the active blue */
+  .impact[data-active="h1"] td:nth-child(3) .impact__fill,
+  .impact[data-active="h2"] td:nth-child(4) .impact__fill,
+  .impact[data-active="h3"] td:nth-child(5) .impact__fill {
+    background: var(--c-primary);
+  }
+  /* H1–H3 columns are clickable; inactive ones hint on hover */
+  .impact :is(td, thead th):nth-child(n + 3) {
+    cursor: pointer;
+  }
+  .impact[data-active="h1"] :is(td, thead th):nth-child(3),
+  .impact[data-active="h2"] :is(td, thead th):nth-child(4),
+  .impact[data-active="h3"] :is(td, thead th):nth-child(5) {
+    cursor: default;
+  }
+  .impact tr :is(td, th).is-hover {
+    color: var(--c-cream);
+  }
+  /* Revenue bars: one scale ($0 → $4,0 млн) on aligned tracks; a 2px gap marks today's $3,0 млн,
+         so growth over the baseline reads as the part of the bar beyond it */
+  .impact__value {
+    display: block;
+    white-space: nowrap;
+  }
+  .impact__track {
+    position: relative;
+    display: block;
+    max-width: 9em;
+    height: 8px;
+    margin-top: var(--space-xs);
+    border-radius: 4px;
+    background: rgb(237 233 222 / 0.12);
+  }
+  .impact__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--v) * 100%);
+    border-radius: 4px;
+    background: currentColor;
+  }
+  .impact__track::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 75%; /* $3,0 млн of $4,0 млн */
+    width: 2px;
+    background: var(--c-night);
+  }
+  /* Enabler forecast: a merged sub-header row, then the enablers and a total */
+  .impact .impact__group th {
+    padding-top: var(--space-md);
+    color: var(--c-white);
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+  .impact__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .impact__toggle:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  .impact__icon {
+    flex: none;
+    width: 1.3em;
+    height: 1.3em;
+    overflow: visible;
+  }
+  .impact__icon path {
+    fill: none;
+    stroke: var(--c-peach);
+    stroke-width: 2px;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .impact__toggle[aria-expanded="true"] .chev--a {
+    transform: translateY(-7.5px) scaleY(0.83);
+  }
+  .impact__toggle[aria-expanded="true"] .chev--b {
+    transform: translateY(20px) scaleY(-0.83);
+  }
+  .impact__enabler.is-revealed {
+    animation: impact-reveal 0.35s var(--ease-out) both;
+  }
+  @keyframes impact-reveal {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .impact__total :is(th, td) {
+    border-top: 2px solid rgb(237 233 222 / 0.35);
+    color: var(--c-cream);
+    font-weight: 600;
+  }
+  .roadmap__poster,
+  .roadmap__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .roadmap__poster {
+    object-fit: cover;
+  }
+  /* the clip is shifted 150px left; a fader on the right blends its cut edge into the section */
+  .roadmap__poster,
+  .roadmap__canvas {
+    transform: translateX(calc(-150 * var(--px)));
+  }
+  .roadmap__fader--right {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    width: calc(400 * var(--px));
+    height: auto;
+    background: linear-gradient(to left, var(--c-night) 50%, rgb(14 21 27 / 0.5) 75%, rgb(14 21 27 / 0));
+  }
+
+  @media (width < 64rem) {
+    .roadmap__stage {
+      margin-top: -64px;
+      --fader-top: 64px;
+      --fader-bottom: 64px;
+    }
+    .roadmap__poster,
+    .roadmap__canvas {
+      transform: none;
+    }
+    .roadmap__fader--right {
+      display: none;
+    }
+    .roadmap > .horizons-wrap {
+      margin-top: -64px;
+    }
+    .roadmap .audience-tabs {
+      display: flex;
+      gap: 24px;
+    }
+    .roadmap .audience-tab {
+      margin: 0;
+    }
+    .horizons {
+      grid-template-columns: 1fr;
+      row-gap: 48px;
+    }
+    .horizon,
+    .horizon:first-child,
+    .horizon:last-child {
+      padding: 0;
+    }
+    .horizon + .horizon {
+      border-left: 0;
+    }
+    .impact {
+      margin-top: 64px;
+    }
+    .impact table {
+      min-width: 720px;
+    }
+  }
+</style>

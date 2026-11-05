@@ -9,11 +9,14 @@ export function frameSet(name: string, cssWidth: number) {
   return (i: number) => `/frames/${name}/${width}/f${String(i + 1).padStart(3, "0")}.webp`;
 }
 
-/** Coarse-to-fine order (every 32nd frame, then 16th, …): the whole range is usable early, detail fills in */
-export function loadOrder(count: number) {
-  const order: number[] = [];
-  const seen = new Set<number>();
-  for (const step of [32, 16, 8, 4, 2, 1]) {
+/**
+ * Coarse-to-fine order (every 32nd frame, then 16th, …): the whole range is usable early, detail fills in.
+ * `first` frames (e.g. the stops a clip plays to) load before everything else.
+ */
+export function loadOrder(count: number, first: number[] = [], steps = [32, 16, 8, 4, 2, 1]) {
+  const order = [...first];
+  const seen = new Set(order);
+  for (const step of steps) {
     for (let i = 0; i < count; i += step) {
       if (seen.has(i)) continue;
       seen.add(i);
