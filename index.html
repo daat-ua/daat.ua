@@ -615,8 +615,13 @@
     .roadmap > .horizons-wrap {
       position: relative;
       z-index: 3;
-      margin-top: calc(-200 * var(--px)); /* tabs and columns rise over the bottom of the animation */
+      margin-top: calc(-235 * var(--px)); /* tabs and columns rise over the bottom of the animation */
     }
+    /* Tabs on the columns' grid: each title starts where its column's text starts, and its underline spans that column */
+    .roadmap .audience-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+    .roadmap .audience-tab { margin: 0 var(--col-gap); }
+    .roadmap .audience-tab:first-child { margin-left: 0; }
+    .roadmap .audience-tab:last-child { margin-right: 0; }
     .horizons {
       margin-top: var(--space-xl);
       display: grid;
@@ -816,6 +821,17 @@
       height: 100%;
     }
     .roadmap__poster { object-fit: cover; }
+    /* the clip is shifted 150px left; a fader on the right blends its cut edge into the section */
+    .roadmap__poster,
+    .roadmap__canvas { transform: translateX(calc(-150 * var(--px))); }
+    .roadmap__fader--right {
+      top: 0;
+      bottom: 0;
+      left: auto;
+      width: calc(400 * var(--px));
+      height: auto;
+      background: linear-gradient(to left, var(--c-night) 50%, rgb(14 21 27 / 0.5) 75%, rgb(14 21 27 / 0));
+    }
 
     /* ---------- Report structure (light section) ---------- */
     .report {
@@ -1463,7 +1479,11 @@
       .for-whom { padding: 64px 0 80px; }
       .scrub::after { height: 64px; }
       .roadmap__stage { margin-top: -64px; --fader-top: 64px; --fader-bottom: 64px; }
+      .roadmap__poster, .roadmap__canvas { transform: none; }
+      .roadmap__fader--right { display: none; }
       .roadmap > .horizons-wrap { margin-top: -64px; }
+      .roadmap .audience-tabs { display: flex; gap: 24px; }
+      .roadmap .audience-tab { margin: 0; }
       .horizons { grid-template-columns: 1fr; row-gap: 48px; }
       .horizon, .horizon:first-child, .horizon:last-child { padding: 0; }
       .horizon + .horizon { border-left: 0; }
@@ -2128,6 +2148,7 @@
         <canvas class="roadmap__canvas"></canvas>
         <div class="roadmap__fader roadmap__fader--top"></div>
         <div class="roadmap__fader roadmap__fader--bottom"></div>
+        <div class="roadmap__fader roadmap__fader--right"></div>
       </div>
       <div class="container horizons-wrap">
         <div class="audience-tabs" role="tablist" aria-label="Горизонти дорожньої карти">

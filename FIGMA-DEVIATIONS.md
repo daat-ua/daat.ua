@@ -465,3 +465,7 @@ The action titles in the three horizon columns ("Захистити час ке�
 ## FAQ questions: Medium weight
 
 The FAQ questions (`dt`) use TT Commons Medium (500) instead of SemiBold (600), the same as the roadmap action titles.
+
+## Roadmap tabs aligned to the horizon columns
+
+On desktop the three roadmap tabs share the horizon columns' grid. Each title starts where its column's text starts, and its underline spans that column's width. Below 1024px they stay a scrolling row.
