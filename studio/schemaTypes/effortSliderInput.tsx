@@ -3,7 +3,7 @@ import {set, unset, type NumberInputProps} from 'sanity'
 import {Flex, Stack, Text} from '@sanity/ui'
 
 export function EffortSliderInput(props: NumberInputProps) {
-    const {value, onChange} = props
+    const {value, onChange, readOnly, elementProps} = props
     const numericValue = typeof value === 'number' ? value : 0
 
     const handleChange = useCallback(
@@ -17,13 +17,16 @@ export function EffortSliderInput(props: NumberInputProps) {
     return (
         <Stack gap={2}>
             <Flex align="center" gap={3}>
+                {/* Studio's id, focus handlers and aria-describedby first; a range input ignores readOnly, so disable it */}
                 <input
+                    {...elementProps}
                     type="range"
                     min={0}
                     max={100}
                     step={1}
                     value={numericValue}
                     onChange={handleChange}
+                    disabled={readOnly}
                     style={{flex: 1}}
                 />
                 <Text size={1} weight="medium" style={{minWidth: 36, textAlign: 'right'}}>
