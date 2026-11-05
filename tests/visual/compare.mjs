@@ -74,6 +74,7 @@ function serve(dir) {
   const server = createServer(async (req, res) => {
     let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
     if (path.endsWith("/")) path += "index.html";
+    if (!extname(path)) path += ".html"; // pages are built as /uk-UA/atlas.html
     const file = join(dir, path);
     if (!file.startsWith(dir) || !existsSync(file)) {
       res.writeHead(404).end();
@@ -151,7 +152,7 @@ for (const width of widths) {
   for (const name of only) {
     const selector = SECTIONS[name];
     const before = await shoot(page, `http://localhost:${legacy.address().port}/index.html`, width, selector);
-    const after = await shoot(page, `http://localhost:${build.address().port}/`, width, selector);
+    const after = await shoot(page, `http://localhost:${build.address().port}/uk-UA/atlas`, width, selector);
     if (!before) {
       rows.push({ width, section: name, result: "missing in legacy" });
       continue;

@@ -21,9 +21,26 @@ const commons = (name, weight) => variant(`TTCommons-${name}`, weight);
 export default defineConfig({
   site: "https://daat.ua",
   output: "static",
-  trailingSlash: "ignore",
+  // URLs without a trailing slash (/uk-UA/atlas), each page built as one .html file
+  trailingSlash: "never",
   compressHTML: true,
+  // One locale for now, always in the URL (/uk-UA/…), so more can be added without moving pages
+  i18n: {
+    locales: ["uk-UA"],
+    defaultLocale: "uk-UA",
+    routing: {
+      prefixDefaultLocale: true,
+      // the root goes to the ATLAS page (below), not to /uk-UA/
+      redirectToDefaultLocale: false,
+    },
+  },
+  // Static redirect pages (meta refresh + canonical); Caddy answers these with real HTTP redirects
+  redirects: {
+    "/": "/uk-UA/atlas",
+    "/uk-UA": "/uk-UA/atlas",
+  },
   build: {
+    format: "file",
     // one page: inline its CSS (~9 KB gzipped) rather than block rendering on a stylesheet request
     inlineStylesheets: "always",
   },

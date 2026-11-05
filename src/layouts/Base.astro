@@ -9,6 +9,10 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+const locale = Astro.currentLocale ?? "uk-UA";
+// pages are built as .html files but served without the extension; the 404 page gets no canonical URL
+const path = Astro.url.pathname.replace(/\.html$/, "");
+const canonical = path === "/404" ? undefined : new URL(path, Astro.site);
 
 // favicons from the square "D" mark: PNG for the tab, 180px for iOS home screens
 const favicon = await getImage({ src: faviconSource, width: 32, height: 32, format: "png" });
@@ -16,12 +20,18 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
 ---
 
 <!doctype html>
-<html lang="uk">
+<html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {canonical && (
+      <>
+        <link rel="canonical" href={canonical} />
+        <link rel="alternate" hreflang={locale} href={canonical} />
+      </>
+    )}
     <link rel="icon" type="image/png" href={favicon.src} />
     <link rel="apple-touch-icon" href={touchIcon.src} />
     <!-- Preload only what's above the fold: the H1 (Turns Light + Medium) and the hero body (Commons Regular) -->

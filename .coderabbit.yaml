@@ -46,6 +46,7 @@ reviews:
         - Images go through `astro:assets` (`<Image>`/`<Picture>`) with sensible `sizes`; the LCP image is eager/high priority, the rest lazy. Frame sequences for the canvases live in public/frames.
         - Fonts come from Astro's Fonts API (no hand-written `@font-face`).
         - Section components live in src/components/atlas-landing/sections; copy lives in src/data as typed data.
+        - i18n: one locale, `uk-UA`, always in the URL (pages under src/pages/uk-UA/, no trailing slash, built as .html). Internal links to pages go through `getRelativeLocaleUrl(…, { normalizeLocale: false })` so the locale keeps its casing.
     - path: "{Dockerfile,Caddyfile,railway.json}"
       instructions: |
         Railway deployment: multi-stage build (Node 26 builds, Caddy serves dist/ on $PORT). Check caching headers (immutable for /_astro/*), compression, security headers and that the image stays small.
