@@ -1,18 +1,20 @@
 ---
+import Base from "../layouts/Base.astro";
 import Footer from "../components/Footer.astro";
 import GlobalMenu from "../components/GlobalMenu.astro";
 import Header from "../components/Header.astro";
+import Toc from "../components/Toc.astro";
+import AuditFindings from "../components/atlas-landing/sections/AuditFindings.astro";
 import Deliverables from "../components/atlas-landing/sections/Deliverables.astro";
+import Faq from "../components/atlas-landing/sections/Faq.astro";
 import ForWhom from "../components/atlas-landing/sections/ForWhom.astro";
 import Hero from "../components/atlas-landing/sections/Hero.astro";
-import Testimonials from "../components/atlas-landing/sections/Testimonials.astro";
-import Roadmap from "../components/atlas-landing/sections/Roadmap.astro";
 import Methodology from "../components/atlas-landing/sections/Methodology.astro";
 import Report from "../components/atlas-landing/sections/Report.astro";
+import Roadmap from "../components/atlas-landing/sections/Roadmap.astro";
 import Scrub from "../components/atlas-landing/sections/Scrub.astro";
+import Testimonials from "../components/atlas-landing/sections/Testimonials.astro";
 import WhyNow from "../components/atlas-landing/sections/WhyNow.astro";
-import Toc from "../components/Toc.astro";
-import Base from "../layouts/Base.astro";
 ---
 
 <Base
@@ -21,7 +23,6 @@ import Base from "../layouts/Base.astro";
 >
   <Header />
   <main id="main">
-    <!-- Sections are ported one PR at a time from the legacy index.html -->
     <Hero />
     <Toc>
       <WhyNow />
@@ -32,6 +33,8 @@ import Base from "../layouts/Base.astro";
       <Roadmap />
       <Testimonials />
       <Methodology />
+      <AuditFindings />
+      <Faq />
     </Toc>
   </main>
   <Footer />

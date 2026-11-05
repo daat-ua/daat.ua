@@ -164,8 +164,10 @@ import Divider from "../../ui/Divider.astro";
   }
 
   @media (width < 64rem) {
+    /* "Чому Daat?" follows a divider: 40px, as everything after a divider on phones (patterns.css). Set here
+       explicitly because Astro's CSS order differs from the legacy page's, where a later rule decided it. */
     .section-title--daat {
-      margin-top: 56px;
+      margin-top: 40px;
     }
     .example {
       flex-direction: column;

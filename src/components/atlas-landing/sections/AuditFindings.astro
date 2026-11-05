@@ -1,0 +1,60 @@
+---
+import { findings } from "../../../data/findings";
+import Carousel from "../../ui/Carousel.astro";
+---
+
+<section class="report" id="audit-findings" data-toc-theme="light">
+  <div class="wrap">
+    <!-- TODO: link "Дивитися каталог" to the page with all findings -->
+    <h2 class="section-title">
+      <strong>Знахідки аудитів:</strong> що ми бачимо в українських <span class="nowrap">IT-компаніях.</span>
+      <br />
+      <a class="finding__more findings__all" href="#">
+        Дивитися&nbsp;каталог&nbsp;
+        <svg class="findings__all-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.5 12L4.99997 12" />
+          <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
+        </svg>
+      </a>
+    </h2>
+    <p class="report__intro">
+      Результати нашої роботи у форматі практичних гайдів на <span class="nowrap">2–3 тис.</span> слів. Кожна
+      знахідка&nbsp;— реальна проблема, яку ми виявили під час аудитів українських{" "}
+      <span class="nowrap">IT-компаній</span>: як вона проявляється, звідки береться і як її вирішують команди.
+    </p>
+
+    <!-- TODO content: draft teaser titles; link each card to its guide once published -->
+    <Carousel
+      label="Знахідки аудитів"
+      items={findings}
+      more="Читати далі"
+      prevLabel="Попередні знахідки"
+      nextLabel="Наступні знахідки"
+    />
+  </div>
+</section>
+
+<style is:global>
+  /* "Дивитися каталог" sits inside the heading, on its own line: heading size and weight, link colour and hover underline */
+  .section-title .findings__all {
+    display: inline;
+    margin: 0;
+    font: inherit;
+    white-space: nowrap;
+  }
+  .findings__all-icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.14em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.2s var(--ease-out);
+  }
+  .findings__all:hover .findings__all-icon,
+  .findings__all:focus-visible .findings__all-icon {
+    transform: translateX(3px);
+  }
+</style>
