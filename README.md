@@ -17,7 +17,9 @@ npm run preview   # serve dist/ locally
 
 ## Deploy
 
-Railway builds the `Dockerfile`: Node 26 builds the site, then Caddy (`Caddyfile`) serves `dist/` on `$PORT` with compression, long-lived caching for hashed assets and security headers.
+Railway builds the `Dockerfile`: Node 26 builds the site, then Caddy (`Caddyfile`) serves it on `$PORT` with compression, long-lived caching for hashed assets and security headers.
+
+While the migration is in progress the image keeps the legacy page live at `/` and serves the Astro build from `/next/`, so merging a migration PR never replaces the live page with a half-ported one. The last migration PR moves the Astro build to `/`.
 
 ## Structure
 

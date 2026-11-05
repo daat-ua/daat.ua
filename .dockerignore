@@ -6,7 +6,3 @@ _source
 tests
 *.md
 .DS_Store
-# legacy page (removed at the end of the migration)
-index.html
-assets
-fonts

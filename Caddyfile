@@ -1,4 +1,8 @@
-# Serves the static Astro build on Railway. Railway provides $PORT.
+# Serves the static site on Railway. Railway provides $PORT.
+#
+# During the migration the legacy page (index.html, assets/, fonts/) stays at / and the Astro build is
+# served from /next/ (its hashed bundles keep their /_astro/ URLs). The last migration PR removes the
+# legacy files and the /next mapping, so the Astro build moves to /.
 {
 	admin off
 	auto_https off
@@ -8,16 +12,20 @@
 	root * /srv
 	encode zstd gzip
 
+	# Astro's bundles live under /next/_astro/ in the image but are referenced as /_astro/
+	@astro path /_astro/*
+	rewrite @astro /next{path}
+
 	# Astro's hashed bundles and optimised images never change: cache for a year
-	@hashed path /_astro/*
+	@hashed path /_astro/* /next/_astro/*
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
 
-	# frame sequences and other public assets: cache for a week
-	@assets path /frames/* /fonts/* /favicon*
+	# frame sequences, fonts and other static assets: cache for a week
+	@assets path /frames/* /fonts/* /assets/* /favicon*
 	header @assets Cache-Control "public, max-age=604800"
 
 	# pages: always revalidate so deploys show up at once
-	@html path / *.html
+	@html path / /next/ *.html
 	header @html Cache-Control "public, max-age=0, must-revalidate"
 
 	header {
@@ -32,7 +40,9 @@
 	file_server
 
 	handle_errors {
-		rewrite * /404.html
+		# a missing file must not inherit the long-lived caching set above
+		header Cache-Control "no-store"
+		rewrite * /next/404.html
 		file_server
 	}
 }
