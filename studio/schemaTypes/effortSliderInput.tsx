@@ -15,7 +15,7 @@ export function EffortSliderInput(props: NumberInputProps) {
     )
 
     return (
-        <Stack space={2}>
+        <Stack gap={2}>
             <Flex align="center" gap={3}>
                 <input
                     type="range"
