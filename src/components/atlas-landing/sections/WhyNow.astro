@@ -1,0 +1,201 @@
+---
+import { Picture } from "astro:assets";
+import founders from "../../../assets/images/founders.jpg";
+import { problems, reasons } from "../../../data/why-now";
+import Divider from "../../ui/Divider.astro";
+---
+
+<section class="why" id="why-now">
+  <div class="wrap">
+    <h2 class="section-title">
+      Що стримує зростання? Рідко ринок. Частіше&nbsp;— <strong>процеси, ролі й рішення всередині компанії.</strong>
+    </h2>
+
+    <div class="why__intro">
+      <p>
+        <strong>Діагностика зростання</strong>&nbsp;— це незалежна доказова оцінка того, які системи та елементи{" "}
+        <span class="nowrap">IT-компанії</span> прискорюють її розвиток, а які стримують: стратегія, управління,
+        delivery, інженерна культура, лідерство, люди й компетенції. ATLAS простежує кожне обмеження до першопричини й
+        показує, що змінити, щоб компанія могла рости далі.
+      </p>
+      <p>
+        У 2026 році зростати по-старому вже не виходить: клієнти вимагають передбачуваності та якості, ринок&nbsp;—
+        зрілого delivery, а AI змінює те, що здатна зробити невелика команда. Компанії, які вчасно перебудовують свої
+        системи, відриваються від решти.
+      </p>
+    </div>
+
+    <Divider />
+
+    <ul class="problems">
+      {problems.map((card) => (
+        <li class="card">
+          <h3 set:html={card.title} />
+          <p set:html={card.text} />
+        </li>
+      ))}
+    </ul>
+
+    <Divider />
+
+    <div class="example">
+      <p>
+        <strong>Приклад із практики:</strong> у компанії на ~50 людей п’ятеро керівників, кожен в окремому інтерв’ю,
+        назвали ту саму головну перешкоду зростанню. Клієнт почав її усувати ще до фінального звіту.
+      </p>
+      <a class="btn btn--light" href="#audit-findings">
+        Знахідки аудитів{" "}
+        <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" />
+        </svg>
+      </a>
+    </div>
+
+    <Divider />
+
+    <h2 class="section-title section-title--daat">
+      Чому <strong>Daat</strong>?
+    </h2>
+
+    <div class="why-daat">
+      <div class="why-daat__photo">
+        <!-- cropped by the CSS mask; the image is drawn at ~1.93× the column -->
+        <Picture
+          src={founders}
+          alt="Засновники Daat"
+          formats={["avif", "webp"]}
+          widths={[480, 640, 900, 1200, 1600]}
+          sizes="(width < 64rem) 620px, 40.8vw"
+          layout="none"
+        />
+      </div>
+      <div>
+        <ul class="reasons">
+          {reasons.map((card) => (
+            <li class="card">
+              <h3 set:html={card.title} />
+              <p set:html={card.text} />
+            </li>
+          ))}
+        </ul>
+        <a class="btn btn--outline reasons__cta" href="#contact">
+          Записатися на діагностичний дзвінок
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  /* opens its section, level with the floating TOC */
+  .section-title--daat {
+    margin-top: var(--space-xl);
+  }
+  .section-title--daat strong {
+    font-feature-settings:
+      "dlig" 1,
+      "ss01" 1;
+  }
+  /* card and list titles in "Чому зараз?", "Що ви отримаєте", the report, the roadmap and the FAQ are Medium, lighter than the DemiBold elsewhere */
+  #why-now .card h3,
+  #deliverables .card h3,
+  #methodology .card h3,
+  #report .report-toc h3,
+  #roadmap .horizon h4,
+  #faq .faq__item dt {
+    font-weight: 500;
+  }
+  .example {
+    display: flex;
+    align-items: center;
+    gap: var(--col-gap);
+    margin-top: var(--space-xl);
+  }
+  .example p {
+    width: var(--span-2);
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .example strong {
+    font-weight: 600;
+  }
+  .example .btn {
+    flex: none;
+    padding-inline: var(--space-lg);
+  }
+  .why-daat {
+    display: grid;
+    grid-template-columns: var(--col) var(--span-2);
+    column-gap: var(--col-gap);
+    align-items: start;
+    margin-top: var(--space-2xl);
+  }
+  .why-daat__photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 301.2 / 339;
+    overflow: hidden;
+    -webkit-mask: url("../../../assets/images/founders-mask.svg") no-repeat 0 0 / 100% 100%;
+    mask: url("../../../assets/images/founders-mask.svg") no-repeat 0 0 / 100% 100%;
+  }
+  .why-daat__photo img {
+    position: absolute;
+    /* Figma crop, expressed relative to the mask box so it scales with the column */
+    left: -46.81%;
+    top: -1.18%;
+    width: 193.39%;
+    height: 114.6%;
+    max-width: none;
+    object-fit: cover;
+  }
+  .reasons {
+    display: grid;
+    grid-template-columns: repeat(2, var(--col));
+    gap: var(--space-xl) var(--col-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .reasons__cta {
+    display: flex;
+    width: fit-content;
+    margin-top: var(--space-xl);
+  }
+
+  @media (width < 64rem) {
+    .section-title--daat {
+      margin-top: 56px;
+    }
+    .example {
+      flex-direction: column;
+      align-items: stretch;
+      max-width: 640px;
+      margin-top: 40px;
+    }
+    .example p {
+      width: auto;
+    }
+    .example {
+      gap: 24px;
+    }
+    .why-daat {
+      grid-template-columns: 1fr;
+      row-gap: 40px;
+      margin-top: 40px;
+    }
+    .why-daat__photo {
+      max-width: 320px;
+    }
+    .reasons {
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+      padding-top: 0;
+    }
+    .reasons__cta {
+      width: auto;
+      max-width: 480px;
+      margin-top: 40px;
+    }
+  }
+</style>

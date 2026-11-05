@@ -1,11 +1,14 @@
 /*
   Tailwind 4 without its preflight reset: the page's own base styles (below) are kept as they were in the
-  legacy index.html, so the port stays pixel-identical. Component CSS lives in @layer components, so
-  Tailwind utilities can still override it.
+  legacy index.html, so the port stays pixel-identical. The base styles sit in @layer base; component CSS is
+  unlayered, as on the legacy page (Astro bundles component CSS before this file, so layer order can't be
+  relied on to rank them). Tailwind utilities are layered, so they don't override component CSS; use the
+  `!` modifier where a utility must win.
 */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+@import "./patterns.css";
 
 /*
   Theme values are `static`: every token is emitted, since the component CSS reads them directly.
@@ -183,29 +186,27 @@
   }
 }
 
-@layer components {
-  .nowrap {
-    white-space: nowrap;
-  }
-  /* the page's container: full width with the gutters (named `wrap` because Tailwind's `container` is a max-width box) */
-  .wrap {
-    position: relative;
-    padding-inline: var(--gutter);
-  }
-  .skip-link {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    z-index: 10;
-    padding: 12px 20px;
-    border-radius: 999px;
-    background: var(--c-white);
-    color: var(--c-hero);
-    font-size: var(--text-small);
-    font-weight: 600;
-    transform: translateY(-200%);
-  }
-  .skip-link:focus {
-    transform: none;
-  }
+.nowrap {
+  white-space: nowrap;
+}
+/* the page's container: full width with the gutters (named `wrap` because Tailwind's `container` is a max-width box) */
+.wrap {
+  position: relative;
+  padding-inline: var(--gutter);
+}
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--c-white);
+  color: var(--c-hero);
+  font-size: var(--text-small);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
 }

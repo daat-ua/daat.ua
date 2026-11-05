@@ -1,0 +1,550 @@
+/*
+  Patterns shared by several sections: section headings, buttons, the "why" section layout, cards and
+  card grids, dotted lists, the "for whom" and report section bases, the findings carousel and the
+  underline tabs. Section-specific CSS lives with each section component. Unlayered, like all
+  component CSS (see global.css).
+*/
+.btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: calc(62.63 * var(--px));
+  border-radius: 999px;
+  font-size: var(--text-body);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+.btn:focus-visible {
+  outline: 3px solid var(--c-accent);
+  outline-offset: 3px;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn__icon {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  margin-left: 0.35em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s var(--ease-out);
+}
+.btn:hover .btn__icon,
+.btn:focus-visible .btn__icon {
+  transform: translateY(2px);
+}
+.btn--primary,
+.btn--secondary {
+  border: 2px solid var(--c-white);
+}
+.btn--primary {
+  position: relative;
+  z-index: 2;
+  padding-inline: calc(53.5 * var(--px));
+  background: var(--c-primary);
+}
+.btn--primary:hover {
+  background: var(--c-primary-hover);
+}
+.btn--secondary {
+  position: relative;
+  z-index: 1;
+  margin-left: calc(-57.5 * var(--px));
+  padding: 0 calc(53.5 * var(--px)) 0 calc(100.5 * var(--px));
+  background: var(--c-surface);
+}
+.btn--secondary:hover {
+  background: var(--c-surface-hover);
+}
+.why {
+  position: relative;
+  z-index: 0;
+  margin-top: calc(-1 * var(--overhang)); /* the hero buttons hang over its top edge */
+  padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
+  background: var(--c-primary);
+}
+/* Section heading, shared by every content section; colour comes from the section */
+.section-title {
+  max-width: calc(831.82 * var(--px));
+  margin: var(--space-md) 0 0;
+  color: var(--title-color, var(--c-on-primary-muted));
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  font-weight: 300;
+  line-height: var(--leading-heading);
+  font-feature-settings: "dlig" 1;
+}
+.section-title strong {
+  font-weight: var(--weight-emphasis);
+}
+.section-title:first-child {
+  margin-top: 0;
+}
+.why__intro {
+  max-width: var(--span-2);
+  margin-top: var(--space-xl);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+.why__intro p {
+  margin: 0;
+}
+.why__intro p + p {
+  margin-top: calc(var(--leading-body) * 1em);
+}
+.why__intro strong {
+  font-weight: 700;
+}
+/* Dividers open the block that follows: more space before (64) than after (48) */
+.why__divider {
+  width: var(--span-3);
+  max-width: 100%;
+  height: calc(2 * var(--px));
+  margin-top: var(--space-2xl);
+}
+.why__divider + * {
+  margin-top: var(--space-xl);
+}
+.card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  font-weight: 600;
+  line-height: var(--leading-title);
+  font-feature-settings: "dlig" 1;
+}
+.card p {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-feature-settings: "dlig" 1;
+}
+.problems {
+  display: grid;
+  grid-template-columns: repeat(3, var(--col));
+  gap: var(--space-xl) var(--col-gap);
+  margin: var(--space-xl) 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Each card spans two rows of the parent grid (title, text), so every description in a row
+       starts below the tallest title in that row, without reserving empty lines */
+.problems .card,
+.reasons .card {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+}
+.btn--light {
+  padding-inline: calc(53.5 * var(--px));
+  background: var(--c-cream);
+  color: var(--c-ink);
+}
+.btn--light:hover {
+  background: var(--c-cream-hover);
+}
+.btn--outline {
+  min-height: calc(62.63 * var(--px));
+  padding-inline: var(--space-md);
+  border: 2px solid var(--c-white);
+  background: var(--c-primary);
+}
+.btn--outline:hover {
+  background: var(--c-white);
+  color: var(--c-primary);
+}
+/* "Що ви отримаєте": same section pattern; cards have a third row (the benefit) */
+.why--gains {
+  margin-top: 0;
+}
+/* nothing overhangs this one */
+/* Titles align across a row (subgrid); description and benefit flow together beneath */
+.card__body > p:first-child {
+  margin-top: var(--space-sm);
+}
+/* Benefit line: one line of space above, an orange "idea" icon on its first line */
+.card .card__benefit {
+  display: grid;
+  grid-template-columns: 1.2em 1fr;
+  column-gap: 0.5em;
+  margin-top: calc(var(--leading-body) * 1em);
+  color: var(--c-on-primary);
+}
+.card__benefit::before {
+  content: "";
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: calc((var(--leading-body) * 1em - 1.2em) / 2); /* centred on the first line */
+  background: var(--c-accent);
+  -webkit-mask: url("../assets/icons/icon-idea.svg") center / contain no-repeat;
+  mask: url("../assets/icons/icon-idea.svg") center / contain no-repeat;
+}
+/* ---------- Report structure (light section) ---------- */
+.report {
+  position: relative;
+  z-index: 0;
+  --title-color: var(--c-hero);
+  --c-report-line: rgb(28 38 50 / 0.15);
+  padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
+  background: var(--c-paper);
+  color: var(--c-hero);
+}
+/* ---------- Audit findings carousel ---------- */
+.findings {
+  width: var(--span-3);
+  max-width: 100%;
+  margin-top: var(--space-xl);
+}
+.findings__track {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--col-gap);
+  margin: 0;
+  padding: 0 0 calc(16 * var(--px)); /* room for the link underline: the scrolling track clips below its edge */
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.findings__track::-webkit-scrollbar {
+  display: none;
+}
+.findings__track:focus-visible {
+  outline-offset: 6px;
+}
+/* varied widths with square images give the staggered heights of the mockup */
+.finding {
+  flex: none;
+  width: 30%;
+  scroll-snap-align: start;
+}
+.finding:nth-child(3n + 2) {
+  width: 38%;
+}
+.finding:nth-child(3n) {
+  width: 24%;
+}
+.finding__media {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--c-night);
+}
+.finding__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.finding__tag {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  padding: 0.6em 0.75em 0.5em; /* fallback: TT Commons sits high, so a little more on top */
+  background: var(--c-primary);
+  color: var(--c-white);
+  font-size: calc(14 * var(--px));
+  font-weight: 400;
+  line-height: 1.15;
+}
+/* where supported, trim the text box to cap height + baseline so equal padding centres it exactly */
+@supports (text-box: trim-both cap alphabetic) {
+  .finding__tag {
+    padding: 0.55em 0.75em;
+    text-box: trim-both cap alphabetic;
+  }
+}
+.finding__title {
+  margin: var(--space-md) 0 0;
+  color: var(--c-hero);
+  font-size: var(--text-lead);
+  font-weight: 500;
+  line-height: 1.3;
+}
+.finding__more {
+  display: inline-block;
+  margin-top: var(--space-sm);
+  color: var(--c-primary);
+  font-size: var(--text-body);
+  font-weight: 500;
+  text-decoration: underline transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: calc(8 * var(--px)); /* like Tailwind's underline-offset-8 */
+  transition: text-decoration-color 0.2s ease;
+}
+.finding__more:hover,
+.finding__more:focus-visible {
+  text-decoration-color: currentColor;
+}
+.findings__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xl);
+}
+.findings__pages {
+  display: flex;
+  gap: var(--space-xs);
+  margin-right: var(--space-lg);
+}
+.findings__pages span {
+  width: calc(48 * var(--px));
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(0 102 222 / 0.2);
+  transition: background-color 0.25s ease;
+}
+.findings__pages span.is-current {
+  background: var(--c-primary);
+}
+.findings__nav {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0 0 0.12em;
+  border: 1.5px solid var(--c-hero);
+  border-radius: 50%;
+  background: none;
+  color: var(--c-hero);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+.findings__nav:hover:not(:disabled) {
+  background: var(--c-hero);
+  color: var(--c-paper);
+}
+.findings__nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+/* ---------- For whom ---------- */
+.for-whom {
+  position: relative;
+  z-index: 0;
+  --title-color: var(--c-white);
+  padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
+  background: var(--c-night);
+}
+.for-whom__intro {
+  max-width: var(--span-2);
+  margin: var(--space-xl) 0 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+/* Audience tabs: large text labels on a thin baseline; the selected one is underlined in orange */
+.audience-tabs {
+  display: flex;
+  gap: var(--space-xl);
+  width: var(--span-3);
+  max-width: 100%;
+  margin-top: var(--space-xl);
+  border-bottom: 1px solid rgb(237 233 222 / 0.2);
+}
+.audience-tab {
+  position: relative;
+  padding: 0 0 var(--space-sm);
+  text-align: left;
+  border: 0;
+  background: none;
+  color: rgb(237 233 222 / 0.6); /* dimmed cream, ≈7:1 on the night background */
+  font: inherit;
+  font-size: var(--text-lead);
+  font-weight: 500; /* same weight for all tabs, so labels don't shift when the selection changes */
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.audience-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px; /* sits on the baseline */
+  height: 2px;
+  background: var(--c-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s var(--ease-out);
+}
+.audience-tab:hover {
+  color: var(--c-cream);
+}
+.audience-tab:hover::after {
+  transform: scaleX(0.25);
+}
+/* Selected: title and underline in the diagram's blue (3.5:1, fine for the 24px title) */
+.audience-tab[aria-selected="true"] .audience-tab__title {
+  color: var(--c-primary);
+}
+.audience-tab[aria-selected="true"]::after {
+  transform: scaleX(1);
+}
+.audience-tab:focus-visible {
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+.for-whom__layout {
+  display: grid;
+  grid-template-columns: 1fr calc(480 * var(--px));
+  column-gap: var(--space-3xl);
+  align-items: start;
+  width: var(--span-3);
+  max-width: 100%;
+  margin-top: var(--space-3xl);
+}
+/* Overlaps that belong to the selected circle are bright, the rest pale */
+.for-whom[data-audience="manager"] .venn__overlap[data-in~="manager"],
+.for-whom[data-audience="investor"] .venn__overlap[data-in~="investor"],
+.for-whom[data-audience="contractor"] .venn__overlap[data-in~="contractor"] {
+  fill-opacity: 1;
+}
+.for-whom[data-hover="manager"] .venn__highlight[data-audience="manager"],
+.for-whom[data-hover="investor"] .venn__highlight[data-audience="investor"],
+.for-whom[data-hover="contractor"] .venn__highlight[data-audience="contractor"] {
+  opacity: 0.35;
+}
+.for-whom[data-hover="manager"] .venn__label[data-audience="manager"],
+.for-whom[data-hover="investor"] .venn__label[data-audience="investor"],
+.for-whom[data-hover="contractor"] .venn__label[data-audience="contractor"] {
+  fill-opacity: 0.8;
+}
+.for-whom[data-audience="manager"] .venn [data-audience="manager"],
+.for-whom[data-audience="investor"] .venn [data-audience="investor"],
+.for-whom[data-audience="contractor"] .venn [data-audience="contractor"] {
+  opacity: 1;
+  fill-opacity: 1;
+}
+.for-whom[data-audience="manager"][data-hover="manager"] .venn [data-audience="manager"],
+.for-whom[data-audience="investor"][data-hover="investor"] .venn [data-audience="investor"],
+.for-whom[data-audience="contractor"][data-hover="contractor"] .venn [data-audience="contractor"] {
+  opacity: 1;
+  fill-opacity: 1;
+}
+/* the hero's navy, not the blue */
+.card .method__list {
+  margin-top: var(--space-md);
+}
+/* Dotted list: medium peach dots centred on the first line of each point */
+.dots {
+  display: grid;
+  row-gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dots li {
+  position: relative;
+  padding-left: 1.1em;
+}
+.dots li::before {
+  content: "";
+  position: absolute;
+  left: 0.1em;
+  top: calc((var(--leading-body) * 1em - 0.34em) / 2 - 0.06em); /* optically centred on lowercase letters */
+  width: 0.34em;
+  height: 0.34em;
+  border-radius: 50%;
+  background: var(--c-peach);
+}
+
+@media (width < 64rem) {
+  .btn {
+    justify-content: center;
+    min-height: 62.63px;
+    padding-block: 12px;
+    white-space: normal;
+    text-align: center;
+  }
+  .btn--primary {
+    padding-inline: 32px;
+  }
+  .btn--secondary {
+    margin: 12px 0 0;
+    padding-inline: 32px;
+  }
+  .why {
+    padding: 64px 0 80px;
+  }
+  .section-title {
+    max-width: 640px;
+    margin-top: 24px;
+  }
+  .why__intro {
+    max-width: 640px;
+    margin-top: 32px;
+  }
+  .why__divider {
+    width: 100%;
+  }
+  .card p {
+    max-width: 540px;
+  }
+  .problems {
+    grid-template-columns: 1fr;
+    row-gap: 40px;
+    margin-top: 40px;
+  }
+  .card p {
+    margin-top: 12px;
+  }
+  .why__divider {
+    margin-top: 48px;
+  }
+  .why__divider + * {
+    margin-top: 40px;
+  }
+  .report {
+    padding: 64px 0 80px;
+  }
+  .finding,
+  .finding:nth-child(3n + 2),
+  .finding:nth-child(3n) {
+    width: 78%;
+  }
+  .findings__pages span {
+    width: 32px;
+  }
+  .finding__tag {
+    font-size: 13px;
+  }
+  .for-whom {
+    padding: 64px 0 80px;
+  }
+  .for-whom__intro {
+    max-width: 640px;
+    margin-top: 32px;
+  }
+  .audience-tabs {
+    gap: 24px;
+    margin-top: 32px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .audience-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .audience-tab {
+    padding-block: 12px;
+  }
+  /* 44px+ touch target */
+  .for-whom__layout {
+    grid-template-columns: 1fr;
+    row-gap: 48px;
+    width: auto;
+    margin-top: 48px;
+  }
+}

@@ -64,152 +64,150 @@ const ICONS: Record<SocialNetwork, string> = {
 </footer>
 
 <style is:global>
-  @layer components {
-    /* ---------- Footer: full width, below the TOC zone ---------- */
+  /* ---------- Footer: full width, below the TOC zone ---------- */
+  .footer {
+    --footer-logo: calc(81.19 * var(--px)); /* half the header logo, then 15% larger */
+    --footer-gap: var(--space-2xl);
+    padding: var(--space-2xl) 0;
+    background: var(--c-paper);
+    color: var(--c-hero);
+    font-size: var(--text-small);
+    line-height: var(--leading-body);
+  }
+  .footer a {
+    color: inherit;
+  }
+  .footer__lang {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-xs);
+    margin: 0;
+  }
+  .footer__lang a[aria-current] {
+    font-weight: 600;
+  }
+  .footer__lang span {
+    color: rgb(28 38 50 / 0.4);
+  }
+  .footer__main {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center; /* the links + social row is centred on the logo */
+    column-gap: var(--footer-gap);
+    margin-top: var(--space-md);
+  }
+  .footer__logo {
+    display: block;
+    width: var(--footer-logo);
+  }
+  /* links and the social line share one top; together they span the last two columns */
+  .footer__row {
+    display: grid;
+    grid-column: 2 / -1;
+    grid-template-columns: subgrid;
+    align-items: start;
+  }
+  .footer__logo img {
+    width: 100%;
+    height: auto;
+  }
+  .footer ul {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .footer__nav ul {
+    gap: var(--space-xs) var(--space-lg);
+  }
+  .footer__nav a {
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+    text-decoration-color: rgb(28 38 50 / 0.35);
+    transition: text-decoration-color 0.2s ease;
+  }
+  .footer__nav a:hover,
+  .footer__nav a:focus-visible {
+    text-decoration-color: currentColor;
+  }
+  .footer__social {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-top: calc(
+      (var(--text-small) * var(--leading-body) - 44px) / 2
+    ); /* the 44px icon targets overhang, so the text lines up with the links */
+  }
+  .footer__social ul {
+    gap: var(--space-sm);
+  }
+  .footer__social a {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+  }
+  .footer__social a:hover {
+    background: rgb(28 38 50 / 0.06);
+  }
+  .footer__social svg {
+    width: calc(24 * var(--px));
+    min-width: 22px;
+    height: auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* the notes sit in the links' column: same start, same width, nothing under the logo */
+  .footer__legal {
+    grid-column: 2;
+    margin-top: var(--space-xl);
+    color: rgb(28 38 50 / 0.75);
+  }
+  .footer__legal p {
+    margin: 0;
+  }
+  .footer__legal p + p {
+    margin-top: 0;
+  } /* the two notes run on as consecutive lines */
+  .footer__legal p:last-child {
+    margin-top: var(--space-md);
+  }
+
+  @media (width < 64rem) {
     .footer {
-      --footer-logo: calc(81.19 * var(--px)); /* half the header logo, then 15% larger */
-      --footer-gap: var(--space-2xl);
-      padding: var(--space-2xl) 0;
-      background: var(--c-paper);
-      color: var(--c-hero);
-      font-size: var(--text-small);
-      line-height: var(--leading-body);
-    }
-    .footer a {
-      color: inherit;
-    }
-    .footer__lang {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--space-xs);
-      margin: 0;
-    }
-    .footer__lang a[aria-current] {
-      font-weight: 600;
-    }
-    .footer__lang span {
-      color: rgb(28 38 50 / 0.4);
+      padding: 48px 0;
+      --footer-logo: 48.76px;
     }
     .footer__main {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center; /* the links + social row is centred on the logo */
-      column-gap: var(--footer-gap);
-      margin-top: var(--space-md);
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+      justify-items: start;
     }
-    .footer__logo {
-      display: block;
-      width: var(--footer-logo);
+    .footer__legal {
+      grid-column: auto;
+      margin-top: 0;
     }
-    /* links and the social line share one top; together they span the last two columns */
     .footer__row {
-      display: grid;
-      grid-column: 2 / -1;
-      grid-template-columns: subgrid;
-      align-items: start;
-    }
-    .footer__logo img {
-      width: 100%;
-      height: auto;
-    }
-    .footer ul {
-      display: flex;
-      flex-wrap: wrap;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .footer__nav ul {
-      gap: var(--space-xs) var(--space-lg);
-    }
-    .footer__nav a {
-      font-weight: 500;
-      text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 0.25em;
-      text-decoration-color: rgb(28 38 50 / 0.35);
-      transition: text-decoration-color 0.2s ease;
-    }
-    .footer__nav a:hover,
-    .footer__nav a:focus-visible {
-      text-decoration-color: currentColor;
+      grid-column: auto;
+      grid-template-columns: 1fr;
+      row-gap: 32px;
     }
     .footer__social {
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-      margin-top: calc(
-        (var(--text-small) * var(--leading-body) - 44px) / 2
-      ); /* the 44px icon targets overhang, so the text lines up with the links */
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-top: 0;
     }
     .footer__social ul {
-      gap: var(--space-sm);
-    }
-    .footer__social a {
-      display: grid;
-      place-items: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      transition: background-color 0.2s ease;
-    }
-    .footer__social a:hover {
-      background: rgb(28 38 50 / 0.06);
-    }
-    .footer__social svg {
-      width: calc(24 * var(--px));
-      min-width: 22px;
-      height: auto;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    /* the notes sit in the links' column: same start, same width, nothing under the logo */
-    .footer__legal {
-      grid-column: 2;
-      margin-top: var(--space-xl);
-      color: rgb(28 38 50 / 0.75);
-    }
-    .footer__legal p {
-      margin: 0;
-    }
-    .footer__legal p + p {
-      margin-top: 0;
-    } /* the two notes run on as consecutive lines */
-    .footer__legal p:last-child {
-      margin-top: var(--space-md);
-    }
-
-    @media (width < 64rem) {
-      .footer {
-        padding: 48px 0;
-        --footer-logo: 48.76px;
-      }
-      .footer__main {
-        grid-template-columns: 1fr;
-        row-gap: 32px;
-        justify-items: start;
-      }
-      .footer__legal {
-        grid-column: auto;
-        margin-top: 0;
-      }
-      .footer__row {
-        grid-column: auto;
-        grid-template-columns: 1fr;
-        row-gap: 32px;
-      }
-      .footer__social {
-        flex-wrap: wrap;
-        gap: 8px 16px;
-        margin-top: 0;
-      }
-      .footer__social ul {
-        gap: 0;
-        margin-left: -10px;
-      }
+      gap: 0;
+      margin-left: -10px;
     }
   }
 </style>

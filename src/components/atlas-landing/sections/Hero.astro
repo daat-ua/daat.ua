@@ -1,0 +1,243 @@
+---
+import { Image, Picture } from "astro:assets";
+import arrow from "../../../assets/icons/icon-arrow-up-right.svg";
+import plant from "../../../assets/icons/icon-plant.svg";
+import photo from "../../../assets/images/hero-photo.webp";
+import { clients } from "../../../data/hero";
+---
+
+<section class="hero">
+  <div class="hero__photo-clip" aria-hidden="true">
+    <!-- the LCP image: modern formats, sized to the 1344.5px (desktop) / 140vw (phone) box, loaded first -->
+    <Picture
+      class="hero__photo"
+      src={photo}
+      alt=""
+      formats={["avif", "webp"]}
+      fallbackFormat="webp"
+      widths={[640, 960, 1344, 1800, 2400, 2880]}
+      sizes="(width < 64rem) 140vw, 93.37vw"
+      loading="eager"
+      fetchpriority="high"
+      layout="none"
+    />
+  </div>
+
+  <div class="wrap">
+    <h1 class="hero__title">
+      Ваша компанія здатна на{" "}
+      <span class="nowrap">
+        більше
+        <Image src={arrow} alt="" width={24} height={24} layout="none" />
+      </span>
+      <strong>
+        ATLAS покаже, що стримує її{" "}
+        <span class="nowrap">
+          зростання
+          <Image src={plant} alt="" width={126} height={126} layout="none" />
+        </span>
+      </strong>
+    </h1>
+
+    <p class="hero__lead">
+      <strong>
+        ATLAS&nbsp;— доказова діагностика зростання <span class="nowrap">IT-компаній</span> від Daat.
+      </strong>
+      Ми знаходимо системи й елементи, що стримують розвиток вашої компанії, пропонуємо найкращі практики delivery та
+      технічної досконалості&nbsp;— і допомагаємо їх упровадити. Перший результат&nbsp;— уже за{" "}
+      <span class="nowrap">4–5 тижнів</span>.
+    </p>
+
+    <div class="clients">
+      <p class="clients__label">Ми пишаємося нашими клієнтами</p>
+      <ul class="clients__logos">
+        {clients.map((c) => (
+          <li>
+            <Image src={c.logo} alt={c.name} layout="none" />
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn--primary" href="#contact">
+        Записатися на діагностичний дзвінок
+      </a>
+      <a class="btn btn--secondary" href="#deliverables">
+        Які результати ви отримаєте?{" "}
+        <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  /* ---------- Hero ---------- */
+  .hero {
+    --hero-gap: calc(20 * var(--px)); /* margin below the hero */
+    position: relative;
+    margin-bottom: var(--hero-gap);
+    z-index: 3; /* buttons overhang onto the blue section below */
+  }
+  .hero__photo-clip {
+    position: absolute;
+    inset: 0 0 calc(var(--overhang) - var(--hero-gap)) 0; /* the dark band runs to where the blue section starts */
+    overflow: hidden;
+    background: var(--c-hero);
+    pointer-events: none;
+  }
+  .hero__photo {
+    position: absolute;
+    left: calc(508 * var(--px));
+    bottom: calc(-59.5 * var(--px)); /* Figma crop: the dark band cuts the photo 59.5 above its bottom edge */
+    width: calc(1344.5 * var(--px));
+    height: calc(896.5 * var(--px));
+    max-width: none;
+    object-fit: cover;
+    opacity: 0.45;
+  }
+  .hero .wrap {
+    z-index: 1;
+    padding-top: calc(var(--space-3xl) + var(--space-lg));
+  }
+  .hero__title {
+    max-width: calc(832 * var(--px));
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    font-weight: 300;
+    font-feature-settings: "dlig" 1;
+  }
+  .hero__title strong {
+    font-weight: var(--weight-emphasis);
+  }
+  .hero__title img {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.2em;
+    vertical-align: -0.19em;
+  }
+  .hero__lead {
+    max-width: var(--span-2);
+    margin: var(--space-2xl) 0 0;
+    color: var(--c-cream);
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+  .hero__lead strong {
+    font-weight: 600;
+  }
+  .hero__divider {
+    width: var(--span-2);
+    max-width: 100%;
+    height: calc(2 * var(--px));
+    margin-top: var(--space-2xl);
+  }
+  .theses {
+    display: grid;
+    grid-template-columns: repeat(2, var(--col));
+    gap: var(--space-xl) var(--col-gap);
+    margin: var(--space-xl) 0 0;
+    padding: 0;
+    list-style: none;
+    font-feature-settings: "dlig" 1;
+  }
+  .theses dt {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-title);
+    line-height: var(--leading-title);
+  }
+  .theses dd {
+    margin: var(--space-sm) 0 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .clients {
+    display: grid;
+    row-gap: var(--space-md);
+    margin: var(--space-2xl) 0;
+    padding-bottom: var(--space-2xl);
+  }
+  .clients__label {
+    margin: 0;
+    color: var(--c-cream);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .clients__logos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .clients__logos img {
+    height: calc(38.815 * var(--px));
+    width: auto;
+  }
+  .cta {
+    position: relative;
+    display: flex;
+    margin-top: var(--space-2xl);
+  }
+
+  @media (width < 64rem) {
+    .hero {
+      --hero-gap: 20px;
+    }
+    .hero .wrap {
+      padding-top: 120px;
+      padding-bottom: 40px;
+    }
+    .hero__title {
+      max-width: 640px;
+    }
+    .hero__lead {
+      margin-top: 40px;
+    }
+    .hero__photo {
+      left: 20%;
+      top: auto;
+      bottom: 0;
+      width: 140vw;
+      height: auto;
+      aspect-ratio: 1344.5 / 896.5;
+      opacity: 0.3;
+    }
+    .hero__divider {
+      margin-top: 40px;
+    }
+    .theses {
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+      margin-top: 36px;
+    }
+    .clients {
+      grid-template-columns: 1fr;
+      row-gap: 24px;
+      margin-top: 48px;
+    }
+    .clients__logos {
+      display: grid;
+      grid-template-columns: repeat(3, max-content);
+      gap: 20px 28px;
+    }
+    .clients__logos img {
+      height: 30px;
+    }
+    .cta {
+      flex-direction: column;
+      align-items: stretch;
+      max-width: 480px;
+      margin-top: 48px;
+    }
+  }
+</style>

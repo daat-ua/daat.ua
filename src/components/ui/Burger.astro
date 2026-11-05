@@ -10,33 +10,31 @@
 </svg>
 
 <style is:global>
-  @layer components {
+  .burger {
+    width: calc(36.5 * var(--px)); /* Figma 45.6, reduced 20% */
+    height: calc(36.5 * var(--px));
+    overflow: visible;
+  }
+  .burger line {
+    stroke: var(--c-white);
+    stroke-width: 14.6;
+    stroke-linecap: round;
+    transform-box: fill-box;
+    transform-origin: center;
+    /* closing: unrotate first, then spread back apart */
+    transition:
+      rotate 0.22s var(--ease-out),
+      translate 0.25s var(--ease-out) 0.18s,
+      scale 0.25s var(--ease-out) 0.2s,
+      opacity 0.15s ease 0.2s;
+  }
+  .burger__mid {
+    transform-origin: right center;
+  }
+  @media (width < 64rem) {
     .burger {
-      width: calc(36.5 * var(--px)); /* Figma 45.6, reduced 20% */
-      height: calc(36.5 * var(--px));
-      overflow: visible;
-    }
-    .burger line {
-      stroke: var(--c-white);
-      stroke-width: 14.6;
-      stroke-linecap: round;
-      transform-box: fill-box;
-      transform-origin: center;
-      /* closing: unrotate first, then spread back apart */
-      transition:
-        rotate 0.22s var(--ease-out),
-        translate 0.25s var(--ease-out) 0.18s,
-        scale 0.25s var(--ease-out) 0.2s,
-        opacity 0.15s ease 0.2s;
-    }
-    .burger__mid {
-      transform-origin: right center;
-    }
-    @media (width < 64rem) {
-      .burger {
-        width: 25.6px;
-        height: 25.6px;
-      }
+      width: 25.6px;
+      height: 25.6px;
     }
   }
 </style>

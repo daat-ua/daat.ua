@@ -2,6 +2,8 @@
 import Footer from "../components/Footer.astro";
 import GlobalMenu from "../components/GlobalMenu.astro";
 import Header from "../components/Header.astro";
+import Hero from "../components/atlas-landing/sections/Hero.astro";
+import WhyNow from "../components/atlas-landing/sections/WhyNow.astro";
 import Toc from "../components/Toc.astro";
 import Base from "../layouts/Base.astro";
 ---
@@ -13,7 +15,10 @@ import Base from "../layouts/Base.astro";
   <Header />
   <main id="main">
     <!-- Sections are ported one PR at a time from the legacy index.html -->
-    <Toc />
+    <Hero />
+    <Toc>
+      <WhyNow />
+    </Toc>
   </main>
   <Footer />
   <GlobalMenu />

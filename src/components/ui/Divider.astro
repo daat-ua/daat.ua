@@ -1,0 +1,12 @@
+---
+import { Image } from "astro:assets";
+import divider from "../../assets/dividers/divider-full.svg";
+
+interface Props {
+  class?: string;
+}
+const { class: className = "why__divider" } = Astro.props;
+---
+
+<!-- the orange-to-blue rule between blocks of a blue section -->
+<Image class={className} src={divider} alt="" layout="none" />
