@@ -5,9 +5,16 @@ import { Image } from "astro:assets";
 // Horizontal teaser carousel (audit findings, case studies): scroll-snapping track, prev/next by a page,
 // page dashes that follow the scroll position. Styles are in patterns.css (.findings, .finding…).
 
+/** an image served elsewhere (the Sanity CDN), with its srcset already built */
+export interface RemoteImage {
+  src: string;
+  srcset: string;
+}
+
 export interface Teaser {
-  image: ImageMetadata;
-  tag: string;
+  image: ImageMetadata | RemoteImage;
+  /** the label on the image; none when empty */
+  tag?: string | null;
   /** may hold HTML (&nbsp;, nowrap spans) */
   title: string;
   href: string;
@@ -33,14 +40,25 @@ const Title = `h${headingLevel}` as "h3" | "h4";
     {items.map((item) => (
       <li class="finding">
         <div class="finding__media">
-          <Image
-            src={item.image}
-            alt=""
-            widths={[320, 480, 640, 800]}
-            sizes="(width < 64rem) 78vw, 26vw"
-            layout="none"
-          />
-          <span class="finding__tag">{item.tag}</span>
+          {"srcset" in item.image ? (
+            <img
+              src={item.image.src}
+              srcset={item.image.srcset}
+              sizes="(width < 64rem) 78vw, 26vw"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <Image
+              src={item.image}
+              alt=""
+              widths={[320, 480, 640, 800]}
+              sizes="(width < 64rem) 78vw, 26vw"
+              layout="none"
+            />
+          )}
+          {item.tag && <span class="finding__tag">{item.tag}</span>}
         </div>
         <Title class="finding__title" set:html={item.title} />
         <a class="finding__more" href={item.href}>

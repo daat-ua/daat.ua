@@ -3,6 +3,7 @@ dist
 .astro
 .git
 _source
+studio
 tests
 *.md
 .DS_Store

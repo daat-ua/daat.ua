@@ -40,7 +40,7 @@ const SECTIONS = {
   roadmap: "#roadmap",
   testimonials: "#testimonials-and-case-studies",
   methodology: "#methodology",
-  "audit-findings": "#audit-findings",
+  // "audit-findings" is left out: its cards now come from Sanity, not from the original page's copy
   faq: "#faq",
   footer: "footer.footer",
 };
