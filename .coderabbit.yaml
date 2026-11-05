@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 # CodeRabbit review settings for the daat.ua / ATLAS landing page.
-# The site is one static page (index.html: markup, CSS and JS inline) plus assets.
+# The site is being migrated from one static page (index.html) to Astro 7 + Tailwind 4 (src/),
+# served as a static build by Caddy on Railway. Until the migration ends both exist side by side.
 
 language: "en-US"
 
@@ -27,6 +28,9 @@ reviews:
     - "!**/*.jpg"
     - "!**/*.png"
     - "!**/.DS_Store"
+    - "!package-lock.json"
+    - "!dist/**"
+    - "!.astro/**"
 
   path_instructions:
     - path: "index.html"
@@ -39,6 +43,16 @@ reviews:
         - Copy: Ukrainian typography: `&nbsp;` before em dashes and inside short numeric phrases, the typographic apostrophe (’), no orphaned single-letter words at line ends where `nowrap` is used elsewhere.
         - Stacking inside `.toc-scope`: content sections z0 < floating TOC z1 < scrub clip z2 < hero z3 < header z4; flag z-index changes that break it.
         - Placeholders: links with `href="#"` and `TODO` comments are deliberate until content arrives; don't flag them unless a TODO looks forgotten in finished-looking work.
+    - path: "src/**"
+      instructions: |
+        Astro 7 + Tailwind 4 port of the legacy index.html; it must look and behave the same (visual parity is checked against the legacy page). The project rules for index.html apply here too (proportional `--px` scaling, one 1024px breakpoint, tokens, accessibility, motion, Ukrainian typography). Also check:
+        - Static output only, no client framework; client JS lives in component `<script>` tags or src/scripts (TypeScript), bundled by Astro.
+        - Images go through `astro:assets` (`<Image>`/`<Picture>`) with sensible `sizes`; the LCP image is eager/high priority, the rest lazy. Icons are imported SVG components.
+        - Fonts come from Astro's Fonts API (no hand-written `@font-face`).
+        - Section components live in src/components/atlas-landing/sections; copy lives in src/data as typed data.
+    - path: "{Dockerfile,Caddyfile,railway.json}"
+      instructions: |
+        Railway deployment: multi-stage build (Node 24 builds, Caddy serves dist/ on $PORT). Check caching headers (immutable for /_astro/*), compression, security headers and that the image stays small.
     - path: "FIGMA-DEVIATIONS.md"
       instructions: |
         Running log for the designer of every deviation from the Figma file. Check that a change to index.html that alters layout, type, colour or copy against the design has a matching entry here, and that entries stay accurate (no notes about things since removed).

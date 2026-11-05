@@ -1,0 +1,12 @@
+dist/
+.astro/
+node_modules/
+_source/
+assets/
+fonts/
+public/
+package-lock.json
+# the legacy page is removed at the end of the migration
+index.html
+FIGMA-DEVIATIONS.md
+.impeccable.md
