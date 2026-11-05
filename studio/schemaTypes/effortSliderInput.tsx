@@ -30,7 +30,8 @@ export function EffortSliderInput(props: NumberInputProps) {
                     style={{flex: 1}}
                 />
                 <Text size={1} weight="medium" style={{minWidth: 36, textAlign: 'right'}}>
-                    {numericValue}
+                    {/* unset is not 0: new findings start empty, and the website shows its default radar until set */}
+                    {typeof value === 'number' ? value : '—'}
                 </Text>
             </Flex>
         </Stack>
