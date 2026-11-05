@@ -1,0 +1,858 @@
+---
+import { Image, Picture } from "astro:assets";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import Base from "../../../../layouts/Base.astro";
+import Footer from "../../../../components/Footer.astro";
+import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
+import author from "../../../../assets/images/insights/author-olena.webp";
+import hero from "../../../../assets/images/insights/pm-skills-hero.webp";
+
+// A delivery-audit finding, recreated from beta.daat.ua (where the content comes from Sanity) in this site's
+// design: hero over the artwork, the article with its efforts radar and TL/DR, a sticky "on this page" list,
+// and the ATLAS page's findings carousel. A sample for now: static content, kept out of search results.
+
+// the breadcrumb leads to the findings catalogue (normalizeLocale: false keeps "uk-UA" as is, as in Logo)
+const findingsHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas/findings", { normalizeLocale: false });
+
+const toc = [
+  { id: "who", label: "Хто такий проджект менеджер і які функції він виконує на проєкті?" },
+  { id: "skills", label: "Яких навичок вимагає позиція проджект менеджера?" },
+  { id: "assessment", label: "Які існують засоби для оцінки навичок проджект менеджерів в організації?" },
+  { id: "why-invest", label: "Чому важливо завжди вкладатися у підвищення навичок проджект менеджерів?" },
+];
+
+// Efforts radar: how much each department is involved in solving the finding (0–100), drawn as a polar
+// area chart — one equal-angle sector per department, its radius proportional to the effort.
+const efforts = [
+  { name: "Strategic management", value: 100 },
+  { name: "Delivery excellence", value: 60 },
+  { name: "Sales", value: 50 },
+  { name: "Marketing", value: 96 },
+  { name: "Company operations", value: 40 },
+  { name: "People management", value: 10 },
+  { name: "Financial control", value: 40 },
+];
+// each sector's shade of the navy, as on beta.daat.ua (by position, not by value)
+const shades = [1, 0.8, 0.9, 0.6, 1, 0.9, 0.5];
+const R = 100; // chart radius in SVG units
+const step = (2 * Math.PI) / efforts.length;
+const point = (r: number, a: number) => `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`;
+const sectors = efforts.map(({ name, value }, i) => {
+  const a0 = -Math.PI / 2 + i * step; // the first sector starts at 12 o'clock, then clockwise
+  const a1 = a0 + step;
+  const r = (R * value) / 100;
+  const mid = a0 + step / 2;
+  const lx = (R + 14) * Math.cos(mid);
+  const ly = (R + 14) * Math.sin(mid);
+  return {
+    name,
+    value,
+    shade: shades[i],
+    d: `M0 0L${point(r, a0)}A${r} ${r} 0 0 1 ${point(r, a1)}Z`,
+    label: {
+      x: lx.toFixed(2),
+      y: ly.toFixed(2),
+      anchor: Math.abs(lx) < 8 ? "middle" : lx > 0 ? "start" : "end",
+      words: name.split(" "),
+    },
+  };
+});
+---
+
+<Base
+  title="Недостатні навички проджект менеджерів — знахідки делівері-аудитів | Daat"
+  description="Хто такий проджект менеджер, яких навичок вимагає ця роль, як їх оцінювати і чому варто вкладатися в їхній розвиток."
+  noindex
+>
+  <main id="main" class="finding-page">
+    <!-- ═══ Hero: the artwork fades into the page ═══ -->
+    <header class="finding-hero">
+      <div class="finding-hero__art" aria-hidden="true">
+        <Picture
+          src={hero}
+          alt=""
+          formats={["avif", "webp"]}
+          fallbackFormat="webp"
+          widths={[640, 960, 1440, 1920, 2400]}
+          sizes="100vw"
+          loading="eager"
+          fetchpriority="high"
+          layout="none"
+        />
+      </div>
+      <div class="wrap finding-hero__inner">
+        <nav aria-label="Хлібні крихти">
+          <a class="finding-crumb" href={findingsHref}>
+            Знахідки аудитів
+          </a>
+        </nav>
+        <h1 class="finding-title">Недостатні навички проджект менеджерів</h1>
+        <div class="finding-author">
+          <Image src={author} alt="" widths={[96, 192]} sizes="96px" layout="none" />
+          <div>
+            <p class="finding-author__name">Олена Кияновська</p>
+            <p class="finding-author__bio">
+              Олена є керуючою партнеркою в Daat, CEO в компанії Alephbet та експерткою в делівері менеджменті.{" "}
+              <a href="https://www.linkedin.com/in/helenkyianovska/" target="_blank" rel="noopener">
+                <span class="finding-author__link">LinkedIn</span>
+                <svg class="finding-author__ext" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M11.0991 3.00012C7.45013 3.00669 5.53932 3.09629 4.31817 4.31764C3.00034 5.63568 3.00034 7.75704 3.00034 11.9997C3.00034 16.2424 3.00034 18.3638 4.31817 19.6818C5.63599 20.9999 7.75701 20.9999 11.9991 20.9999C16.241 20.9999 18.3621 20.9999 19.6799 19.6818C20.901 18.4605 20.9906 16.5493 20.9972 12.8998"></path>
+                  <path d="M20.556 3.49612L11.0487 13.0586M20.556 3.49612C20.062 3.00151 16.7343 3.04761 16.0308 3.05762M20.556 3.49612C21.05 3.99074 21.0039 7.32273 20.9939 8.02714"></path>
+                </svg>
+                <span class="visually-hidden"> (відкриється в новій вкладці)</span>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ Article + sticky "on this page" ═══ -->
+    <div class="wrap finding-layout">
+      <article class="finding-article">
+        <p class="finding-lead">
+          Project manager, проектний менеджер, менеджер проекту, проджект менеджер — це людина, яка відповідає за
+          цілісність проєкту. Вони організовують роботу команди, управляють обмеженнями проєкту (терміни, бюджет,
+          скоуп), а також забезпечують прозору комунікацію між клієнтом і командою.
+        </p>
+
+        <figure class="efforts">
+          <figcaption class="efforts__title">
+            Efforts radar <small>©</small>
+          </figcaption>
+          <p class="efforts__desc" id="efforts-desc">
+            Розподілення зусиль, потрібних для вирішення цієї проблеми, між основними відділами компанії. Кожен сектор
+            відображає рівень залученості відділу у вирішення знахідки.
+          </p>
+          <div class="efforts__body">
+            <svg class="efforts__chart" viewBox="-215 -140 430 280" role="img" aria-labelledby="efforts-desc">
+              {[20, 40, 60, 80, 100].map((r) => (
+                <circle class="efforts__ring" r={r} />
+              ))}
+              {sectors.map((s) => (
+                <g class="efforts__slice">
+                  <path class="efforts__sector" d={s.d} style={`--shade: ${s.shade}`} />
+                  <text class="efforts__label" x={s.label.x} y={s.label.y} text-anchor={s.label.anchor}>
+                    {s.label.words.map((w, j) => (
+                      <tspan x={s.label.x} dy={j === 0 ? `${(1 - s.label.words.length) * 0.55 + 0.35}em` : "1.1em"}>
+                        {w}
+                      </tspan>
+                    ))}
+                  </text>
+                </g>
+              ))}
+            </svg>
+            <div class="efforts__side">
+              <ul class="efforts__list">
+                {efforts.map((e) => (
+                  <li>
+                    <span>{e.name}</span>
+                    <span class="efforts__bar" style={`--v: ${e.value}%`} aria-hidden="true" />
+                    <span class="efforts__value">{e.value}%</span>
+                  </li>
+                ))}
+              </ul>
+              <a class="efforts__more" href="#" aria-disabled="true">
+                Детальніше про методологію
+              </a>
+            </div>
+          </div>
+        </figure>
+
+        <div class="finding-body">
+          <h2 id="who">Хто такий проджект менеджер і які функції він виконує на проєкті?</h2>
+          <p>
+            Project manager, проектний менеджер, менеджер проекту, проджект менеджер — це людина, яка відповідає за
+            цілісність проєкту. Вони організовують роботу команди, управляють обмеженнями проєкту (терміни, бюджет,
+            скоуп), а також забезпечують прозору комунікацію між клієнтом і командою.
+          </p>
+          <p>Проджект менеджер — обовʼязки:</p>
+          <ul>
+            <li>планування проєкту та визначення його етапів;</li>
+            <li>управління ресурсами (час, бюджет, команда);</li>
+            <li>контроль виконання завдань і дотримання дедлайнів;</li>
+            <li>управління ризиками;</li>
+            <li>пошук рішень у кризових ситуаціях;</li>
+            <li>контроль якості виконання проєкту;</li>
+            <li>звітність перед стейкхолдерами та узгодження пріоритетів;</li>
+            <li>підтримка ефективної взаємодії всередині команди.</li>
+          </ul>
+          <p>
+            Без цієї ролі проєкти швидко втрачають контрольованість і перетворюються на набір окремих завдань без
+            загальної мети.
+          </p>
+
+          <h2 id="skills">Яких навичок вимагає позиція проджект менеджера?</h2>
+          <p>
+            Роль проджект менеджера вимагає збалансованого набору знань та особистих якостей. З одного боку, він має
+            добре розбиратися у процесах, інструментах та методологіях управління. З іншого — бути лідером, здатним
+            надихати команду та будувати ефективну комунікацію.
+          </p>
+          <p>
+            <strong>Хард-навички</strong> — це основа професійності проджект менеджера:
+          </p>
+          <ul>
+            <li>
+              <strong>Методології управління проєктами.</strong> Agile, Scrum, Kanban, Waterfall, PMI, PRINCE2 — не
+              просто модні слова, а практичні підходи, які визначають, як працюватиме команда.
+            </li>
+            <li>
+              <strong>Робота з бюджетами.</strong> Уміння планувати та контролювати витрати допомагає уникати перевитрат
+              і забезпечує фінансову стабільність.
+            </li>
+            <li>
+              <strong>Базове технічне розуміння.</strong> Проджект менеджер не має писати код, але має знати основи
+              розробки, щоб коректно оцінювати ризики й часові витрати.
+            </li>
+            <li>
+              <strong>Ризик-менеджмент.</strong> Виявлення проблем ще до того, як вони стали критичними, — ключ до
+              стабільності.
+            </li>
+          </ul>
+          <p>
+            <strong>Софт-навички</strong> — це те, що відрізняє середнього менеджера від сильного:
+          </p>
+          <ul>
+            <li>
+              <strong>Комунікація та навички переговорів.</strong> Чітко та зрозуміло пояснювати завдання, доносити
+              інформацію від клієнта до команди і навпаки.
+            </li>
+            <li>
+              <strong>Лідерство.</strong> Надихати, підтримувати, вирішувати конфлікти, створювати середовище, де кожен
+              відчуває себе важливим.
+            </li>
+            <li>
+              <strong>Критичне мислення.</strong> Уміння зважити різні варіанти, знайти оптимальне рішення й
+              аргументувати його.
+            </li>
+            <li>
+              <strong>Емоційний інтелект.</strong> Розуміння емоцій і мотивацій людей, здатність пом’якшувати конфлікти
+              та підтримувати здорову атмосферу.
+            </li>
+            <li>
+              <strong>Адаптивність.</strong> Проєкти рідко йдуть ідеально за планом. Вміння швидко реагувати на зміни
+              відрізняє сильного проджект менеджера від того, хто губиться при першій проблемі.
+            </li>
+          </ul>
+          <p>
+            Поєднання хард- і софт-скілів створює унікальний профіль спеціаліста, який здатен не просто координувати
+            завдання, а й вести команду до результату.
+          </p>
+
+          <h2 id="assessment">Які існують засоби для оцінки навичок проджект менеджерів в організації?</h2>
+          <p>
+            Багато компаній покладаються на інтуїцію керівників, оцінюючи проджект менеджерів за загальним відчуттям
+            «добре/погано справляється», кількістю ескалацій на проєкті, або як часто необхідне залучення менеджера
+            вищої ланки для вирішення проблеми. Але такий підхід суб’єктивний і часто несправедливий. Щоб отримати
+            реальну картину, варто застосовувати системні інструменти оцінки.
+          </p>
+          <p>Найпоширеніші засоби:</p>
+          <ul>
+            <li>
+              <strong>Матриці компетенцій.</strong> Це таблиці, які описують, які саме навички потрібні проджект
+              менеджеру на кожному рівні зрілості — від базового до експертного. Такі матриці дозволяють швидко
+              визначити, де людина сильна, а де є прогалини.
+            </li>
+            <li>
+              <strong>Зворотний зв’язок «на 360°».</strong> Проджект менеджера оцінюють колеги, підлеглі та керівники.
+              Це допомагає отримати більш об’єктивний результат і зрозуміти, як він виглядає в очах різних груп.
+            </li>
+            <li>
+              <strong>Performance review.</strong> Регулярні зустрічі для аналізу результатів роботи за конкретними
+              показниками (кількість завершених проєктів, відхилення від бюджету, рівень задоволеності клієнтів).
+            </li>
+            <li>
+              <strong>Сертифікації й тести.</strong> Міжнародні стандарти на кшталт PMP, PRINCE2, SAFe чи PMI-ACP
+              дозволяють підтвердити професійний рівень проджект менеджера.
+            </li>
+            <li>
+              <strong>Практичні кейси.</strong> Перевірка навичок у змодельованих умовах, наприклад: «Що ви зробите,
+              якщо команда не вкладається в дедлайн через зовнішні залежності?»
+            </li>
+          </ul>
+          <p>
+            Системна оцінка допомагає не лише знайти слабкі місця, а й вибудовувати шлях розвитку для кожного менеджера,
+            щоб його потенціал працював на користь компанії.
+          </p>
+
+          <h2 id="why-invest">Чому важливо завжди вкладатися у підвищення навичок проджект менеджерів?</h2>
+          <p>
+            Покращення навичок проджект менеджерів є критично важливим для успіху компанії та результатів проєктів. Ось
+            чому:
+          </p>
+          <ul>
+            <li>
+              <strong>Підвищення ефективності проєктів.</strong> Досвідчені менеджери з більшою ймовірністю завершують
+              проєкти вчасно та в межах бюджету, краще керують ризиками й передбачають потенційні проблеми.
+            </li>
+            <li>
+              <strong>Зростання продуктивності команди.</strong> Розвинуті лідерські навички допомагають мотивувати
+              команду, а ефективна комунікація забезпечує чітке делегування завдань і зрозумілі очікування.
+            </li>
+            <li>
+              <strong>Краща взаємодія зі стейкхолдерами.</strong> Розвинуті навички переговорів і комунікації покращують
+              відносини з клієнтами та партнерами, допомагають узгоджувати очікування й вирішувати конфлікти.
+            </li>
+            <li>
+              <strong>Стратегічне узгодження.</strong> Покращене стратегічне мислення дозволяє узгоджувати проєкти з
+              бізнес-цілями компанії та ефективніше розподіляти ресурси.
+            </li>
+            <li>
+              <strong>Оптимізація ресурсів.</strong> Високі навички управління допомагають ефективніше використовувати
+              час, бюджет і команду, краще виявляти й застосовувати сильні сторони людей.
+            </li>
+            <li>
+              <strong>Покращення якості.</strong> Досвідчені менеджери впроваджують ефективні процеси контролю якості та
+              швидко реагують на проблеми, які можуть зашкодити продукту.
+            </li>
+            <li>
+              <strong>Управління ризиками.</strong> Сильні менеджери краще ідентифікують і зменшують ризики, готові до
+              криз і непередбачених подій.
+            </li>
+            <li>
+              <strong>Краща задоволеність клієнтів.</strong> Навички управління очікуваннями клієнтів допомагають
+              будувати довготривалі партнерства й забезпечують цінність продукту.
+            </li>
+          </ul>
+        </div>
+
+        <section class="tldr" id="tldr" aria-labelledby="tldr-title">
+          <h2 class="tldr__title" id="tldr-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 16.5A6 6 0 0 1 6 12a6 6 0 0 1 12 0 6 6 0 0 1-2 4.5M12 12v4.5M9.5 19h5M10.5 21.5h3M12 2v1M21 12h-1M4 12H3M18.36 5.64l-.7.7M6.34 6.34l-.7-.7"></path>
+            </svg>
+            TL/DR, або швиденьке саммарі
+          </h2>
+          <ol>
+            <li>
+              <strong>Проджект менеджер відповідає за цілісність проєкту.</strong> Він організовує роботу команди,
+              управляє обмеженнями (терміни, бюджет, скоуп) та забезпечує прозору комунікацію між клієнтом і командою.
+            </li>
+            <li>
+              <strong>Обовʼязки ПМ охоплюють весь життєвий цикл проєкту.</strong> Від планування та управління ресурсами
+              до контролю якості, управління ризиками, звітності перед стейкхолдерами та підтримки ефективної взаємодії
+              в команді.
+            </li>
+            <li>
+              <strong>Хард-навички формують професійну основу.</strong> Знання методологій (Agile, Scrum, Kanban,
+              Waterfall), робота з бюджетами, базове технічне розуміння та ризик-менеджмент є критично важливими для
+              успішного управління проєктами.
+            </li>
+            <li>
+              <strong>Софт-навички відрізняють сильного менеджера від середнього.</strong> Комунікація, лідерство,
+              критичне мислення, емоційний інтелект та адаптивність дозволяють не просто координувати завдання, а вести
+              команду до результату.
+            </li>
+            <li>
+              <strong>Суб’єктивна оцінка «на відчуття» недостатня.</strong> Для об’єктивної оцінки навичок ПМ потрібні
+              системні інструменти: матриці компетенцій, зворотний зв’язок 360°, performance review, сертифікації та
+              практичні кейси.
+            </li>
+            <li>
+              <strong>Системна оцінка допомагає вибудовувати шлях розвитку.</strong> Вона дозволяє не лише знайти слабкі
+              місця, а й створити індивідуальний план розвитку для кожного менеджера.
+            </li>
+            <li>
+              <strong>Розвиток навичок ПМ підвищує ефективність проєктів.</strong> Досвідчені менеджери краще завершують
+              проєкти вчасно та в межах бюджету, ефективніше керують ризиками й передбачають потенційні проблеми.
+            </li>
+            <li>
+              <strong>Інвестиції в розвиток ПМ покращують продуктивність всієї команди.</strong> Розвинуті лідерські
+              навички мотивують команду, а ефективна комунікація забезпечує чітке делегування та зрозумілі очікування.
+            </li>
+            <li>
+              <strong>Сильні навички управління оптимізують використання ресурсів.</strong> Досвідчені менеджери
+              ефективніше розподіляють час, бюджет і людські ресурси, краще виявляють та застосовують сильні сторони
+              команди.
+            </li>
+            <li>
+              <strong>Розвиток ПМ безпосередньо впливає на задоволеність клієнтів.</strong> Навички управління
+              очікуваннями допомагають будувати довготривалі партнерства та забезпечують реальну цінність продукту для
+              клієнтів.
+            </li>
+          </ol>
+        </section>
+      </article>
+
+      <aside class="finding-toc" aria-labelledby="finding-toc-title">
+        <div class="finding-toc__inner">
+          <p class="finding-toc__title" id="finding-toc-title">
+            На цій сторінці
+          </p>
+          <nav aria-labelledby="finding-toc-title">
+            <ul>
+              {toc.map((item) => (
+                <li>
+                  <a href={`#${item.id}`}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <a class="finding-toc__tldr" href="#tldr">
+            Немає часу читати? Переходьте до швидкого саммарі статті
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ═══ More findings: the ATLAS page's findings carousel ═══ -->
+    <div class="more-findings">
+      <AuditFindings title="Більше знахідок аудитів" catalogLink={false} intro={false} />
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  // "On this page": highlight the section being read — the last heading that has passed the upper third.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>(".finding-toc nav a")];
+  const targets = links.flatMap((a) => {
+    const el = document.getElementById(a.hash.slice(1));
+    return el ? [[a, el] as const] : [];
+  });
+  function update() {
+    const line = innerHeight / 3;
+    let current: HTMLAnchorElement | undefined;
+    for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
+    for (const a of links) a.toggleAttribute("aria-current", a === current);
+  }
+  update();
+  addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+</script>
+
+<style>
+  /* this page runs on a lighter paper, halfway to white (#faf9f6): the article, the findings section,
+     the footer and the menu panel all take it from the token */
+  :global(body:has(.finding-page)) {
+    --c-paper: color-mix(in srgb, var(--color-paper) 50%, var(--color-white));
+  }
+  .finding-page {
+    --ink-soft: rgb(28 38 50 / 0.72); /* secondary text on paper */
+    --rule: rgb(28 38 50 / 0.12);
+    background: var(--c-paper);
+    color: var(--c-hero);
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---------- Hero ---------- */
+  .finding-hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    /* The title block sits at the bottom of a screen-tall hero, lifted by making the hero shorter.
+       --hero-lift is how much shorter than a screen the hero is (465.6 at 1440). --hero-pad-top is the floor
+       above the block, clear of the logo hanging 63 below the bar: in most windows the lift reaches it, and
+       the hero is as tall as its content. */
+    --hero-pad-top: calc(72 * var(--px));
+    --hero-lift: calc(465.6 * var(--px));
+    min-height: calc(100svh - var(--header-h) - var(--hero-lift));
+    overflow: hidden;
+  }
+  .finding-hero__art,
+  .finding-hero__art :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* the artwork fades into the paper so the title reads over it */
+  .finding-hero__art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-paper) 20%, transparent),
+      color-mix(in srgb, var(--c-paper) 72%, transparent) 55%,
+      var(--c-paper)
+    );
+  }
+  .finding-hero__inner {
+    display: grid;
+    row-gap: var(--space-xl);
+    width: 100%;
+    padding-top: var(--hero-pad-top);
+    padding-bottom: var(--space-2xl);
+  }
+  .finding-crumb {
+    /* the lead paragraph's type, in Medium */
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    text-decoration-line: none; /* the longhands: the shorthand would reset the thickness */
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
+    transition: color 0.2s ease;
+  }
+  .finding-crumb:hover {
+    color: var(--c-primary);
+    text-decoration-line: underline;
+  }
+  .finding-title {
+    max-width: calc(1017 * var(--px));
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: var(--leading-display);
+    font-feature-settings: "dlig" 1;
+  }
+  .finding-author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    max-width: var(--span-2); /* the article column's width */
+  }
+  .finding-author :global(img) {
+    flex: none;
+    width: calc(96 * var(--px));
+    height: calc(96 * var(--px));
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .finding-author p {
+    margin: 0;
+  }
+  .finding-author__name {
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+  .finding-author__bio {
+    margin-top: var(--space-xs) !important;
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .finding-author__bio a {
+    color: var(--c-primary);
+  }
+  /* only the word is underlined, not the gap or the icon after it */
+  .finding-author__link {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  /* "opens elsewhere" mark, part of the link (same colour, same target) */
+  .finding-author__ext {
+    display: inline-block;
+    width: 0.81em;
+    height: 0.81em;
+    vertical-align: -0.05em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- Article + sticky "on this page" ---------- */
+  .finding-layout {
+    display: grid;
+    grid-template-columns: var(--span-2) 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    padding-bottom: var(--space-xl); /* no top padding: the hero's bottom padding is the gap */
+  }
+  .finding-article {
+    --gap: var(--space-2xl); /* between the article's blocks */
+    --gap-tight: var(--space-lg); /* within the intro: lead, efforts radar, body */
+    display: grid;
+    row-gap: var(--gap);
+    min-width: 0;
+  }
+  .finding-article > :is(.efforts, .finding-body) {
+    margin-top: calc(var(--gap-tight) - var(--gap));
+  }
+  .finding-lead {
+    margin: 0;
+    font-size: var(--text-body); /* the same size as the article body */
+    line-height: var(--leading-body);
+  }
+
+  /* efforts radar */
+  .efforts {
+    /* the radar's colours, as on beta.daat.ua */
+    --radar-ink: oklch(26% 17% 256deg); /* daat-main-1 */
+    --radar-label: rgb(2 40 48);
+    --radar-link-hover: oklch(57% 59% 263deg); /* daat-accent-1 */
+    margin: 0;
+    padding-block: var(--space-xl);
+    border-block: 1px solid var(--rule);
+  }
+  .efforts__title {
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+  /* the explainer runs the full width, above the chart and the breakdown */
+  .efforts__desc {
+    margin: var(--space-sm) 0 0;
+    padding-bottom: var(--space-md);
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-body);
+  }
+  .efforts__body {
+    display: grid;
+    grid-template-columns: 56.25fr 43.75fr; /* the chart 25% wider than an even 45 : 55 split */
+    align-items: center;
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+  }
+  .efforts__chart {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .efforts__ring {
+    fill: none;
+    stroke: rgb(0 0 0 / 0.1);
+  }
+  .efforts__sector {
+    fill: var(--radar-ink);
+    fill-opacity: var(--shade);
+    stroke: var(--c-paper);
+    stroke-width: 2;
+  }
+  .efforts__label {
+    fill: var(--radar-label);
+    font-size: 17px; /* SVG units: about 11px on screen at the desktop chart size */
+    font-weight: 600;
+  }
+  .efforts__side {
+    display: grid;
+    row-gap: var(--space-md);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  /* one column grid for all rows (subgrid): names as wide as the longest, bars share the rest */
+  .efforts__list {
+    display: grid;
+    grid-template-columns: max-content 1fr max-content;
+    gap: var(--space-xs) var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .efforts__list li {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    color: oklch(26% 17% 256deg / 70%);
+  }
+  .efforts__bar {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(var(--radar-ink), var(--radar-ink)) 0 0 / var(--v) 100% no-repeat
+      oklch(26% 17% 256deg / 10%);
+  }
+  .efforts__value {
+    color: oklch(26% 17% 256deg / 50%);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .efforts__more {
+    justify-self: start;
+    color: oklch(26% 17% 256deg / 60%);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: color 0.3s ease;
+  }
+  .efforts__more:hover {
+    color: var(--radar-link-hover);
+  }
+
+  /* article body */
+  .finding-body {
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .finding-body h2 {
+    margin: var(--space-2xl) 0 var(--space-md);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+    scroll-margin-top: var(--space-xl);
+  }
+  .finding-body h2:first-child {
+    margin-top: 0;
+  }
+  .finding-body p,
+  .finding-body ul {
+    margin: 0 0 var(--space-md);
+  }
+  .tldr ol {
+    padding-left: 1.3em;
+  }
+  .finding-body ul {
+    display: grid;
+    row-gap: var(--space-xs);
+    padding: 0;
+    list-style: none;
+  }
+  .finding-body li {
+    position: relative;
+    padding-left: 1.6em; /* not a grid: items mix bold lead-ins with plain text */
+  }
+  /* rounded-square bullet, in the accent like the icon bullets on the ATLAS page */
+  .finding-body li::before {
+    content: "";
+    position: absolute;
+    top: calc((var(--leading-body) * 1em - 1em) / 2); /* centred on the first line */
+    left: 0;
+    width: 1em;
+    height: 1em;
+    background: var(--c-accent);
+    -webkit-mask: url("../../../../assets/icons/icon-square.svg") center / contain no-repeat;
+    mask: url("../../../../assets/icons/icon-square.svg") center / contain no-repeat;
+  }
+  .finding-body strong {
+    font-weight: 500;
+  }
+  .tldr strong {
+    font-weight: 600;
+  }
+
+  /* TL/DR */
+  .tldr {
+    padding: var(--space-xl) var(--space-xl) 0 var(--space-lg);
+    border-top: 3px solid var(--c-accent);
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--c-accent) 14%, var(--c-paper)), var(--c-paper));
+    font-size: var(--text-small);
+    line-height: var(--leading-body);
+    scroll-margin-top: var(--space-xl);
+  }
+  .tldr__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0 0 var(--space-md);
+    /* the article's section headings' type */
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .tldr__title svg {
+    flex: none;
+    width: 1.1em; /* the same ~28px as before at the larger heading size */
+    height: 1.1em;
+    fill: none;
+    stroke: #c47a1e; /* the accent, darkened to read on the light ground */
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .tldr ol {
+    display: grid;
+    row-gap: var(--space-sm);
+    margin: 0;
+  }
+
+  /* "on this page" */
+  .finding-toc__inner {
+    position: sticky;
+    width: 85%; /* 15% narrower than its column */
+    top: var(--space-xl);
+    padding-left: var(--space-lg);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .finding-toc__title {
+    margin: 0 0 var(--space-md);
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+  .finding-toc ul {
+    display: grid;
+    row-gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .finding-toc nav a {
+    display: block;
+    color: var(--ink-soft);
+    transition: color 0.2s ease;
+  }
+  .finding-toc nav a:hover {
+    color: var(--c-hero);
+  }
+  .finding-toc nav a[aria-current] {
+    color: var(--c-hero);
+    font-weight: 500;
+  }
+  .finding-toc__tldr {
+    display: block;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--rule);
+    color: var(--c-primary);
+  }
+  .finding-toc__tldr:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* ---------- More findings ---------- */
+  .more-findings {
+    border-bottom: 1px solid var(--rule);
+  }
+  /* the section's own paddings, cut: the top halved (the article above already ends with its bottom
+     padding), the bottom to half its 160 */
+  .more-findings :global(.report) {
+    padding-top: var(--space-xl);
+    padding-bottom: calc((var(--space-3xl) + var(--space-2xl)) * 0.5);
+  }
+
+  @media (width < 64rem) {
+    .finding-hero {
+      --hero-pad-top: 56px; /* the logo hangs 35px below the bar */
+      --hero-lift: 339.5px;
+      min-height: calc(80svh - var(--hero-lift));
+    }
+    .finding-hero__inner {
+      row-gap: 24px;
+      padding-bottom: 40px;
+    }
+    .finding-author {
+      gap: 16px;
+    }
+    .finding-author :global(img) {
+      width: 64px;
+      height: 64px;
+    }
+    .finding-layout {
+      grid-template-columns: 1fr;
+      padding-bottom: 48px;
+    }
+    .finding-article {
+      --gap: 48px;
+      --gap-tight: 24px;
+    }
+    .finding-toc {
+      display: none; /* the phone reads straight through; the TL/DR is at the end */
+    }
+    .efforts__body {
+      grid-template-columns: 1fr;
+    }
+    .efforts__chart {
+      justify-self: center;
+      max-width: 380px; /* keeps the labels near the body text size */
+    }
+    .tldr {
+      padding: 32px 20px 0;
+    }
+    .more-findings :global(.report) {
+      padding-top: 32px;
+      padding-bottom: 40px; /* half its 80 */
+    }
+  }
+</style>

@@ -1,27 +1,48 @@
 ---
 import { findings } from "../../../data/findings";
 import Carousel from "../../ui/Carousel.astro";
+
+interface Props {
+  /** plain-text heading; the ATLAS page's "Знахідки аудитів: …" by default */
+  title?: string;
+  /** "Дивитися каталог" link in the heading */
+  catalogLink?: boolean;
+  /** the explainer paragraph under the heading */
+  intro?: boolean;
+}
+
+const { title, catalogLink = true, intro = true } = Astro.props;
 ---
 
 <section class="report" id="audit-findings" data-toc-theme="light">
   <div class="wrap">
     <!-- TODO: link "Дивитися каталог" to the page with all findings -->
     <h2 class="section-title">
-      <strong>Знахідки аудитів:</strong> що ми бачимо в українських <span class="nowrap">IT-компаніях.</span>
-      <br />
-      <a class="finding__more findings__all" href="#">
-        Дивитися&nbsp;каталог&nbsp;
-        <svg class="findings__all-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18.5 12L4.99997 12" />
-          <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
-        </svg>
-      </a>
+      {title ?? (
+        <>
+          <strong>Знахідки аудитів:</strong> що ми бачимо в українських <span class="nowrap">IT-компаніях.</span>
+        </>
+      )}
+      {catalogLink && (
+        <>
+          <br />
+          <a class="finding__more findings__all" href="#">
+            Дивитися&nbsp;каталог&nbsp;
+            <svg class="findings__all-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.5 12L4.99997 12" />
+              <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
+            </svg>
+          </a>
+        </>
+      )}
     </h2>
-    <p class="report__intro">
-      Результати нашої роботи у форматі практичних гайдів на <span class="nowrap">2–3 тис.</span> слів. Кожна
-      знахідка&nbsp;— реальна проблема, яку ми виявили під час аудитів українських{" "}
-      <span class="nowrap">IT-компаній</span>: як вона проявляється, звідки береться і як її вирішують команди.
-    </p>
+    {intro && (
+      <p class="report__intro">
+        Результати нашої роботи у форматі практичних гайдів на <span class="nowrap">2–3 тис.</span> слів. Кожна
+        знахідка&nbsp;— реальна проблема, яку ми виявили під час аудитів українських{" "}
+        <span class="nowrap">IT-компаній</span>: як вона проявляється, звідки береться і як її вирішують команди.
+      </p>
+    )}
 
     <!-- TODO content: draft teaser titles; link each card to its guide once published -->
     <Carousel
