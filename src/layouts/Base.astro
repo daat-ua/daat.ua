@@ -1,6 +1,6 @@
 ---
 import { Font, getImage } from "astro:assets";
-import logo from "../assets/images/logo.webp";
+import faviconSource from "../assets/images/favicon.png";
 import "../styles/global.css";
 
 interface Props {
@@ -10,9 +10,9 @@ interface Props {
 
 const { title, description } = Astro.props;
 
-// favicons from the logo (PNG for the tab, 180px for iOS home screens)
-const favicon = await getImage({ src: logo, width: 32, height: 32, format: "png", fit: "cover" });
-const touchIcon = await getImage({ src: logo, width: 180, height: 180, format: "png", fit: "cover" });
+// favicons from the square "D" mark: PNG for the tab, 180px for iOS home screens
+const favicon = await getImage({ src: faviconSource, width: 32, height: 32, format: "png" });
+const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, format: "png" });
 ---
 
 <!doctype html>
