@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit review settings for the daat.ua / ATLAS landing page.
+# The site is one static page (index.html: markup, CSS and JS inline) plus assets.
+
+language: "en-US"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+  # Review the page and its docs; skip source material, fonts and generated media
+  path_filters:
+    - "!_source/**"
+    - "!fonts/**"
+    - "!assets/scrub/**"
+    - "!assets/roadmap/**"
+    - "!**/*.webp"
+    - "!**/*.jpg"
+    - "!**/*.png"
+    - "!**/.DS_Store"
+
+  path_instructions:
+    - path: "index.html"
+      instructions: |
+        Single static landing page in Ukrainian; no build step, framework or external runtime dependencies. Review with these project rules in mind:
+        - Layout: desktop (>= 1024px) scales the 1440px design proportionally through `--px: calc(100vw / 1440)`; every desktop size is `calc(N * var(--px))`. One breakpoint only, `@media (max-width: 1023.98px)`, sets `--px: 1px` and the phone layout. Flag new breakpoints, clamps or fixed px sizes on desktop.
+        - Tokens: use the existing custom properties (colours `--c-*`, type `--text-display/heading/title/lead/body/small`, spacing `--space-xs…3xl`, grid `--col`, `--col-gap`, `--span-2`, `--span-3`, `--gutter`). Flag font sizes outside the type scale and hard-coded colours that duplicate a token.
+        - Accessibility: WCAG 2.1 AA contrast, visible focus states, keyboard support for tabs, accordions, carousels and the menu dialog, `aria-*` kept in sync by the scripts, and `prefers-reduced-motion` respected by every animation.
+        - Motion: animate transform and opacity (or clip-path / grid rows) rather than layout properties; one-time and scroll-driven effects must not cause layout shift.
+        - Copy: Ukrainian typography: `&nbsp;` before em dashes and inside short numeric phrases, the typographic apostrophe (’), no orphaned single-letter words at line ends where `nowrap` is used elsewhere.
+        - Stacking inside `.toc-scope`: content sections z0 < floating TOC z1 < scrub clip z2 < hero z3 < header z4; flag z-index changes that break it.
+        - Placeholders: links with `href="#"` and `TODO` comments are deliberate until content arrives; don't flag them unless a TODO looks forgotten in finished-looking work.
+    - path: "FIGMA-DEVIATIONS.md"
+      instructions: |
+        Running log for the designer of every deviation from the Figma file. Check that a change to index.html that alters layout, type, colour or copy against the design has a matching entry here, and that entries stay accurate (no notes about things since removed).
+    - path: ".impeccable.md"
+      instructions: |
+        Design context (audience, tone, principles) used for design reviews. Only check that it stays consistent with the page.
+
+chat:
+  auto_reply: true
