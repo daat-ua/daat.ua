@@ -5,6 +5,8 @@
 //   npm run test:visual -- --widths=1440 --sections=hero,faq
 //
 // Sections not yet ported (missing from the build) are skipped. Diff images go to tests/visual/output/.
+// Images are hidden by default (their boxes still count): Astro resizes and re-encodes them, which shifts
+// pixels without changing the design. Pass --images to compare them too.
 // Uses the locally installed Google Chrome (playwright-core, no browser download).
 
 import { createServer } from "node:http";
@@ -44,6 +46,7 @@ const args = Object.fromEntries(
 const widths = (args.widths ?? "1440,1280,1024,500").split(",").map(Number);
 const only = args.sections ? args.sections.split(",") : Object.keys(SECTIONS);
 const threshold = Number(args.threshold ?? 0.005); // share of differing pixels allowed per section
+const compareImages = Boolean(args.images);
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -83,7 +86,8 @@ async function settle(page) {
   });
   await page.addStyleTag({
     content:
-      "*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}",
+      "*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}" +
+      (compareImages ? "" : "img{visibility:hidden!important}"),
   });
   await page.waitForTimeout(300);
 }
