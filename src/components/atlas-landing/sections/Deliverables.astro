@@ -1,0 +1,34 @@
+---
+import { deliverables } from "../../../data/deliverables";
+import Divider from "../../ui/Divider.astro";
+---
+
+<!-- Same pattern as "Чому зараз?"; each card adds a benefit line with the "idea" icon (styles in patterns.css) -->
+<section class="why why--gains" id="deliverables">
+  <div class="wrap">
+    <h2 class="section-title">
+      <strong>Що ATLAS дає</strong> власникам і тим, хто ухвалює рішення
+    </h2>
+
+    <div class="why__intro">
+      <p>
+        Не список із 50 зауважень, а чітка відповідь на два питання: що заважає компанії рости&nbsp;— і як саме це
+        змінити.
+      </p>
+    </div>
+
+    <Divider />
+
+    <ul class="problems gains">
+      {deliverables.map((card) => (
+        <li class="card">
+          <h3 set:html={card.title} />
+          <div class="card__body">
+            <p set:html={card.text} />
+            <p class="card__benefit" set:html={card.benefit} />
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
