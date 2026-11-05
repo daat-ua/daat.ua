@@ -1,6 +1,5 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
-import { enablerNames } from "../../../data/enablers";
 import { sanityClient } from "../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../sanity/image";
 import { FINDING_TEASERS_QUERY } from "../../../sanity/queries";
@@ -19,8 +18,7 @@ interface Props {
 
 const { title, catalogLink = true, intro = true, exclude } = Astro.props;
 
-// The teasers come from the Sanity "Delivery audit findings" collection, newest first; each links to its page
-// and is tagged with its enabler's Ukrainian name (no tag until one is chosen in the Studio).
+// The teasers come from the Sanity "Delivery audit findings" collection, newest first; each links to its page.
 // Card titles are passed to the carousel as HTML, so the plain-text titles are escaped.
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const locale = Astro.currentLocale ?? "uk-UA";
@@ -31,7 +29,7 @@ const findings: Teaser[] = (await sanityClient.fetch(FINDING_TEASERS_QUERY))
       src: urlFor(f.image!).width(640).height(640).fit("crop").url(),
       srcset: srcsetFor(f.image!, [320, 480, 640, 800], 1),
     },
-    tag: f.enabler ? enablerNames[f.enabler] : null,
+    tag: f.tag,
     title: escape(f.title),
     href: getRelativeLocaleUrl(locale, `atlas/findings/${f.slug}`, { normalizeLocale: false }),
   }));
