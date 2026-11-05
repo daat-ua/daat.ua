@@ -503,3 +503,12 @@ A full-width footer below the TOC zone, following the client's reference layout,
 
 The links and the social line share one top, and together they are centred on the logo. The notes sit in the links' column (same start and width), so nothing sits under the logo (on phones everything is left-aligned). Everything is in the small size, in sentence case rather than the reference's capitals. On phones the row stacks.
 - **TODO:** the legal pages, social profiles (and which networks), the English version, and the legal copy.
+
+## Global menu
+
+The header's menu button opens a global menu laid out like the client's reference, in the project's colours and type. It's a modal dialog: focus stays inside, Esc, the close button or a click on the dimmed page closes it, and the page behind doesn't scroll.
+- **Over the page:** the page dims to 92% night; the logo and the menu button stay on top, undimmed and in place. The menu button keeps its size and morphs into a close button: the outer bars meet in the middle and turn into an X with a slight overshoot, while the middle bar slides out to the right. Closing reverses it.
+- **Panel:** paper-coloured (`--c-paper`), 640px wide on desktop and full width on phones. It slides in from the right (0.45s). It holds the main items in TT Turns Medium at title size (five unfold sub-items with a turning chevron), a rule, "Наші напрями" with four links, a rule, and the language ("Україна (українська)") with a globe icon. The reference's search, contact link and "This is…" label are left out.
+- Items cascade in as on tieto.com: each entry fades in and drops 8px into place (0.22s), 50ms after the one before; sub-items do the same (40ms apart) as their group unfolds. On closing everything fades out together.
+- In-page links close the menu, then scroll to their section.
+- **TODO content:** every item, sub-item and direction is a translated placeholder from the reference; the English version doesn't exist yet.

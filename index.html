@@ -171,7 +171,23 @@
     }
     .menu-btn:hover { filter: brightness(1.06); }
     .menu-btn:focus-visible { outline: 3px solid var(--c-white); outline-offset: -6px; }
-    .menu-btn img { width: calc(36.5 * var(--px)); height: calc(36.5 * var(--px)); } /* Figma 45.6, reduced 20% */
+    /* the "fries" icon, drawn as three round-capped strokes so the menu's close button can morph it into an X */
+    .burger { width: calc(36.5 * var(--px)); height: calc(36.5 * var(--px)); overflow: visible; } /* Figma 45.6, reduced 20% */
+    .burger line {
+      stroke: var(--c-white);
+      stroke-width: 14.6;
+      stroke-linecap: round;
+      transform-box: fill-box;
+      transform-origin: center;
+      /* closing: unrotate first, then spread back apart */
+      transition: rotate .22s var(--ease-out), translate .25s var(--ease-out) .18s, scale .25s var(--ease-out) .2s, opacity .15s ease .2s;
+    }
+    .burger__mid { transform-origin: right center; }
+    /* opening: the outer bars meet in the middle, then turn into an X; the middle bar slides out to the right */
+    .gmenu.is-open .burger line { transition: translate .22s var(--ease-out), rotate .35s cubic-bezier(.3, 1.5, .5, 1) .18s, scale .2s var(--ease-out), opacity .15s ease; }
+    .gmenu.is-open .burger__top { translate: 0 25.55px; rotate: 45deg; }
+    .gmenu.is-open .burger__bot { translate: 0 -25.55px; rotate: -45deg; }
+    .gmenu.is-open .burger__mid { scale: 0 1; opacity: 0; }
 
     /* ---------- Hero ---------- */
     .hero {
@@ -1744,6 +1760,116 @@
     }
 
 
+    /* ---------- Global menu: a modal dialog. The bar repeats the header (logo, actions, a close button where
+       the menu button is); the panel slides in from the right over the dimmed page. ---------- */
+    .gmenu {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      background: rgb(14 21 27 / 0);
+      color: var(--c-hero);
+      transition: background-color .35s ease;
+    }
+    .gmenu::backdrop { background: transparent; }
+    .gmenu.is-open { background: rgb(14 21 27 / 0.92); } /* the page all but disappears; the logo and button stay on top */
+    html:has(.gmenu[open]) { overflow: hidden; } /* the page behind doesn't scroll */
+    .gmenu__bar {
+      position: relative;
+      z-index: 1;
+      height: var(--header-h);
+      pointer-events: none; /* only its logo and button take clicks; the rest is overlay */
+    }
+    .gmenu__bar .container { height: 100%; }
+    .gmenu__bar :is(.logo, .menu-btn) { pointer-events: auto; }
+    .gmenu__panel {
+      position: absolute;
+      top: var(--header-h);
+      right: 0;
+      bottom: 0;
+      width: calc(640 * var(--px));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: var(--space-2xl) var(--space-2xl) var(--space-3xl) calc(80 * var(--px));
+      background: var(--c-paper);
+      transform: translateX(100%);
+      transition: transform .45s var(--ease-out);
+    }
+    .gmenu.is-open .gmenu__panel { transform: none; }
+    /* Item cascade (as on tieto.com): each entry fades in and drops 8px into place, 50ms after the one
+       before it (--i is set by the script); on closing they just fade out together. */
+    .gmenu [data-cascade] {
+      opacity: 0;
+      translate: 0 -8px;
+      transition: opacity .22s ease, translate .22s ease;
+    }
+    .gmenu.is-open [data-cascade] {
+      opacity: 1;
+      translate: none;
+      transition-delay: calc(100ms + var(--i, 0) * 50ms);
+    }
+    .gmenu a { color: inherit; }
+    .gmenu ul { margin: 0; padding: 0; list-style: none; }
+    .gmenu__eyebrow { margin: 0; color: var(--c-primary); font-size: var(--text-small); font-weight: 500; }
+    .gmenu__main { width: min(100%, calc(340 * var(--px))); }
+    .gmenu__toggle,
+    .gmenu__link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: var(--space-xs) 0;
+      border: 0;
+      background: none;
+      color: var(--c-hero);
+      font: inherit;
+      font-family: var(--font-display);
+      font-size: var(--text-title);
+      font-weight: 500;
+      line-height: var(--leading-title);
+      text-align: left;
+      cursor: pointer;
+    }
+    .gmenu__toggle:hover,
+    .gmenu__link:hover { color: var(--c-primary); }
+    .gmenu__chev {
+      flex: none;
+      width: 0.8em;
+      height: 0.8em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform .3s var(--ease-out);
+    }
+    .gmenu__toggle[aria-expanded="true"] .gmenu__chev { transform: rotate(180deg); }
+    /* sub-items unfold by animating the row height (grid 0fr → 1fr) */
+    .gmenu__sub { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s var(--ease-out), visibility 0s linear .35s; visibility: hidden; }
+    .gmenu__toggle[aria-expanded="true"] + .gmenu__sub { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows .35s var(--ease-out), visibility 0s; }
+    .gmenu__sub ul { display: grid; row-gap: var(--space-xs); min-height: 0; overflow: hidden; }
+    .gmenu__sub li:first-child { padding-top: var(--space-xs); }
+    .gmenu__sub li:last-child { padding-bottom: var(--space-sm); }
+    .gmenu__sub a { font-size: var(--text-body); color: rgb(28 38 50 / 0.75); }
+    /* sub-items cascade the same way as their group unfolds */
+    .gmenu__sub li { opacity: 0; translate: 0 -8px; transition: opacity .2s ease, translate .2s ease; }
+    .gmenu__toggle[aria-expanded="true"] + .gmenu__sub li { opacity: 1; translate: none; transition-delay: calc(80ms + var(--j, 0) * 40ms); }
+    .gmenu__sub a:hover,
+    .gmenu__minor a:hover,
+    .gmenu__lang:hover { color: var(--c-primary); }
+    /* separators between the groups, as in the reference */
+    .gmenu nav + .gmenu__eyebrow,
+    .gmenu__lang { margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid rgb(28 38 50 / 0.15); }
+    .gmenu__minor { display: grid; row-gap: var(--space-xs); margin-top: var(--space-md) !important; font-size: var(--text-body); font-weight: 500; }
+    .gmenu__lang { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--text-body); font-weight: 500; }
+    .gmenu__lang svg { width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-width: 1.5; }
+
     /* ---------- Footer: full width, below the TOC zone ---------- */
     .footer {
       --footer-logo: calc(81.19 * var(--px)); /* half the header logo, then 15% larger */
@@ -1814,7 +1940,7 @@
         --text-small:   1rem;      /* 16 */
       }
       .logo { top: 16px; width: 84.8px; }
-      .menu-btn img { width: 25.6px; height: 25.6px; }
+      .burger { width: 25.6px; height: 25.6px; }
       .hero { --hero-gap: 20px; }
       .hero .container { padding-top: 120px; padding-bottom: 40px; }
       .hero__title { max-width: 640px; }
@@ -1884,6 +2010,8 @@
       .findings__pages span { width: 32px; }
       .finding__tag { font-size: 13px; }
       .cases__title { margin-top: 48px; }
+      .gmenu__panel { width: 100%; padding: 72px 24px 64px; } /* clears the logo hanging below the bar */
+      .gmenu__main { width: 100%; }
       .footer { padding: 48px 0; }
       .footer__main { grid-template-columns: 1fr; row-gap: 32px; justify-items: start; }
       .footer { --footer-logo: 48.76px; }
@@ -1941,9 +2069,8 @@
         <img src="assets/logo.webp" width="706" height="795" alt="Daat&nbsp;— IT business strategy" />
       </a>
     </div>
-    <!-- TODO: no menu exists yet; wire this up (aria-expanded + aria-controls) when the menu is designed -->
-    <button class="menu-btn" type="button" aria-label="Відкрити меню">
-      <img src="assets/icon-menu.svg" width="91.25" height="91.25" alt="" />
+    <button class="menu-btn" type="button" aria-label="Відкрити меню" aria-haspopup="dialog" aria-controls="gmenu" aria-expanded="false">
+      <svg class="burger" viewBox="0 0 91.25 91.25" aria-hidden="true"><line class="burger__top" x1="7.3" y1="20.45" x2="80.3" y2="20.45" /><line class="burger__mid" x1="29.2" y1="46" x2="80.3" y2="46" /><line class="burger__bot" x1="7.3" y1="71.55" x2="80.3" y2="71.55" /></svg>
     </button>
   </header>
 
@@ -3165,6 +3292,87 @@
     </div>
   </footer>
 
+  <!-- Global menu: opens from the header's menu button.
+       TODO content: placeholder items and links (from the reference layout); search; the English version -->
+  <dialog class="gmenu" id="gmenu" aria-label="Меню">
+    <div class="gmenu__bar">
+      <div class="container">
+        <a class="logo" href="/" tabindex="-1" aria-hidden="true">
+          <img src="assets/logo.webp" width="706" height="795" alt="" />
+        </a>
+      </div>
+      <button class="menu-btn gmenu__close" type="button" aria-label="Закрити меню" autofocus>
+        <svg class="burger" viewBox="0 0 91.25 91.25" aria-hidden="true"><line class="burger__top" x1="7.3" y1="20.45" x2="80.3" y2="20.45" /><line class="burger__mid" x1="29.2" y1="46" x2="80.3" y2="46" /><line class="burger__bot" x1="7.3" y1="71.55" x2="80.3" y2="71.55" /></svg>
+      </button>
+    </div>
+    <div class="gmenu__panel">
+      <nav aria-label="Головне меню">
+        <ul class="gmenu__main">
+            <li>
+              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls="gmenu-sub-1">Що ми робимо<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></button>
+              <div class="gmenu__sub" id="gmenu-sub-1">
+                <ul>
+                  <li><a href="#">Діагностика ATLAS</a></li>
+                  <li><a href="#">Дорожня карта зростання</a></li>
+                  <li><a href="#">Супровід упровадження</a></li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls="gmenu-sub-2">Галузі<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></button>
+              <div class="gmenu__sub" id="gmenu-sub-2">
+                <ul>
+                  <li><a href="#">Аутсорс і аутстаф</a></li>
+                  <li><a href="#">Продуктові компанії</a></li>
+                  <li><a href="#">Інвестори та покупці</a></li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls="gmenu-sub-3">Про нас<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></button>
+              <div class="gmenu__sub" id="gmenu-sub-3">
+                <ul>
+                  <li><a href="#">Команда</a></li>
+                  <li><a href="#">Підхід і методологія</a></li>
+                  <li><a href="#">Контакти</a></li>
+                </ul>
+              </div>
+            </li>
+            <li><a class="gmenu__link" href="#">Кар’єра</a></li>
+            <li><a class="gmenu__link" href="#testimonials-and-case-studies">Кейси</a></li>
+            <li>
+              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls="gmenu-sub-4">Медіа<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></button>
+              <div class="gmenu__sub" id="gmenu-sub-4">
+                <ul>
+                  <li><a href="#">Знахідки аудитів</a></li>
+                  <li><a href="#">Статті</a></li>
+                  <li><a href="#">Події</a></li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls="gmenu-sub-5">Актуальне<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></button>
+              <div class="gmenu__sub" id="gmenu-sub-5">
+                <ul>
+                  <li><a href="#">AI у delivery</a></li>
+                  <li><a href="#">Fixed-price без збитків</a></li>
+                  <li><a href="#">Підготовка до інвестора</a></li>
+                </ul>
+              </div>
+            </li>
+        </ul>
+      </nav>
+      <p class="gmenu__eyebrow">Наші напрями</p>
+      <ul class="gmenu__minor">
+        <li><a href="#">Daat ATLAS</a></li>
+        <li><a href="#">Daat Delivery</a></li>
+        <li><a href="#">Daat Engineering</a></li>
+        <li><a href="#">Daat Advisory</a></li>
+      </ul>
+      <a class="gmenu__lang" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M2.5 12h19M12 2.5c2.5 2.6 3.8 5.8 3.8 9.5s-1.3 6.9-3.8 9.5c-2.5-2.6-3.8-5.8-3.8-9.5s1.3-6.9 3.8-9.5z" /></svg>Україна (українська)</a>
+    </div>
+  </dialog>
+
   <!-- Full-size view for the report charts -->
   <dialog class="lightbox" aria-label="Графік зі звіту">
     <img class="lightbox__img" alt="" />
@@ -3500,6 +3708,53 @@
       }, { threshold: Array.from({ length: 21 }, (_, k) => k / 20) });
       io.observe(tl);
     }
+
+    // Global menu: the header's menu button opens it as a modal dialog (focus stays inside, Esc closes).
+    // .is-open runs the slide-in; closing reverses it and closes the dialog when the panel has slid out.
+    (() => {
+      const dialog = document.getElementById("gmenu");
+      const openBtn = document.querySelector(".menu-btn");
+      const panel = dialog.querySelector(".gmenu__panel");
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+      function open() {
+        dialog.showModal();
+        openBtn.setAttribute("aria-expanded", "true");
+        requestAnimationFrame(() => requestAnimationFrame(() => dialog.classList.add("is-open")));
+      }
+      function close(then) {
+        if (!dialog.open) return;
+        dialog.classList.remove("is-open");
+        openBtn.setAttribute("aria-expanded", "false");
+        let done = false;
+        const finish = () => { if (done) return; done = true; dialog.close(); then?.(); };
+        if (reduced.matches) return finish();
+        panel.addEventListener("transitionend", (e) => { if (e.target === panel) finish(); }, { once: true });
+        setTimeout(finish, 600); // in case the transition doesn't run
+      }
+      openBtn.addEventListener("click", open);
+      dialog.querySelector(".gmenu__close").addEventListener("click", () => close());
+      dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+      dialog.addEventListener("click", (e) => { if (e.target === dialog) close(); }); // the dimmed page
+      // cascade order: main items, the directions label and links, then the language
+      [...dialog.querySelectorAll(".gmenu__main > li, .gmenu__eyebrow, .gmenu__minor > li, .gmenu__lang")].forEach((el, i) => {
+        el.dataset.cascade = "";
+        el.style.setProperty("--i", i);
+      });
+      for (const sub of dialog.querySelectorAll(".gmenu__sub")) [...sub.querySelectorAll("li")].forEach((li, j) => li.style.setProperty("--j", j));
+      for (const t of dialog.querySelectorAll(".gmenu__toggle")) {
+        t.addEventListener("click", () => t.setAttribute("aria-expanded", String(t.getAttribute("aria-expanded") !== "true")));
+      }
+      for (const a of dialog.querySelectorAll("a")) {
+        a.addEventListener("click", (e) => {
+          const hash = a.getAttribute("href");
+          if (hash === "#") { e.preventDefault(); return; } // TODO: placeholder links
+          const target = hash.startsWith("#") && document.getElementById(hash.slice(1));
+          if (!target) return;
+          e.preventDefault(); // scroll once the page is unlocked
+          close(() => target.scrollIntoView({ behavior: reduced.matches ? "auto" : "smooth" }));
+        });
+      }
+    })();
 
     // Report charts: click to see full size
     (() => {
