@@ -91,7 +91,6 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 | Item | Where | Needed |
 |---|---|---|
 | `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
-| `#results` | "Які результати ви отримаєте?" | Results section |
 | `#audit-findings` | "Знахідки аудитів" | Audit findings section |
 | `#testimonials` | Table of contents | The remaining section (all other sections now exist, including `#audit-findings`) |
 | Menu button | Header | Menu design and content |
@@ -419,3 +418,50 @@ TODO:
 - Real findings: the 8 teaser titles are drafts written from problems named elsewhere on the page.
 - Guide links for "Читати далі" (currently inactive placeholders).
 - Report row 04 can now link "Приклади — у знахідках аудитів" to `#audit-findings`.
+
+## "Часті питання" section (new, from the mockup; not in Figma yet)
+
+The last section, in the "Для кого" style (dark), with `id="faq"`, inside the floating TOC area and with a new TOC item "Часті питання".
+
+- **H2:** "**Питання,** які власники ставлять перед діагностикою".
+- **FAQ:** the mockup's ten questions in two columns (same order). Rows align across the columns and are separated by pale lines.
+- **Typography:** questions as the roadmap's h4 (20px SemiBold white); answers as the revenue table (17px, muted cream).
+- **Links:** "сім організаційних енейблерів" goes to `#roadmap` (the enabler forecast). The problem links and "знахідках аудитів" go to `#audit-findings` until individual guides exist.
+- **Copy:** "DA'AT" is written as "Daat". The mockup's "Вартість — від [ЦІНА]." is omitted until there is a price (TODO in the code).
+- **Mobile:** one column.
+
+TODO:
+- The price sentence.
+- Links from the problem names to their individual guides.
+
+## Hero lead colour
+
+The hero lead ("ATLAS — доказова діагностика зростання IT-компаній від Daat. …") is cream `#ede9de` (Figma: orange `#feb161`).
+
+## "Які результати ви отримаєте?" button
+
+It links to `#deliverables` ("Що ви отримаєте") with smooth scrolling (page-wide, off for reduced motion). A down-chevron icon (`arrow-down-01`, inline SVG) follows the text and nudges down on hover.
+
+## "Чому зараз?" card titles: Medium weight
+
+The problem cards and the "Чому Daat?" reason cards use TT Turns Medium (500) for their titles instead of DemiBold (600).
+
+## "Для кого" situation titles: Medium weight
+
+The accordion situation titles ("Масштабування без зламів"…) are TT Commons Medium (500) instead of DemiBold (600), matching the "Чому зараз?" card titles. The H2 and the tabs are unchanged.
+
+## "Що ви отримаєте" card titles: Medium weight
+
+The six card titles use TT Turns Medium (500) instead of DemiBold (600), like the "Чому зараз?" cards.
+
+## "Що всередині звіту ATLAS" list titles: Medium weight
+
+The six numbered report-section titles use TT Commons Medium (500) instead of SemiBold (600), like the card titles above.
+
+## Roadmap horizon action titles: Medium weight
+
+The action titles in the three horizon columns ("Захистити час керівників"…) use TT Commons Medium (500) instead of SemiBold (600).
+
+## FAQ questions: Medium weight
+
+The FAQ questions (`dt`) use TT Commons Medium (500) instead of SemiBold (600), the same as the roadmap action titles.

@@ -94,6 +94,7 @@
 
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; }
+    html { scroll-behavior: smooth; } /* in-page links glide; turned off for reduced motion below */
     body {
       background: var(--c-white);
       color: var(--c-white);
@@ -223,7 +224,7 @@
     .hero__lead {
       max-width: var(--span-2);
       margin: var(--space-2xl) 0 0;
-      color: var(--c-accent);
+      color: var(--c-cream);
       font-size: var(--text-lead);
       line-height: var(--leading-body);
     }
@@ -261,7 +262,8 @@
     .clients {
       display: grid;
       row-gap: var(--space-md);
-      margin: var(--space-2xl) 0 0;
+      margin: var(--space-2xl) 0;
+      padding-bottom: var(--space-2xl);
     }
     .clients__label {
       margin: 0;
@@ -298,6 +300,20 @@
     }
     .btn:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 3px; }
     .btn:active { transform: translateY(1px); }
+    .btn__icon {
+      flex: none;
+      width: 1.1em;
+      height: 1.1em;
+      margin-left: 0.35em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform .2s var(--ease-out);
+    }
+    .btn:hover .btn__icon,
+    .btn:focus-visible .btn__icon { transform: translateY(2px); }
     .btn--primary,
     .btn--secondary { border: 2px solid var(--c-white); }
     .btn--primary {
@@ -474,6 +490,12 @@
     }
 
     .why__divider + * { margin-top: var(--space-xl); }
+    /* card and list titles in "Чому зараз?", "Що ви отримаєте", the report, the roadmap and the FAQ are Medium, lighter than the DemiBold elsewhere */
+    #why-now .card h3,
+    #deliverables .card h3,
+    #report .report-toc h3,
+    #roadmap .horizon h4,
+    #faq .faq__item dt { font-weight: 500; }
 
     .card h3 {
       margin: 0;
@@ -932,6 +954,43 @@
     }
     .report__cta .btn--primary { border-color: var(--c-primary); color: var(--c-white); }
 
+    /* ---------- FAQ: two columns, typography of the roadmap's revenue table ---------- */
+    .faq__list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: var(--space-2xl);
+      width: var(--span-3);
+      max-width: 100%;
+      margin: var(--space-xl) 0 0;
+    }
+    .faq__item {
+      padding: var(--space-md) 0;
+      border-top: 1px solid rgb(237 233 222 / 0.12);
+      font-size: var(--text-small);
+    }
+    .faq__item dt {
+      /* same as the horizon column h4 */
+      margin: 0;
+      color: var(--c-white);
+      font-size: var(--text-body);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .faq__item dd {
+      margin: var(--space-xs) 0 0;
+      color: rgb(237 233 222 / 0.75);
+      line-height: var(--leading-body);
+    }
+    .faq__item a {
+      color: var(--c-cream);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+      text-decoration-color: rgb(237 233 222 / 0.45);
+      transition: text-decoration-color .2s ease;
+    }
+    .faq__item a:hover { text-decoration-color: currentColor; }
+
     /* ---------- Audit findings carousel ---------- */
     .findings { width: var(--span-3); max-width: 100%; margin-top: var(--space-xl); }
     /* "Дивитися каталог" sits inside the heading, on its own line: heading size and weight, link colour and hover underline */
@@ -1256,7 +1315,7 @@
     .situation__title, .situation__sub { grid-column: 2; }
     .situation__title {
       font-size: var(--text-lead);
-      font-weight: 600;
+      font-weight: 500; /* Medium, like the "Чому зараз?" card titles */
       line-height: 1.2;
     }
     .situation__sub {
@@ -1399,6 +1458,7 @@
       .finding, .finding:nth-child(3n + 2), .finding:nth-child(3n) { width: 78%; }
       .findings__pages span { width: 32px; }
       .finding__tag { font-size: 13px; }
+      .faq__list { grid-template-columns: 1fr; margin-top: 32px; }
 
       .for-whom { padding: 64px 0 80px; }
       .scrub::after { height: 64px; }
@@ -1454,9 +1514,9 @@
             Ми знаходимо системи й елементи, що стримують розвиток вашої компанії, пропонуємо найкращі практики delivery та технічної досконалості&nbsp;— і допомагаємо їх упровадити. Перший результат&nbsp;— уже за <span class="nowrap">4–5 тижнів</span>.
           </p>
 
-          <img class="hero__divider" src="assets/divider.svg" width="1154" height="4" alt="" />
+          <!--<img class="hero__divider" src="assets/divider.svg" width="1154" height="4" alt="" />-->
 
-          <dl class="theses">
+          <!--<dl class="theses">
             <div>
               <dt>4 тижні</dt>
               <dd>від старту до діагнозу й дорожньої карти зростання</dd>
@@ -1465,7 +1525,7 @@
               <dt>Стратегія впровадження</dt>
               <dd>для <span class="nowrap">IT-компаній</span> на <span class="nowrap">~50–500</span> людей: не лише звіт, а супровід змін</dd>
             </div>
-          </dl>
+          </dl>-->
 
           <div class="clients">
             <p class="clients__label">Ми пишаємося нашими клієнтами</p>
@@ -1480,7 +1540,7 @@
 
           <div class="cta">
             <a class="btn btn--primary" href="#contact">Записатися на діагностичний дзвінок</a>
-            <a class="btn btn--secondary" href="#results">Які результати ви отримаєте?</a>
+            <a class="btn btn--secondary" href="#deliverables">Які результати ви отримаєте? <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg></a>
           </div>
       </div>
     </section>
@@ -1496,6 +1556,7 @@
             <li><a href="#report">Що всередині звіту</a></li>
             <li><a href="#roadmap">Дорожня карта</a></li>
             <li><a href="#audit-findings">Знахідки аудитів</a></li>
+            <li><a href="#faq">Часті питання</a></li>
             <li><a href="#testimonials">Відгуки клієнтів</a></li>
           </ul>
         </nav>
@@ -2353,6 +2414,55 @@
             <button class="findings__nav" type="button" data-dir="1" aria-label="Наступні знахідки">›</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="for-whom faq" id="faq">
+      <div class="container">
+        <h2 class="section-title"><strong>Питання,</strong> які власники ставлять перед діагностикою</h2>
+        <!-- TODO links: point the problem links at their individual guides once published -->
+        <dl class="faq__list">
+          <div class="faq__item">
+            <dt>Що таке діагностика зростання <span class="nowrap">IT-компанії</span>?</dt>
+            <dd>Незалежна доказова оцінка того, які системи й елементи <span class="nowrap">IT-компанії</span> стримують її розвиток. ATLAS оцінює <a href="#roadmap">сім організаційних енейблерів</a>&nbsp;— від стратегії до інженерної культури,&nbsp;— знаходить першопричини обмежень і перетворює їх на дорожню карту з найкращими практиками delivery та технічної досконалості.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Скільки триває діагностика ATLAS?</dt>
+            <dd><span class="nowrap">4–5 тижнів</span> від старту до фінального звіту й дорожньої карти: кілька днів на рамку проєкту, <span class="nowrap">1–2 тижні</span> на збір доказів, далі оцінювання, синтез, дорожня карта та раунд валідації з вами. Упровадження&nbsp;— окремий етап у вашому темпі.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Чим ATLAS відрізняється від аналізу за McKinsey 7S чи оцінки ISO/CMMI?</dt>
+            <dd>7S дає наратив, але не дає оцінок; ISO та CMMI сертифікують процеси, але рідко пояснюють бізнес-результати. ATLAS поєднує лінзу 7S із доказовою дисципліною EFQM та оцінюванням зрілості в стилі Baldrige, адаптованими для IT delivery.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Для яких компаній підходить ATLAS?</dt>
+            <dd>Для <span class="nowrap">IT-сервісних</span> і продуктових компаній на <span class="nowrap">50–500 FTE</span> в Україні та ЄС&nbsp;— і для трьох типів замовників: власників і керівників (масштабування, плато, підготовка до продажу, перші 90 днів нового керівника), інвесторів і покупців (due diligence, базова лінія після злиття, моніторинг портфеля) та клієнтів, які обирають або контролюють <span class="nowrap">IT-підрядника</span>. Організаціям до <span class="nowrap">30 FTE</span> ATLAS зазвичай надмірний.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Що потрібно від нашої команди?</dt>
+            <dd>Час на інтерв’ю з керівниками й ключовими ролями та доступ на читання до даних, які ви вже збираєте. Графік погоджуємо з вами у фазі 0, щоб не заважати роботі з клієнтами.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Чи конфіденційні наші дані?</dt>
+            <dd>Так. Ми підписуємо NDA до передачі будь-яких даних, а всі створені артефакти&nbsp;— реєстр доказів, scorecard, реєстр ризиків, мапа тем і дорожня карта&nbsp;— належать вам.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Чи допомагаєте ви з упровадженням?</dt>
+            <dd>Так. Ваша команда може виконувати дорожню карту самостійно, але Daat може й супроводжувати впровадження: налаштувати процеси delivery, інженерні стандарти, гейти якості та управлінські ритуали разом із вашими людьми. Повторна діагностика через <span class="nowrap">12–15 місяців</span> вимірює прогрес.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Скільки коштує діагностика ATLAS?</dt>
+            <dd>Ціна залежить від розміру компанії та скоупу й фіксується до початку роботи.<!-- TODO: add "Вартість — від [ЦІНА]." once the price is set --> Супровід упровадження&nbsp;— окремий трек і оцінюється окремо. Запишіться на дзвінок, щоб отримати оцінку для вашої компанії.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Які проблеми найчастіше стримують зростання <span class="nowrap">IT-компаній</span>?</dt>
+            <dd>Серед того, що ми регулярно бачимо під час аудитів: <a href="#audit-findings">відсутність стандартизованого SDLC</a> і <a href="#audit-findings">ресурс-менеджменту</a>, <a href="#audit-findings">перевантажені проджект-менеджери</a>, засновник як єдина точка ухвалення рішень і оцінка fixed-price проєктів без Discovery. Розбір кожної проблеми&nbsp;— у <a href="#audit-findings">знахідках аудитів</a>.</dd>
+          </div>
+          <div class="faq__item">
+            <dt>Як зрозуміти, що компанія переросла свої процеси?</dt>
+            <dd>Типові сигнали: більше людей не дає більше результату, рішення застрягають на засновникові, якість залежить від окремих людей, а команда постійно гасить пожежі. Якщо впізнаєте два-три з них, варто провести діагностику. Приклади з реальних аудитів&nbsp;— у <a href="#audit-findings">знахідках аудитів</a>.</dd>
+          </div>
+        </dl>
       </div>
     </section>
     </div>
