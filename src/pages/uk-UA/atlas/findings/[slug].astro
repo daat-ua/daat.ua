@@ -33,8 +33,7 @@ const toc = headingsOf(body);
 const bodyComponents = { block: { h2: Heading, h3: Heading } };
 
 // Efforts radar: how much each department is involved in solving the finding (0–100), drawn as a polar
-// area chart — one equal-angle sector per department, its radius proportional to the effort. Shown only
-// once all seven values are set in the Studio.
+// area chart — one equal-angle sector per department, its radius proportional to the effort.
 const departments = [
   "Strategic management",
   "Delivery excellence",
@@ -44,15 +43,20 @@ const departments = [
   "People management",
   "Financial control",
 ];
-const efforts = finding.efforts.every((v): v is number => typeof v === "number")
-  ? departments.map((name, i) => ({ name, value: finding.efforts[i] as number }))
-  : null;
+// Until a finding's values are filled in, the chart shows beta.daat.ua's defaults (its component's
+// fallback); once any are set, an unset one counts as 0.
+const defaultEfforts = [100, 60, 50, 96, 40, 10, 40];
+const anySet = finding.efforts.some((v) => typeof v === "number");
+const efforts = departments.map((name, i) => ({
+  name,
+  value: anySet ? (finding.efforts[i] ?? 0) : defaultEfforts[i],
+}));
 // each sector's shade of the navy, as on beta.daat.ua (by position, not by value)
 const shades = [1, 0.8, 0.9, 0.6, 1, 0.9, 0.5];
 const R = 100; // chart radius in SVG units
 const step = (2 * Math.PI) / departments.length;
 const point = (r: number, a: number) => `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`;
-const sectors = (efforts ?? []).map(({ name, value }, i) => {
+const sectors = efforts.map(({ name, value }, i) => {
   const a0 = -Math.PI / 2 + i * step; // the first sector starts at 12 o'clock, then clockwise
   const a1 = a0 + step;
   const r = (R * value) / 100;
@@ -146,50 +150,48 @@ const sectors = (efforts ?? []).map(({ name, value }, i) => {
           </div>
         )}
 
-        {efforts && (
-          <figure class="efforts">
-            <figcaption class="efforts__title">
-              Efforts radar <small>©</small>
-            </figcaption>
-            <p class="efforts__desc" id="efforts-desc">
-              Розподілення зусиль, потрібних для вирішення цієї проблеми, між основними відділами компанії. Кожен сектор
-              відображає рівень залученості відділу у вирішення знахідки.
-            </p>
-            <div class="efforts__body">
-              <svg class="efforts__chart" viewBox="-215 -140 430 280" role="img" aria-labelledby="efforts-desc">
-                {[20, 40, 60, 80, 100].map((r) => (
-                  <circle class="efforts__ring" r={r} />
+        <figure class="efforts">
+          <figcaption class="efforts__title">
+            Efforts radar <small>©</small>
+          </figcaption>
+          <p class="efforts__desc" id="efforts-desc">
+            Розподілення зусиль, потрібних для вирішення цієї проблеми, між основними відділами компанії. Кожен сектор
+            відображає рівень залученості відділу у вирішення знахідки.
+          </p>
+          <div class="efforts__body">
+            <svg class="efforts__chart" viewBox="-215 -140 430 280" role="img" aria-labelledby="efforts-desc">
+              {[20, 40, 60, 80, 100].map((r) => (
+                <circle class="efforts__ring" r={r} />
+              ))}
+              {sectors.map((s) => (
+                <g class="efforts__slice">
+                  <path class="efforts__sector" d={s.d} style={`--shade: ${s.shade}`} />
+                  <text class="efforts__label" x={s.label.x} y={s.label.y} text-anchor={s.label.anchor}>
+                    {s.label.words.map((w, j) => (
+                      <tspan x={s.label.x} dy={j === 0 ? `${(1 - s.label.words.length) * 0.55 + 0.35}em` : "1.1em"}>
+                        {w}
+                      </tspan>
+                    ))}
+                  </text>
+                </g>
+              ))}
+            </svg>
+            <div class="efforts__side">
+              <ul class="efforts__list">
+                {efforts.map((e) => (
+                  <li>
+                    <span>{e.name}</span>
+                    <span class="efforts__bar" style={`--v: ${e.value}%`} aria-hidden="true" />
+                    <span class="efforts__value">{e.value}%</span>
+                  </li>
                 ))}
-                {sectors.map((s) => (
-                  <g class="efforts__slice">
-                    <path class="efforts__sector" d={s.d} style={`--shade: ${s.shade}`} />
-                    <text class="efforts__label" x={s.label.x} y={s.label.y} text-anchor={s.label.anchor}>
-                      {s.label.words.map((w, j) => (
-                        <tspan x={s.label.x} dy={j === 0 ? `${(1 - s.label.words.length) * 0.55 + 0.35}em` : "1.1em"}>
-                          {w}
-                        </tspan>
-                      ))}
-                    </text>
-                  </g>
-                ))}
-              </svg>
-              <div class="efforts__side">
-                <ul class="efforts__list">
-                  {efforts.map((e) => (
-                    <li>
-                      <span>{e.name}</span>
-                      <span class="efforts__bar" style={`--v: ${e.value}%`} aria-hidden="true" />
-                      <span class="efforts__value">{e.value}%</span>
-                    </li>
-                  ))}
-                </ul>
-                <a class="efforts__more" href="#" aria-disabled="true">
-                  Детальніше про методологію
-                </a>
-              </div>
+              </ul>
+              <a class="efforts__more" href="#" aria-disabled="true">
+                Детальніше про методологію
+              </a>
             </div>
-          </figure>
-        )}
+          </div>
+        </figure>
 
         {body && (
           <div class="finding-body">
