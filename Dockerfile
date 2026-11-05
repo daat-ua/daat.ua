@@ -1,6 +1,6 @@
-# Build the static site, then serve dist/ with Caddy (Railway sets $PORT).
+# Build the static site with Node 26 (LTS), then serve dist/ with Caddy (Railway sets $PORT).
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci

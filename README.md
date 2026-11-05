@@ -6,7 +6,7 @@ Astro 7 + Tailwind 4, built as a static site and served by Caddy on Railway.
 
 ## Develop
 
-Requires Node 24 (see `.nvmrc`; Astro 7.4 needs ≥ 22.23.4).
+Requires Node 26 LTS (see `.nvmrc`; Astro 7.4 needs ≥ 22.23.4).
 
 ```sh
 npm install
@@ -17,7 +17,7 @@ npm run preview   # serve dist/ locally
 
 ## Deploy
 
-Railway builds the `Dockerfile`: Node builds the site, then Caddy (`Caddyfile`) serves `dist/` on `$PORT` with compression, long-lived caching for hashed assets and security headers.
+Railway builds the `Dockerfile`: Node 26 builds the site, then Caddy (`Caddyfile`) serves `dist/` on `$PORT` with compression, long-lived caching for hashed assets and security headers.
 
 ## Structure
 

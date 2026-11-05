@@ -52,7 +52,7 @@ reviews:
         - Section components live in src/components/atlas-landing/sections; copy lives in src/data as typed data.
     - path: "{Dockerfile,Caddyfile,railway.json}"
       instructions: |
-        Railway deployment: multi-stage build (Node 24 builds, Caddy serves dist/ on $PORT). Check caching headers (immutable for /_astro/*), compression, security headers and that the image stays small.
+        Railway deployment: multi-stage build (Node 26 builds, Caddy serves dist/ on $PORT). Check caching headers (immutable for /_astro/*), compression, security headers and that the image stays small.
     - path: "FIGMA-DEVIATIONS.md"
       instructions: |
         Running log for the designer of every deviation from the Figma file. Check that a change to index.html that alters layout, type, colour or copy against the design has a matching entry here, and that entries stay accurate (no notes about things since removed).
