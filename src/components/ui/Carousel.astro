@@ -39,28 +39,31 @@ const Title = `h${headingLevel}` as "h3" | "h4";
   <ul class="findings__track" tabindex="0">
     {items.map((item) => (
       <li class="finding">
-        {/* the image leads where "more" does; skipped by keyboard and screen readers, which get that link */}
-        <a class="finding__media" href={item.href} tabindex="-1" aria-hidden="true">
-          {"srcset" in item.image ? (
-            <img
-              src={item.image.src}
-              srcset={item.image.srcset}
-              sizes="(width < 64rem) 78vw, 26vw"
-              alt=""
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <Image
-              src={item.image}
-              alt=""
-              widths={[320, 480, 640, 800]}
-              sizes="(width < 64rem) 78vw, 26vw"
-              layout="none"
-            />
-          )}
+        <div class="finding__media">
+          {/* the image leads where "more" does; skipped by keyboard and screen readers, which get that link
+              (the tag stays outside it, so they still read it) */}
+          <a class="finding__link" href={item.href} tabindex="-1" aria-hidden="true">
+            {"srcset" in item.image ? (
+              <img
+                src={item.image.src}
+                srcset={item.image.srcset}
+                sizes="(width < 64rem) 78vw, 26vw"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <Image
+                src={item.image}
+                alt=""
+                widths={[320, 480, 640, 800]}
+                sizes="(width < 64rem) 78vw, 26vw"
+                layout="none"
+              />
+            )}
+          </a>
           {item.tag && <span class="finding__tag">{item.tag}</span>}
-        </a>
+        </div>
         <Title class="finding__title" set:html={item.title} />
         <a class="finding__more" href={item.href}>
           {more} <span aria-hidden="true">›</span>

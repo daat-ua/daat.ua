@@ -241,11 +241,14 @@
 }
 .finding__media {
   position: relative;
-  display: block; /* a link */
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 6px;
   background: var(--c-night);
+}
+.finding__link {
+  display: block;
+  height: 100%;
 }
 .finding__media img {
   width: 100%;

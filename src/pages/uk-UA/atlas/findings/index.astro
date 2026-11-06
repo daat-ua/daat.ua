@@ -21,15 +21,16 @@ const groups = (Object.entries(enablerNames) as [Enabler, string][]).map(([enabl
   enabler,
   id: enabler,
   label,
-  count: teasers.filter((t) => t.enabler === enabler).length,
+  // the findings the carousel can show (AuditFindings skips any without an image)
+  count: teasers.filter((t) => t.enabler === enabler && t.image?.asset).length,
 }));
 
 const intro =
-  "Результати нашої роботи у форматі практичних гайдів. Кожна знахідка — реальна проблема, яку ми виявили під час аудитів українських IT-компаній: як вона проявляється, звідки береться і як її вирішують команди.";
+  "Результати нашої роботи у форматі практичних гайдів. Кожна знахідка\u00a0— реальна проблема, яку ми виявили під час аудитів українських IT-компаній: як вона проявляється, звідки береться і як її вирішують команди.";
 ---
 
 <FindingsLayout
-  title="Знахідки аудитів — каталог | Daat"
+  title={"Знахідки аудитів\u00a0— каталог | Daat"}
   description={intro}
   image={heroImage}
   crumb={{ href: atlasHref, label: "ATLAS" }}
