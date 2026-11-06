@@ -1,8 +1,8 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText, toPlainText } from "astro-portabletext";
-import Base from "../../../../layouts/Base.astro";
-import Footer from "../../../../components/Footer.astro";
+import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
+import FindingsToc from "../../../../components/findings/FindingsToc.astro";
 import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
 import Heading from "../../../../components/portable-text/Heading.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
@@ -79,205 +79,133 @@ const sectors = efforts.map(({ name, value }, i) => {
 });
 ---
 
-<Base
+<FindingsLayout
   title={finding.seo_title ?? `${title} — знахідки аудитів | Daat`}
   description={description}
   noindex={finding.no_index ?? false}
+  image={image}
+  crumb={{ href: findingsHref, label: "Знахідки аудитів" }}
+  heading={title}
 >
-  <main id="main" class="finding-page">
-    <!-- ═══ Hero: the artwork fades into the page ═══ -->
-    <header class="finding-hero">
-      {image?.asset && (
-        <div
-          class="finding-hero__art"
-          aria-hidden="true"
-          style={image.asset.metadata?.lqip ? `background-image: url(${image.asset.metadata.lqip})` : undefined}
-        >
-          <img
-            src={urlFor(image).width(1440).url()}
-            srcset={srcsetFor(image, [640, 960, 1440, 1920, 2400])}
-            sizes="100vw"
-            alt=""
-            fetchpriority="high"
-          />
+  {author && (
+    <div class="finding-author" slot="hero">
+      {author.photo?.asset && (
+        <img
+          src={urlFor(author.photo).width(192).height(192).fit("crop").url()}
+          srcset={srcsetFor(author.photo, [96, 192], 1)}
+          sizes="96px"
+          alt=""
+          width="96"
+          height="96"
+        />
+      )}
+      <div>
+        <p class="finding-author__name">{author.name}</p>
+        <p class="finding-author__bio">
+          {author.bio}{" "}
+          {author.linkedin_link && (
+            <a href={author.linkedin_link} target="_blank" rel="noopener">
+              <span class="finding-author__link">LinkedIn</span>
+              <svg class="finding-author__ext" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M11.0991 3.00012C7.45013 3.00669 5.53932 3.09629 4.31817 4.31764C3.00034 5.63568 3.00034 7.75704 3.00034 11.9997C3.00034 16.2424 3.00034 18.3638 4.31817 19.6818C5.63599 20.9999 7.75701 20.9999 11.9991 20.9999C16.241 20.9999 18.3621 20.9999 19.6799 19.6818C20.901 18.4605 20.9906 16.5493 20.9972 12.8998" />
+                <path d="M20.556 3.49612L11.0487 13.0586M20.556 3.49612C20.062 3.00151 16.7343 3.04761 16.0308 3.05762M20.556 3.49612C21.05 3.99074 21.0039 7.32273 20.9939 8.02714" />
+              </svg>
+              <span class="visually-hidden"> (відкриється в новій вкладці)</span>
+            </a>
+          )}
+        </p>
+      </div>
+    </div>
+  )}
+
+  <!-- ═══ Article + sticky "on this page" ═══ -->
+  <div class="wrap finding-layout">
+    <article class="finding-article">
+      {teaser && (
+        <div class="finding-lead">
+          <PortableText value={teaser} />
         </div>
       )}
-      <div class="wrap finding-hero__inner">
-        <nav aria-label="Хлібні крихти">
-          <a class="finding-crumb" href={findingsHref}>
-            Знахідки аудитів
-          </a>
-        </nav>
-        <h1 class="finding-title">{title}</h1>
-        {author && (
-          <div class="finding-author">
-            {author.photo?.asset && (
-              <img
-                src={urlFor(author.photo).width(192).height(192).fit("crop").url()}
-                srcset={srcsetFor(author.photo, [96, 192], 1)}
-                sizes="96px"
-                alt=""
-                width="96"
-                height="96"
-              />
-            )}
-            <div>
-              <p class="finding-author__name">{author.name}</p>
-              <p class="finding-author__bio">
-                {author.bio}{" "}
-                {author.linkedin_link && (
-                  <a href={author.linkedin_link} target="_blank" rel="noopener">
-                    <span class="finding-author__link">LinkedIn</span>
-                    <svg class="finding-author__ext" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M11.0991 3.00012C7.45013 3.00669 5.53932 3.09629 4.31817 4.31764C3.00034 5.63568 3.00034 7.75704 3.00034 11.9997C3.00034 16.2424 3.00034 18.3638 4.31817 19.6818C5.63599 20.9999 7.75701 20.9999 11.9991 20.9999C16.241 20.9999 18.3621 20.9999 19.6799 19.6818C20.901 18.4605 20.9906 16.5493 20.9972 12.8998" />
-                      <path d="M20.556 3.49612L11.0487 13.0586M20.556 3.49612C20.062 3.00151 16.7343 3.04761 16.0308 3.05762M20.556 3.49612C21.05 3.99074 21.0039 7.32273 20.9939 8.02714" />
-                    </svg>
-                    <span class="visually-hidden"> (відкриється в новій вкладці)</span>
-                  </a>
-                )}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </header>
 
-    <!-- ═══ Article + sticky "on this page" ═══ -->
-    <div class="wrap finding-layout">
-      <article class="finding-article">
-        {teaser && (
-          <div class="finding-lead">
-            <PortableText value={teaser} />
-          </div>
-        )}
-
-        <figure class="efforts">
-          <figcaption class="efforts__title">
-            Efforts radar <small>©</small>
-          </figcaption>
-          <p class="efforts__desc" id="efforts-desc">
-            Розподілення зусиль, потрібних для вирішення цієї проблеми, між основними відділами компанії. Кожен сектор
-            відображає рівень залученості відділу у вирішення знахідки.
-          </p>
-          <div class="efforts__body">
-            <svg class="efforts__chart" viewBox="-215 -140 430 280" role="img" aria-labelledby="efforts-desc">
-              {[20, 40, 60, 80, 100].map((r) => (
-                <circle class="efforts__ring" r={r} />
+      <figure class="efforts">
+        <figcaption class="efforts__title">
+          Efforts radar <small>©</small>
+        </figcaption>
+        <p class="efforts__desc" id="efforts-desc">
+          Розподілення зусиль, потрібних для вирішення цієї проблеми, між основними відділами компанії. Кожен сектор
+          відображає рівень залученості відділу у вирішення знахідки.
+        </p>
+        <div class="efforts__body">
+          <svg class="efforts__chart" viewBox="-215 -140 430 280" role="img" aria-labelledby="efforts-desc">
+            {[20, 40, 60, 80, 100].map((r) => (
+              <circle class="efforts__ring" r={r} />
+            ))}
+            {sectors.map((s) => (
+              <g class="efforts__slice">
+                <path class="efforts__sector" d={s.d} style={`--shade: ${s.shade}`} />
+                <text class="efforts__label" x={s.label.x} y={s.label.y} text-anchor={s.label.anchor}>
+                  {s.label.words.map((w, j) => (
+                    <tspan x={s.label.x} dy={j === 0 ? `${(1 - s.label.words.length) * 0.55 + 0.35}em` : "1.1em"}>
+                      {w}
+                    </tspan>
+                  ))}
+                </text>
+              </g>
+            ))}
+          </svg>
+          <div class="efforts__side">
+            <ul class="efforts__list">
+              {efforts.map((e) => (
+                <li>
+                  <span>{e.name}</span>
+                  <span class="efforts__bar" style={`--v: ${e.value}%`} aria-hidden="true" />
+                  <span class="efforts__value">{e.value}%</span>
+                </li>
               ))}
-              {sectors.map((s) => (
-                <g class="efforts__slice">
-                  <path class="efforts__sector" d={s.d} style={`--shade: ${s.shade}`} />
-                  <text class="efforts__label" x={s.label.x} y={s.label.y} text-anchor={s.label.anchor}>
-                    {s.label.words.map((w, j) => (
-                      <tspan x={s.label.x} dy={j === 0 ? `${(1 - s.label.words.length) * 0.55 + 0.35}em` : "1.1em"}>
-                        {w}
-                      </tspan>
-                    ))}
-                  </text>
-                </g>
-              ))}
-            </svg>
-            <div class="efforts__side">
-              <ul class="efforts__list">
-                {efforts.map((e) => (
-                  <li>
-                    <span>{e.name}</span>
-                    <span class="efforts__bar" style={`--v: ${e.value}%`} aria-hidden="true" />
-                    <span class="efforts__value">{e.value}%</span>
-                  </li>
-                ))}
-              </ul>
-              <a class="efforts__more" href="#" aria-disabled="true">
-                Детальніше про методологію
-              </a>
-            </div>
+            </ul>
+            <a class="efforts__more" href="#" aria-disabled="true">
+              Детальніше про методологію
+            </a>
           </div>
-        </figure>
+        </div>
+      </figure>
 
-        {body && (
-          <div class="finding-body">
-            <PortableText value={body} components={bodyComponents} />
-          </div>
-        )}
-
-        {summarisation && (
-          <section class="tldr" id="tldr" aria-labelledby="tldr-title">
-            <h2 class="tldr__title" id="tldr-title">
-              <Bulb class="tldr__icon" aria-hidden="true" />
-              Коротка версія
-            </h2>
-            <PortableText value={summarisation} />
-          </section>
-        )}
-      </article>
-
-      {toc.length > 0 && (
-        <aside class="finding-toc" aria-labelledby="finding-toc-title">
-          <div class="finding-toc__inner">
-            <p class="finding-toc__title" id="finding-toc-title">
-              На цій сторінці
-            </p>
-            <nav aria-labelledby="finding-toc-title">
-              <ul>
-                {toc.map((item) => (
-                  <li>
-                    <a href={`#${item.id}`}>{item.label}</a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            {summarisation && (
-              <a class="finding-toc__tldr" href="#tldr">
-                <Bulb class="finding-toc__tldr-icon" aria-hidden="true" />
-                <span>Немає часу читати? Переходьте до швидкого саммарі статті</span>
-              </a>
-            )}
-          </div>
-        </aside>
+      {body && (
+        <div class="finding-body">
+          <PortableText value={body} components={bodyComponents} />
+        </div>
       )}
-    </div>
 
-    <!-- ═══ More findings: the ATLAS page's findings carousel, without this one ═══ -->
-    <div class="more-findings">
-      <AuditFindings title="Більше знахідок аудитів" catalogLink={false} intro={false} exclude={slug} />
-    </div>
-  </main>
-  <Footer />
-</Base>
+      {summarisation && (
+        <section class="tldr" id="tldr" aria-labelledby="tldr-title">
+          <h2 class="tldr__title" id="tldr-title">
+            <Bulb class="tldr__icon" aria-hidden="true" />
+            Коротка версія
+          </h2>
+          <PortableText value={summarisation} />
+        </section>
+      )}
+    </article>
 
-<script>
-  // "On this page": highlight the section being read — the last heading that has passed the upper third.
-  const links = [...document.querySelectorAll<HTMLAnchorElement>(".finding-toc nav a")];
-  const targets = links.flatMap((a) => {
-    const el = document.getElementById(a.hash.slice(1));
-    return el ? [[a, el] as const] : [];
-  });
-  function update() {
-    const line = innerHeight / 3;
-    let current: HTMLAnchorElement | undefined;
-    for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
-    // an explicit token: an empty aria-current reads as "false" to assistive technology
-    for (const a of links) {
-      if (a === current) a.setAttribute("aria-current", "location");
-      else a.removeAttribute("aria-current");
-    }
-  }
-  update();
-  addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
-</script>
+    {toc.length > 0 && (
+      <FindingsToc items={toc}>
+        {summarisation && (
+          <a class="finding-toc__tldr" href="#tldr">
+            <Bulb class="finding-toc__tldr-icon" aria-hidden="true" />
+            <span>Немає часу читати? Переходьте до швидкого саммарі статті</span>
+          </a>
+        )}
+      </FindingsToc>
+    )}
+  </div>
+
+  <!-- ═══ More findings: the ATLAS page's findings carousel, without this one ═══ -->
+  <div class="more-findings">
+    <AuditFindings title="Більше знахідок аудитів" catalogLink={false} intro={false} exclude={slug} />
+  </div>
+</FindingsLayout>
 
 <style>
-  /* this page runs on a lighter paper, halfway to white (#faf9f6): the article, the findings section,
-     the footer and the menu panel all take it from the token */
-  :global(body:has(.finding-page)) {
-    --c-paper: color-mix(in srgb, var(--color-paper) 50%, var(--color-white));
-  }
-  .finding-page {
-    --ink-soft: rgb(28 38 50 / 0.72); /* secondary text on paper */
-    --rule: rgb(28 38 50 / 0.12);
-    background: var(--c-paper);
-    color: var(--c-hero);
-  }
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -287,74 +215,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     white-space: nowrap;
   }
 
-  /* ---------- Hero ---------- */
-  .finding-hero {
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    /* The title block sits at the bottom of a screen-tall hero, lifted by making the hero shorter.
-       --hero-lift is how much shorter than a screen the hero is (465.6 at 1440). --hero-pad-top is the floor
-       above the block, clear of the logo hanging 63 below the bar: in most windows the lift reaches it, and
-       the hero is as tall as its content. */
-    --hero-pad-top: calc(72 * var(--px));
-    --hero-lift: calc(465.6 * var(--px));
-    min-height: calc(100svh - var(--header-h) - var(--hero-lift));
-    overflow: hidden;
-  }
-  .finding-hero__art,
-  .finding-hero__art img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  /* the blurred preview (Sanity's LQIP) shows until the artwork loads */
-  .finding-hero__art {
-    background: center / cover no-repeat;
-  }
-  /* the artwork fades into the paper so the title reads over it */
-  .finding-hero__art::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--c-paper) 20%, transparent),
-      color-mix(in srgb, var(--c-paper) 72%, transparent) 55%,
-      var(--c-paper)
-    );
-  }
-  .finding-hero__inner {
-    display: grid;
-    row-gap: var(--space-xl);
-    width: 100%;
-    padding-top: var(--hero-pad-top);
-    padding-bottom: var(--space-2xl);
-  }
-  .finding-crumb {
-    /* the lead paragraph's type, in Medium */
-    font-size: var(--text-body);
-    font-weight: 500;
-    line-height: var(--leading-body);
-    text-decoration-line: none; /* the longhands: the shorthand would reset the thickness */
-    text-underline-offset: 4px;
-    text-decoration-thickness: 2px;
-    transition: color 0.2s ease;
-  }
-  .finding-crumb:hover {
-    color: var(--c-primary);
-    text-decoration-line: underline;
-  }
-  .finding-title {
-    max-width: calc(1017 * var(--px));
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-display);
-    font-weight: 600;
-    line-height: var(--leading-display);
-    font-feature-settings: "dlig" 1;
-  }
+  /* ---------- Hero: the author under the title ---------- */
   .finding-author {
     display: flex;
     align-items: center;
@@ -630,39 +491,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     font-variant-numeric: tabular-nums;
   }
 
-  /* "on this page" */
-  .finding-toc__inner {
-    position: sticky;
-    width: 85%; /* 15% narrower than its column */
-    top: var(--space-xl);
-    padding-left: var(--space-lg);
-    font-size: var(--text-small);
-    line-height: var(--leading-small);
-  }
-  .finding-toc__title {
-    margin: 0 0 var(--space-md);
-    font-size: var(--text-body);
-    font-weight: 600;
-  }
-  .finding-toc ul {
-    display: grid;
-    row-gap: var(--space-sm);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .finding-toc nav a {
-    display: block;
-    color: var(--ink-soft);
-    transition: color 0.2s ease;
-  }
-  .finding-toc nav a:hover {
-    color: var(--c-hero);
-  }
-  .finding-toc nav a[aria-current] {
-    color: var(--c-hero);
-    font-weight: 500;
-  }
+  /* "on this page": the link to the short version at the list's foot */
   .finding-toc__tldr {
     display: flex;
     gap: 0.5em;
@@ -694,15 +523,6 @@ const sectors = efforts.map(({ name, value }, i) => {
   }
 
   @media (width < 64rem) {
-    .finding-hero {
-      --hero-pad-top: 56px; /* the logo hangs 35px below the bar */
-      --hero-lift: 339.5px;
-      min-height: calc(80svh - var(--hero-lift));
-    }
-    .finding-hero__inner {
-      row-gap: 24px;
-      padding-bottom: 40px;
-    }
     .finding-author {
       gap: 16px;
     }
@@ -717,9 +537,6 @@ const sectors = efforts.map(({ name, value }, i) => {
     .finding-article {
       --gap: 48px;
       --gap-tight: 24px;
-    }
-    .finding-toc {
-      display: none; /* the phone reads straight through; the TL/DR is at the end */
     }
     .efforts__body {
       grid-template-columns: 1fr;
