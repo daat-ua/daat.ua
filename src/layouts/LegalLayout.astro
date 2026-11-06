@@ -1,12 +1,11 @@
 ---
-import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "./FindingsLayout.astro";
 import FindingsToc from "../components/findings/FindingsToc.astro";
 import { legal } from "../data/legal";
 
-// A legal document (privacy policy, terms of use): the findings pages' layout without a hero image, the
-// text on the left two thirds (.article-body), the sections as "on this page" on the right. The page's
-// slot holds the sections, each an h2 with the id its `sections` entry names.
+// A legal document (privacy policy, terms of use): the findings pages' layout without a hero image or a
+// breadcrumb, the text on the left two thirds (.article-body), the sections as "on this page" on the right.
+// The page's slot holds the sections, each an h2 with the id its `sections` entry names.
 
 interface Props {
   title: string;
@@ -16,10 +15,9 @@ interface Props {
 }
 
 const { title, description, heading, sections } = Astro.props;
-const atlasHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas", { normalizeLocale: false });
 ---
 
-<FindingsLayout title={title} description={description} crumb={{ href: atlasHref, label: "ATLAS" }} heading={heading}>
+<FindingsLayout title={title} description={description} heading={heading}>
   <p class="legal-updated" slot="hero">
     Чинна редакція від {legal.updated}
   </p>
