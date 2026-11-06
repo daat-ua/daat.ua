@@ -5,6 +5,7 @@ import Base from "../../../../layouts/Base.astro";
 import Footer from "../../../../components/Footer.astro";
 import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
 import Heading from "../../../../components/portable-text/Heading.astro";
+import Bulb from "../../../../assets/icons/icon-bulb.svg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
 import { headingsOf } from "../../../../sanity/portable-text";
@@ -202,10 +203,8 @@ const sectors = efforts.map(({ name, value }, i) => {
         {summarisation && (
           <section class="tldr" id="tldr" aria-labelledby="tldr-title">
             <h2 class="tldr__title" id="tldr-title">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 16.5A6 6 0 0 1 6 12a6 6 0 0 1 12 0 6 6 0 0 1-2 4.5M12 12v4.5M9.5 19h5M10.5 21.5h3M12 2v1M21 12h-1M4 12H3M18.36 5.64l-.7.7M6.34 6.34l-.7-.7" />
-              </svg>
-              TL/DR, або швиденьке саммарі
+              <Bulb class="tldr__icon" aria-hidden="true" />
+              Коротка версія
             </h2>
             <PortableText value={summarisation} />
           </section>
@@ -229,7 +228,8 @@ const sectors = efforts.map(({ name, value }, i) => {
             </nav>
             {summarisation && (
               <a class="finding-toc__tldr" href="#tldr">
-                Немає часу читати? Переходьте до швидкого саммарі статті
+                <Bulb class="finding-toc__tldr-icon" aria-hidden="true" />
+                <span>Немає часу читати? Переходьте до швидкого саммарі статті</span>
               </a>
             )}
           </div>
@@ -407,7 +407,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     display: grid;
     grid-template-columns: var(--span-2) 1fr;
     column-gap: calc(var(--col-gap) * 2);
-    padding-bottom: var(--space-xl); /* no top padding: the hero's bottom padding is the gap */
+    padding-bottom: var(--space-md); /* no top padding: the hero's bottom padding is the gap */
   }
   .finding-article {
     --gap: var(--space-2xl); /* between the article's blocks */
@@ -550,9 +550,6 @@ const sectors = efforts.map(({ name, value }, i) => {
   .finding-body :global(ul) {
     margin: 0 0 var(--space-md);
   }
-  .tldr :global(ol) {
-    padding-left: 1.3em;
-  }
   .finding-body :global(ul) {
     display: grid;
     row-gap: var(--space-xs);
@@ -583,18 +580,20 @@ const sectors = efforts.map(({ name, value }, i) => {
   }
 
   /* TL/DR */
+  /* The heading's icon and the list's numbers hang in the left padding, so the heading and the items
+     start at one edge (--tldr-indent from the box's side). */
   .tldr {
-    padding: var(--space-xl) var(--space-xl) 0 var(--space-lg);
-    border-top: 3px solid var(--c-accent);
+    --tldr-icon: calc(var(--text-title) * 1.1); /* ~28px at 1440 */
+    --tldr-indent: calc(var(--space-lg) + var(--tldr-icon) + var(--space-sm));
+    padding: var(--space-xl) var(--space-xl) 0 var(--tldr-indent);
+    border-radius: 6px; /* as the panels and teaser images on the ATLAS page */
     background: linear-gradient(to bottom, color-mix(in srgb, var(--c-accent) 14%, var(--c-paper)), var(--c-paper));
     font-size: var(--text-small);
     line-height: var(--leading-body);
     scroll-margin-top: var(--space-xl);
   }
   .tldr__title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
+    position: relative;
     margin: 0 0 var(--space-md);
     /* the article's section headings' type */
     font-family: var(--font-display);
@@ -602,20 +601,33 @@ const sectors = efforts.map(({ name, value }, i) => {
     font-weight: 500;
     line-height: var(--leading-title);
   }
-  .tldr__title svg {
-    flex: none;
-    width: 1.1em; /* the same ~28px as before at the larger heading size */
-    height: 1.1em;
-    fill: none;
-    stroke: #c47a1e; /* the accent, darkened to read on the light ground */
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .tldr__title :global(.tldr__icon) {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + var(--space-sm));
+    width: var(--tldr-icon);
+    height: var(--tldr-icon);
+    translate: 0 -50%;
+    color: #c47a1e; /* the accent, darkened to read on the light ground */
   }
+  /* numbers hang to the left of the text, right-aligned, with a gap of their own */
   .tldr :global(ol) {
     display: grid;
     row-gap: var(--space-sm);
     margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: tldr;
+  }
+  .tldr :global(ol > li) {
+    position: relative;
+    counter-increment: tldr;
+  }
+  .tldr :global(ol > li)::before {
+    content: counter(tldr) ".";
+    position: absolute;
+    right: calc(100% + 0.75em);
+    font-variant-numeric: tabular-nums;
   }
 
   /* "on this page" */
@@ -652,13 +664,20 @@ const sectors = efforts.map(({ name, value }, i) => {
     font-weight: 500;
   }
   .finding-toc__tldr {
-    display: block;
+    display: flex;
+    gap: 0.5em;
     margin-top: var(--space-lg);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--rule);
     color: var(--c-primary);
   }
-  .finding-toc__tldr:hover {
+  .finding-toc__tldr :global(.finding-toc__tldr-icon) {
+    flex: none;
+    width: 1.25em; /* the TL/DR heading's icon, smaller */
+    height: 1.25em;
+    margin-top: calc((var(--leading-small) * 1em - 1.25em) / 2); /* centred on the first line */
+  }
+  .finding-toc__tldr:hover span {
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
@@ -693,7 +712,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     }
     .finding-layout {
       grid-template-columns: 1fr;
-      padding-bottom: 48px;
+      padding-bottom: 24px;
     }
     .finding-article {
       --gap: 48px;
@@ -710,7 +729,8 @@ const sectors = efforts.map(({ name, value }, i) => {
       max-width: 380px; /* keeps the labels near the body text size */
     }
     .tldr {
-      padding: 32px 20px 0;
+      --tldr-indent: calc(20px + var(--tldr-icon) + var(--space-sm));
+      padding: 32px 20px 0 var(--tldr-indent);
     }
     .more-findings :global(.report) {
       padding-top: 32px;
