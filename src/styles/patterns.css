@@ -257,6 +257,7 @@
 }
 .finding__tag {
   position: absolute;
+  pointer-events: none; /* a click on it reaches the image link beneath */
   top: var(--space-sm);
   left: var(--space-sm);
   padding: 0.6em 0.75em 0.5em; /* fallback: TT Commons sits high, so a little more on top */
