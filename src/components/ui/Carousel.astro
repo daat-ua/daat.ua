@@ -39,7 +39,8 @@ const Title = `h${headingLevel}` as "h3" | "h4";
   <ul class="findings__track" tabindex="0">
     {items.map((item) => (
       <li class="finding">
-        <div class="finding__media">
+        {/* the image leads where "more" does; skipped by keyboard and screen readers, which get that link */}
+        <a class="finding__media" href={item.href} tabindex="-1" aria-hidden="true">
           {"srcset" in item.image ? (
             <img
               src={item.image.src}
@@ -59,7 +60,7 @@ const Title = `h${headingLevel}` as "h3" | "h4";
             />
           )}
           {item.tag && <span class="finding__tag">{item.tag}</span>}
-        </div>
+        </a>
         <Title class="finding__title" set:html={item.title} />
         <a class="finding__more" href={item.href}>
           {more} <span aria-hidden="true">›</span>

@@ -15,3 +15,21 @@ export const enablerNames = {
   "people-capacity": "Люди та ресурси",
   "capabilities-competency": "Спроможності та компетенції",
 } as const satisfies Record<Enabler, string>;
+
+/** One line on what each enabler covers, under its heading in the findings catalogue */
+export const enablerDescriptions = {
+  "strategy-portfolio":
+    "Чи узгоджені стратегія, портфель проєктів і пріоритети компанії — і чи доходять вони до команд.",
+  "structure-governance":
+    "Як влаштовані ролі, відповідальність і управління: хто ухвалює рішення і як компанія контролює виконання.",
+  "delivery-operating-system":
+    "Процеси, практики й інструменти, з якими компанія передбачувано доставляє результат клієнтам.",
+  "engineering-delivery-culture":
+    "Інженерні практики, якість і культура delivery: як команди працюють щодня і що вважають нормою.",
+  "leadership-decision-making":
+    "Як лідери ставлять цілі, ухвалюють рішення й делегують — і наскільки компанія залежить від окремих людей.",
+  "people-capacity":
+    "Завантаження, розподіл і утримання людей: чи вистачає команди, щоб виконувати зобовʼязання без вигорання.",
+  "capabilities-competency":
+    "Навички та компетенції, яких потребує зростання компанії, і системи, що їх розвивають і оцінюють.",
+} as const satisfies Record<Enabler, string>;

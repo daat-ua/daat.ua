@@ -1,9 +1,8 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
-import { enablerNames } from "../../../data/enablers";
-import { sanityClient } from "../../../sanity/client";
+import { enablerNames, type Enabler } from "../../../data/enablers";
+import { getFindingTeasers } from "../../../sanity/findings";
 import { srcsetFor, urlFor } from "../../../sanity/image";
-import { FINDING_TEASERS_QUERY } from "../../../sanity/queries";
 import Carousel, { type Teaser } from "../../ui/Carousel.astro";
 
 interface Props {
@@ -15,31 +14,37 @@ interface Props {
   intro?: boolean;
   /** slug of a finding to leave out (the one whose page this is) */
   exclude?: string;
+  /** only this enabler's findings (their cards then go without the enabler tag) */
+  enabler?: Enabler;
+  /** the section's id (an anchor); unique per page */
+  id?: string;
+  /** a line under the heading (in place of the ATLAS page's intro) */
+  description?: string;
 }
 
-const { title, catalogLink = true, intro = true, exclude } = Astro.props;
+const { title, catalogLink = true, intro = true, exclude, enabler, id = "audit-findings", description } = Astro.props;
 
 // The teasers come from the Sanity "Delivery audit findings" collection, newest first; each links to its page
 // and is tagged with its enabler's Ukrainian name (no tag until one is chosen in the Studio).
 // Card titles are passed to the carousel as HTML, so the plain-text titles are escaped.
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const locale = Astro.currentLocale ?? "uk-UA";
-const findings: Teaser[] = (await sanityClient.fetch(FINDING_TEASERS_QUERY))
-  .filter((f) => f.slug !== exclude && f.image?.asset)
+const findings: Teaser[] = (await getFindingTeasers())
+  .filter((f) => f.slug !== exclude && f.image?.asset && (!enabler || f.enabler === enabler))
   .map((f) => ({
     image: {
       src: urlFor(f.image!).width(640).height(640).fit("crop").url(),
       srcset: srcsetFor(f.image!, [320, 480, 640, 800], 1),
     },
-    tag: f.enabler ? enablerNames[f.enabler] : null,
+    tag: f.enabler && !enabler ? enablerNames[f.enabler] : null,
     title: escape(f.title),
     href: getRelativeLocaleUrl(locale, `atlas/findings/${f.slug}`, { normalizeLocale: false }),
   }));
+const catalogueHref = getRelativeLocaleUrl(locale, "atlas/findings", { normalizeLocale: false });
 ---
 
-<section class="report" id="audit-findings" data-toc-theme="light">
+<section class="report" id={id} data-toc-theme="light">
   <div class="wrap">
-    <!-- TODO (DAA-223): link "Дивитися каталог" to the findings catalogue, /uk-UA/atlas/findings -->
     <h2 class="section-title">
       {title ?? (
         <>
@@ -49,7 +54,7 @@ const findings: Teaser[] = (await sanityClient.fetch(FINDING_TEASERS_QUERY))
       {catalogLink && (
         <>
           <br />
-          <a class="finding__more findings__all" href="#">
+          <a class="finding__more findings__all" href={catalogueHref}>
             Дивитися&nbsp;каталог&nbsp;
             <svg class="findings__all-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M18.5 12L4.99997 12" />
@@ -59,6 +64,7 @@ const findings: Teaser[] = (await sanityClient.fetch(FINDING_TEASERS_QUERY))
         </>
       )}
     </h2>
+    {description && <p class="report__intro">{description}</p>}
     {intro && (
       <p class="report__intro">
         Результати нашої роботи у форматі практичних гайдів на <span class="nowrap">2–3 тис.</span> слів. Кожна
@@ -68,7 +74,7 @@ const findings: Teaser[] = (await sanityClient.fetch(FINDING_TEASERS_QUERY))
     )}
 
     <Carousel
-      label="Знахідки аудитів"
+      label={title ?? "Знахідки аудитів"}
       items={findings}
       more="Читати далі"
       prevLabel="Попередні знахідки"
