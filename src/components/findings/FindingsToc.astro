@@ -1,0 +1,100 @@
+---
+// "На цій сторінці": the sticky list beside a findings page's content (FindingsLayout). The link to the section
+// being read is marked (the last target that has passed the upper third). The slot adds to the list's foot
+// (a finding's link to its short version). Hidden on phones, where the page reads straight through.
+// A disabled item (a section with nothing in it yet) is listed as plain text, not a link.
+
+interface Props {
+  items: { id: string; label: string; disabled?: boolean }[];
+}
+
+const { items } = Astro.props;
+---
+
+<aside class="finding-toc" aria-labelledby="finding-toc-title">
+  <div class="finding-toc__inner">
+    <p class="finding-toc__title" id="finding-toc-title">
+      На цій сторінці
+    </p>
+    <nav aria-labelledby="finding-toc-title">
+      <ul>
+        {items.map((item) => (
+          <li>
+            {item.disabled ? (
+              <span class="finding-toc__disabled">{item.label}</span>
+            ) : (
+              <a href={`#${item.id}`}>{item.label}</a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <slot />
+  </div>
+</aside>
+
+<script>
+  const links = [...document.querySelectorAll<HTMLAnchorElement>(".finding-toc nav a")];
+  const targets = links.flatMap((a) => {
+    const el = document.getElementById(a.hash.slice(1));
+    return el ? [[a, el] as const] : [];
+  });
+  function update() {
+    const line = innerHeight / 3;
+    let current: HTMLAnchorElement | undefined;
+    for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
+    // an explicit token: an empty aria-current reads as "false" to assistive technology
+    for (const a of links) {
+      if (a === current) a.setAttribute("aria-current", "location");
+      else a.removeAttribute("aria-current");
+    }
+  }
+  update();
+  addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+</script>
+
+<style>
+  .finding-toc__inner {
+    position: sticky;
+    width: 85%; /* 15% narrower than its column */
+    top: var(--space-xl);
+    padding-left: var(--space-lg);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .finding-toc__title {
+    margin: 0 0 var(--space-md);
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+  .finding-toc ul {
+    display: grid;
+    row-gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .finding-toc nav a {
+    display: block;
+    color: var(--ink-soft);
+    transition: color 0.2s ease;
+  }
+  .finding-toc nav a:hover {
+    color: var(--c-hero);
+  }
+  .finding-toc nav a[aria-current] {
+    color: var(--c-hero);
+    font-weight: 500;
+  }
+  .finding-toc__disabled {
+    display: block;
+    color: rgb(28 38 50 / 0.35);
+    cursor: default;
+  }
+
+  @media (width < 64rem) {
+    .finding-toc {
+      display: none;
+    }
+  }
+</style>
