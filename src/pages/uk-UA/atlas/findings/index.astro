@@ -1,0 +1,125 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
+import FindingsToc from "../../../../components/findings/FindingsToc.astro";
+import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
+import heroImage from "../../../../assets/images/findings-catalogue-hero.webp";
+import { enablerDescriptions, enablerNames, type Enabler } from "../../../../data/enablers";
+import { getFindingTeasers } from "../../../../sanity/findings";
+
+// The findings catalogue: every finding from the Sanity collection, grouped by its ATLAS enabler. The
+// enablers are the "on this page" list (left, 20%); each enabler with findings has the findings carousel
+// (right, 80%), and those without any are listed but disabled. Findings without an enabler yet are left
+// out until one is chosen in the Studio.
+
+const locale = Astro.currentLocale ?? "uk-UA";
+const atlasHref = getRelativeLocaleUrl(locale, "atlas", { normalizeLocale: false });
+
+const teasers = await getFindingTeasers();
+
+const groups = (Object.entries(enablerNames) as [Enabler, string][]).map(([enabler, label]) => ({
+  enabler,
+  id: enabler,
+  label,
+  count: teasers.filter((t) => t.enabler === enabler).length,
+}));
+
+const intro =
+  "Результати нашої роботи у форматі практичних гайдів. Кожна знахідка — реальна проблема, яку ми виявили під час аудитів українських IT-компаній: як вона проявляється, звідки береться і як її вирішують команди.";
+---
+
+<FindingsLayout
+  title="Знахідки аудитів — каталог | Daat"
+  description={intro}
+  image={heroImage}
+  crumb={{ href: atlasHref, label: "ATLAS" }}
+  heading="Знахідки аудитів"
+>
+  <p class="catalogue-intro" slot="hero">
+    {intro}
+  </p>
+
+  <div class="wrap catalogue-layout">
+    <FindingsToc
+      items={groups.map((g) => ({
+        id: g.id,
+        label: g.count ? `${g.label} · ${g.count}` : g.label,
+        disabled: g.count === 0,
+      }))}
+    />
+
+    <div class="catalogue-groups">
+      {groups
+        .filter((g) => g.count > 0)
+        .map((g) => (
+          <AuditFindings
+            id={g.id}
+            title={g.label}
+            description={enablerDescriptions[g.enabler]}
+            enabler={g.enabler}
+            catalogLink={false}
+            intro={false}
+          />
+        ))}
+    </div>
+  </div>
+</FindingsLayout>
+
+<style>
+  .catalogue-intro {
+    max-width: var(--span-2);
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+
+  /* the enablers on the left (20%), their findings on the right (80%), two column gaps between, as on a
+     finding's page (minmax: the carousels' tracks mustn't widen the columns) */
+  .catalogue-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 4fr);
+    column-gap: calc(var(--col-gap) * 2);
+    padding-bottom: var(--space-3xl);
+  }
+  /* the narrower column: the list takes all of it */
+  .catalogue-layout :global(.finding-toc__inner) {
+    width: auto;
+    padding-left: 0;
+  }
+  .catalogue-groups {
+    display: grid;
+    row-gap: var(--space-3xl);
+    min-width: 0;
+  }
+  /* each enabler is the ATLAS findings section, sitting in the column: no section padding or gutters,
+     and a smaller heading */
+  .catalogue-groups :global(.report) {
+    min-width: 0;
+    padding: 0;
+    background: none;
+    scroll-margin-top: var(--space-xl);
+  }
+  .catalogue-groups :global(.report .wrap) {
+    padding-inline: 0;
+  }
+  .catalogue-groups :global(.section-title) {
+    margin: 0;
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .catalogue-groups :global(.findings) {
+    margin-top: var(--space-md);
+  }
+
+  @media (width < 64rem) {
+    .catalogue-layout {
+      grid-template-columns: minmax(0, 1fr);
+      padding-bottom: 64px;
+    }
+    .catalogue-groups {
+      row-gap: 56px;
+    }
+  }
+</style>

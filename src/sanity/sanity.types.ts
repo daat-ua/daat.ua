@@ -575,7 +575,7 @@ export type FINDING_QUERY_RESULT = {
 
 // Source: ../src/sanity/queries.ts
 // Variable: FINDING_TEASERS_QUERY
-// Query: *[_type == "post" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  enabler,  image{ hotspot, crop, asset->{ _id } }}
+// Query: *[_type == "post" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  enabler,  image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }}
 export type FINDING_TEASERS_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -594,6 +594,9 @@ export type FINDING_TEASERS_QUERY_RESULT = Array<{
     crop: SanityImageCrop | null;
     asset: {
       _id: string;
+      metadata: {
+        lqip: string | null;
+      } | null;
     } | null;
   } | null;
 }>;
@@ -603,7 +606,7 @@ declare global {
   interface SanityQueries {
     '*[_type == "post" && defined(slug.current)].slug.current': FINDING_SLUGS_QUERY_RESULT;
     '*[_type == "post" && slug.current == $slug][0]{\n  title,\n  "slug": slug.current,\n  image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  art_description,\n  artist,\n  "author": author.author->{\n    name,\n    bio,\n    linkedin_link,\n    photo{ alt, hotspot, crop, asset->{ _id } }\n  },\n  teaser,\n  body,\n  summarisation,\n  "efforts": [\n    efforts_strategic_management,\n    efforts_delivery_excellence,\n    efforts_sales,\n    efforts_marketing,\n    efforts_company_operations,\n    efforts_people_management,\n    efforts_financial_control\n  ],\n  seo_title,\n  seo_description,\n  no_index\n}': FINDING_QUERY_RESULT;
-    '*[_type == "post" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  enabler,\n  image{ hotspot, crop, asset->{ _id } }\n}': FINDING_TEASERS_QUERY_RESULT;
+    '*[_type == "post" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  enabler,\n  image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': FINDING_TEASERS_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

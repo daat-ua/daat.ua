@@ -195,6 +195,14 @@
   background: var(--c-paper);
   color: var(--c-hero);
 }
+/* the line under a light section's heading (the report, the findings, a findings category) */
+.report__intro {
+  max-width: var(--span-2);
+  margin: var(--space-xl) 0 0;
+  color: var(--c-ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
 /* ---------- Audit findings carousel ---------- */
 .findings {
   width: var(--span-3);
@@ -233,6 +241,7 @@
 }
 .finding__media {
   position: relative;
+  display: block; /* a link */
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 6px;

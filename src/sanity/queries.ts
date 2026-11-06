@@ -42,5 +42,5 @@ export const FINDING_TEASERS_QUERY = defineQuery(`*[_type == "post" && defined(s
   title,
   "slug": slug.current,
   enabler,
-  image{ hotspot, crop, asset->{ _id } }
+  image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }
 }`);
