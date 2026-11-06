@@ -1,5 +1,5 @@
 // Navigation copy: table of contents, global menu and footer.
-// TODO content: the menu, directions, legal links and social profiles are placeholders.
+// TODO content: the menu, directions, cookie settings, site map and social profiles are placeholders.
 
 export interface Link {
   label: string;
@@ -39,12 +39,11 @@ export const menu: MenuItem[] = [
 
 export const directions: Link[] = placeholder("Daat ATLAS", "Daat Delivery", "Daat Engineering", "Daat Advisory");
 
-export const legalLinks: Link[] = placeholder(
-  "Політика конфіденційності",
-  "Умови використання",
-  "Налаштування cookie",
-  "Карта сайту",
-);
+export const legalLinks: Link[] = [
+  { label: "Політика конфіденційності", href: "/uk-UA/privacy-policy" },
+  { label: "Умови використання", href: "/uk-UA/terms-of-use" },
+  ...placeholder("Налаштування cookie", "Карта сайту"),
+];
 
 export type SocialNetwork = "LinkedIn" | "Facebook" | "Instagram" | "YouTube";
 export const social: { network: SocialNetwork; href: string }[] = [
