@@ -8,7 +8,7 @@ import { srcsetFor, urlFor } from "../sanity/image";
 import type { SanityImageCrop, SanityImageHotspot } from "../sanity/sanity.types";
 
 // The delivery-audit findings' pages (a finding, the catalogue): Base on a lighter paper, a hero with the
-// artwork fading into the page, a breadcrumb back and the title. The hero slot adds to the title block
+// artwork fading into the page, a breadcrumb back (optional) and the title. The hero slot adds to the title block
 // (a finding's author, the catalogue's intro); the default slot is the page below it.
 
 interface HeroImage {
@@ -24,8 +24,8 @@ interface Props {
   noindex?: boolean;
   /** the hero's artwork: a Sanity image, or a local one */
   image?: HeroImage | ImageMetadata | null;
-  /** the breadcrumb: where it leads and what it says */
-  crumb: { href: string; label: string };
+  /** the breadcrumb: where it leads and what it says; none without it (the legal pages) */
+  crumb?: { href: string; label: string };
   /** the page's h1 */
   heading: string;
 }
@@ -68,12 +68,14 @@ const lqip = sanityImage?.asset?.metadata?.lqip;
         )
       )}
       <div class="wrap finding-hero__inner">
-        <nav aria-label="Хлібні крихти">
-          <a class="finding-crumb" href={crumb.href}>
-            <ArrowLeft class="finding-crumb__icon" aria-hidden="true" />
-            <span>{crumb.label}</span>
-          </a>
-        </nav>
+        {crumb && (
+          <nav aria-label="Хлібні крихти">
+            <a class="finding-crumb" href={crumb.href}>
+              <ArrowLeft class="finding-crumb__icon" aria-hidden="true" />
+              <span>{crumb.label}</span>
+            </a>
+          </nav>
+        )}
         <h1 class="finding-title">{heading}</h1>
         <slot name="hero" />
       </div>
@@ -98,9 +100,9 @@ const lqip = sanityImage?.asset?.metadata?.lqip;
   }
 
   /* ---------- Hero ---------- */
-  /* As tall as its content: the breadcrumb starts --hero-pad-top (200 at 1440) below the bar, well clear
-     of the logo hanging 63 below it, and scales with the page like everything else, not with the window's
-     height. */
+  /* As tall as its content: the breadcrumb (or the title, without one) starts --hero-pad-top (200 at 1440)
+     below the bar, well clear of the logo hanging 63 below it, and scales with the page like everything
+     else, not with the window's height. */
   .finding-hero {
     position: relative;
     display: flex;
