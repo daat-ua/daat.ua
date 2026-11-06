@@ -1,0 +1,59 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import FindingsLayout from "./FindingsLayout.astro";
+import FindingsToc from "../components/findings/FindingsToc.astro";
+import { legal } from "../data/legal";
+
+// A legal document (privacy policy, terms of use): the findings pages' layout without a hero image, the
+// text on the left two thirds (.article-body), the sections as "on this page" on the right. The page's
+// slot holds the sections, each an h2 with the id its `sections` entry names.
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  sections: { id: string; label: string }[];
+}
+
+const { title, description, heading, sections } = Astro.props;
+const atlasHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas", { normalizeLocale: false });
+---
+
+<FindingsLayout title={title} description={description} crumb={{ href: atlasHref, label: "ATLAS" }} heading={heading}>
+  <p class="legal-updated" slot="hero">
+    Чинна редакція від {legal.updated}
+  </p>
+
+  <div class="wrap legal-layout">
+    <article class="article-body legal-body">
+      <slot />
+    </article>
+    <FindingsToc items={sections} />
+  </div>
+</FindingsLayout>
+
+<style>
+  .legal-updated {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  /* the document on the left two thirds, "on this page" beside it, as on a finding's page */
+  .legal-layout {
+    display: grid;
+    grid-template-columns: var(--span-2) 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    padding-bottom: var(--space-3xl);
+  }
+  .legal-body {
+    min-width: 0;
+  }
+
+  @media (width < 64rem) {
+    .legal-layout {
+      grid-template-columns: 1fr;
+      padding-bottom: 64px;
+    }
+  }
+</style>
