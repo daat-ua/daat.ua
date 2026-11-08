@@ -74,7 +74,7 @@ import { toc } from "../data/navigation";
   .why__toc {
     position: absolute;
     z-index: 1;
-    top: var(--space-3xl); /* level with the first section title */
+    top: calc(var(--space-3xl) + var(--overhang)); /* level with the first section title */
     bottom: 0;
     /* a fourth column right of the full 1017px content (the TOC stays put while the content beside it is narrower), nudged 15 right */
     left: calc(var(--gutter) + 1017 * var(--px) + var(--col-gap) + 15 * var(--px));

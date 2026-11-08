@@ -65,7 +65,9 @@
   position: relative;
   z-index: 0;
   margin-top: calc(-1 * var(--overhang)); /* the hero buttons hang over its top edge */
-  padding: var(--space-3xl) 0 calc(var(--space-3xl) + var(--space-2xl));
+  /* a link to it scrolls past them, and the title still lands as far down as other sections' do */
+  scroll-margin-top: calc(-1 * var(--overhang));
+  padding: calc(var(--space-3xl) + var(--overhang)) 0 calc(var(--space-3xl) + var(--space-2xl));
   background: var(--c-primary);
 }
 /* Section heading, shared by every content section; colour comes from the section */

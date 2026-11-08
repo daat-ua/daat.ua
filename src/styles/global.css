@@ -105,7 +105,9 @@
   --space-2xl: calc(64 * var(--px));
   --space-3xl: calc(96 * var(--px));
   --header-h: calc(132 * var(--px)); /* Figma 165, reduced 20% */
-  --overhang: calc(32.88 * var(--px)); /* how far the buttons hang below the dark hero */
+  /* how far the buttons hang below the dark hero: the hero's 20 gap + half the 62.63 button, so the
+     edge between the dark hero and the blue section runs through the middle of the buttons */
+  --overhang: calc(51.315 * var(--px));
 }
 
 @media (width < 64rem) {
