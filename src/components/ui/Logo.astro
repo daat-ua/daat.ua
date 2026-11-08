@@ -1,35 +1,28 @@
 ---
-import { Image } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
-import logo from "../../assets/images/logo.webp";
+import logo from "../../assets/images/logo.svg";
 
 interface Props {
   class?: string;
-  /** rendered width in CSS px at the largest size it's shown (for srcset) */
-  maxWidth: number;
-  /** the `sizes` attribute */
-  sizes: string;
   /** above the fold: load at once */
   eager?: boolean;
   /** hidden from assistive tech (a duplicate of a visible logo) */
   decorative?: boolean;
 }
 
-const { class: className, maxWidth, sizes, eager = false, decorative = false } = Astro.props;
+const { class: className, eager = false, decorative = false } = Astro.props;
 // the logo leads to the locale's home page (ATLAS for now)
 // (normalizeLocale: false keeps "uk-UA" as is instead of lowercasing it)
 const home = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas", { normalizeLocale: false });
-// 1x and 2x of the largest size, plus the phone size
-const widths = [...new Set([85, 170, Math.round(maxWidth), Math.round(maxWidth * 2)])].sort((a, b) => a - b);
 ---
 
 <a class={className} href={home} aria-hidden={decorative ? "true" : undefined} tabindex={decorative ? -1 : undefined}>
-  <Image
-    src={logo}
+  <!-- a vector: one file for every size, so no srcset -->
+  <img
+    src={logo.src}
     alt={decorative ? "" : "Daat — IT business strategy"}
-    widths={widths}
-    sizes={sizes}
+    width={logo.width}
+    height={logo.height}
     loading={eager ? "eager" : "lazy"}
-    layout="none"
   />
 </a>
