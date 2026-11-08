@@ -44,3 +44,10 @@ export const FINDING_TEASERS_QUERY = defineQuery(`*[_type == "post" && defined(s
   enabler,
   image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }
 }`);
+
+/** The founders (every author is one), for the calls to action on a finding page */
+export const FOUNDERS_QUERY = defineQuery(`*[_type == "authors" && defined(photo.asset)] | order(name asc){
+  _id,
+  name,
+  photo{ hotspot, crop, asset->{ _id } }
+}`);
