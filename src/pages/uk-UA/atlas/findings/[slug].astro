@@ -939,6 +939,26 @@ const sectors = efforts.map(({ name, value }, i) => {
   .more-findings {
     border-bottom: 1px solid var(--rule);
   }
+  /* desktop: the carousel runs the full content width, four teasers to a screen, keeping the staggered
+     widths (fractions of the row without its three gaps, summing to 1) */
+  @media (width >= 64rem) {
+    .more-findings :global(.findings) {
+      width: 100%;
+    }
+    .more-findings :global(.finding) {
+      --row: calc(100% - 3 * var(--col-gap));
+      width: calc(var(--row) * 0.243);
+    }
+    .more-findings :global(.finding:nth-child(4n + 2)) {
+      width: calc(var(--row) * 0.292);
+    }
+    .more-findings :global(.finding:nth-child(4n + 3)) {
+      width: calc(var(--row) * 0.21);
+    }
+    .more-findings :global(.finding:nth-child(4n)) {
+      width: calc(var(--row) * 0.255);
+    }
+  }
   /* the section's own paddings, cut: the top halved (the article above already ends with its bottom
      padding), the bottom to half its 160 */
   .more-findings :global(.report) {
