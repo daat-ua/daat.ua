@@ -1,4 +1,5 @@
 ---
+import { Picture } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText, toPlainText } from "astro-portabletext";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
@@ -6,10 +7,11 @@ import FindingsToc from "../../../../components/findings/FindingsToc.astro";
 import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
 import Heading from "../../../../components/portable-text/Heading.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
+import foundersStudio from "../../../../assets/images/founders-studio.jpg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
 import { headingsOf } from "../../../../sanity/portable-text";
-import { FINDING_QUERY, FINDING_SLUGS_QUERY } from "../../../../sanity/queries";
+import { FINDING_QUERY, FINDING_SLUGS_QUERY, FOUNDERS_QUERY } from "../../../../sanity/queries";
 
 // A delivery-audit finding from the Sanity "Delivery audit findings" collection (`post`), one page per
 // finding at build time: hero over the artwork, the article with its efforts radar and TL/DR, a sticky
@@ -23,6 +25,17 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const finding = await sanityClient.fetch(FINDING_QUERY, { slug });
 if (!finding) throw new Error(`No finding with the slug "${slug}"`);
+// the founders' faces on the call to action under the efforts radar
+const founders = await sanityClient.fetch(FOUNDERS_QUERY);
+
+// The founders' next free slots. TODO: mocked (the next three working days after the build, at fixed times)
+// until the booking tool's API is wired up; each slot then opens the booking at its time.
+const slotDay = new Intl.DateTimeFormat("uk-UA", { weekday: "short", day: "numeric", month: "short" });
+const slots: string[] = [];
+for (let d = new Date(), times = ["10:00", "15:30", "11:00"]; slots.length < times.length;) {
+  d.setDate(d.getDate() + 1);
+  if (d.getDay() % 6 !== 0) slots.push(`${slotDay.format(d)} · ${times[slots.length]}`);
+}
 
 const { title, image, author, teaser, body, summarisation } = finding;
 
@@ -170,6 +183,34 @@ const sectors = efforts.map(({ name, value }, i) => {
         </div>
       </figure>
 
+      <!-- Call to action under the radar: the reader's own company would split the effort differently -->
+      <aside class="radar-cta" aria-label="Діагностика ATLAS">
+        {founders.length > 0 && (
+          <div class="radar-cta__faces">
+            {founders.map((f) => (
+              <img
+                src={urlFor(f.photo!).width(88).height(88).fit("crop").url()}
+                srcset={srcsetFor(f.photo!, [44, 88], 1)}
+                sizes="44px"
+                alt=""
+                width="44"
+                height="44"
+                loading="lazy"
+              />
+            ))}
+          </div>
+        )}
+        <div class="radar-cta__body">
+          <p>
+            <strong>У вашій компанії розподіл буде іншим.</strong> ATLAS показує, які саме відділи стримують зростання,
+            за 4–5 тижнів. Почніть із 30‑хвилинного дзвінка.
+          </p>
+          <a class="btn radar-cta__btn" href="#founders-cta">
+            Обговорити діагностику
+          </a>
+        </div>
+      </aside>
+
       {body && (
         <div class="finding-body article-body">
           <PortableText value={body} components={bodyComponents} />
@@ -195,9 +236,67 @@ const sectors = efforts.map(({ name, value }, i) => {
             <span>Немає часу читати? Переходьте до швидкого саммарі статті</span>
           </a>
         )}
+        <!-- a quiet call to action that stays beside the article; leads to the founders' block -->
+        <div class="toc-cta">
+          {founders.length > 0 && (
+            <div class="toc-cta__faces">
+              {founders.map((f) => (
+                <img
+                  src={urlFor(f.photo!).width(80).height(80).fit("crop").url()}
+                  srcset={srcsetFor(f.photo!, [40, 80], 1)}
+                  sizes="40px"
+                  alt=""
+                  width="40"
+                  height="40"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          )}
+          <p class="toc-cta__title">Впізнали свою компанію?</p>
+          <p>30 хвилин із засновниками Daat. Без продажу.</p>
+          <a href="#founders-cta">Записатися на дзвінок</a>
+        </div>
       </FindingsToc>
     )}
   </div>
+
+  <!-- ═══ Call to action: the founders' studio photo across the page, the offer on its backdrop ═══ -->
+  <aside class="founders-cta" id="founders-cta" aria-labelledby="founders-cta-title">
+    <!-- the founders stand at the left; the backdrop is extended (right and above) so the text sits on it -->
+    <Picture
+      class="founders-cta__photo"
+      src={foundersStudio}
+      alt="Олена Кияновська і Сергій Герасимов"
+      formats={["avif", "webp"]}
+      widths={[900, 1300, 1800, 2400]}
+      quality={80}
+      sizes="(width < 64rem) 907px, 111vw"
+      layout="none"
+    />
+    <div class="founders-cta__text">
+      <h2 class="founders-cta__title" id="founders-cta-title">
+        Ви говорите з тими, <strong>хто розбиратиме вашу компанію</strong>, а не з відділом продажу.
+      </h2>
+      <p>Олена й Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
+      <div class="founders-cta__slots">
+        <p id="founders-cta-slots">Найближчі вільні слоти</p>
+        <ul aria-labelledby="founders-cta-slots">
+          {slots.map((slot) => (
+            <li>
+              <!-- TODO: the booking link at this time -->
+              <a href="#">{slot}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <!-- TODO: the booking link (Cal.com / Calendly) -->
+      <a class="btn btn--primary founders-cta__btn" href="#">
+        Обрати інший час
+      </a>
+      <p class="founders-cta__assure">30 хв, онлайн, безкоштовно</p>
+    </div>
+  </aside>
 
   <!-- ═══ More findings: the ATLAS page's findings carousel, without this one ═══ -->
   <div class="more-findings">
@@ -277,7 +376,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     row-gap: var(--gap);
     min-width: 0;
   }
-  .finding-article > :is(.efforts, .finding-body) {
+  .finding-article > :is(.efforts, .radar-cta, .finding-body) {
     margin-top: calc(var(--gap-tight) - var(--gap));
   }
   .finding-lead {
@@ -300,8 +399,8 @@ const sectors = efforts.map(({ name, value }, i) => {
     --radar-label: rgb(2 40 48);
     --radar-link-hover: oklch(57% 59% 263deg); /* daat-accent-1 */
     margin: 0;
-    padding-block: var(--space-xl);
-    border-block: 1px solid var(--rule);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--rule); /* the rule below it comes after the call to action */
   }
   .efforts__title {
     font-size: var(--text-body);
@@ -386,6 +485,67 @@ const sectors = efforts.map(({ name, value }, i) => {
     color: var(--radar-link-hover);
   }
 
+  /* call to action under the radar: the founders, one line of offer, a quiet button (the main one is
+     the author's, below the article) */
+  .radar-cta {
+    --radar-cta-bg: color-mix(in srgb, var(--c-hero) 5%, var(--c-paper));
+    --radar-cta-text: var(--text-body);
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg) var(--space-lg) var(--space-md);
+    border-radius: 6px; /* as the TL/DR */
+    background: var(--radar-cta-bg);
+    margin-bottom: var(--space-xl);
+  }
+  /* the rule that closes the radar, below this box */
+  .radar-cta::after {
+    content: "";
+    position: absolute;
+    top: calc(100% + var(--space-xl));
+    right: 0;
+    left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .radar-cta__body {
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-sm);
+  }
+  .radar-cta__faces {
+    display: flex;
+  }
+  .radar-cta__faces img {
+    width: calc(44 * var(--px));
+    height: calc(44 * var(--px));
+    border: 3px solid var(--radar-cta-bg);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .radar-cta__faces img + img {
+    margin-left: calc(-11 * var(--px));
+  }
+  .radar-cta p {
+    margin: 0;
+    font-size: var(--radar-cta-text);
+    line-height: var(--leading-body);
+  }
+  .radar-cta strong {
+    font-weight: 600;
+  }
+  .radar-cta__btn {
+    min-height: calc(40 * var(--px));
+    padding-inline: var(--space-lg);
+    border: 1.5px solid currentColor;
+    color: var(--c-primary);
+    font-size: var(--radar-cta-text);
+  }
+  .radar-cta__btn:hover {
+    background: color-mix(in srgb, var(--c-primary) 6%, transparent);
+  }
+
   /* article body: typography from .article-body (patterns.css) */
   .tldr :global(strong) {
     font-weight: 600;
@@ -462,6 +622,150 @@ const sectors = efforts.map(({ name, value }, i) => {
     text-underline-offset: 0.2em;
   }
 
+  /* ---------- Founders call to action ---------- */
+  /* The photo is drawn at the band's height from its left edge; the founders take ~1.1 of that height in
+     width, so the text starts at 1.17 × the height, on the plain backdrop. */
+  .founders-cta {
+    --h: calc(600 * var(--px));
+    --backdrop: #cfd9df; /* the photo's backdrop, sampled */
+    position: relative;
+    display: grid;
+    align-content: center;
+    height: var(--h);
+    margin-top: var(--space-2xl);
+    padding: var(--space-2xl) var(--gutter) var(--space-2xl) calc(var(--h) * 1.17);
+    overflow: hidden;
+    background: var(--backdrop);
+    color: var(--c-hero);
+  }
+  .founders-cta :global(.founders-cta__photo) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
+    height: var(--h);
+  }
+  .founders-cta__text {
+    position: relative;
+    max-width: calc(560 * var(--px));
+  }
+  .founders-cta__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: calc(36 * var(--px));
+    font-weight: 300;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .founders-cta__title strong {
+    font-weight: 500;
+  }
+  .founders-cta p {
+    margin: var(--space-md) 0 0;
+    color: #3d4a58; /* 5.8:1 on the backdrop */
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  /* the slots: outlined pills, filled on hover */
+  .founders-cta__slots {
+    margin-top: var(--space-lg);
+  }
+  .founders-cta .founders-cta__slots p {
+    margin: 0;
+    font-size: var(--text-small);
+  }
+  .founders-cta__slots ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin: var(--space-sm) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .founders-cta__slots a {
+    display: block;
+    padding: 0.7em 1.1em;
+    border: 1px solid rgb(28 38 50 / 0.3);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.35);
+    color: var(--c-hero);
+    font-size: var(--text-small);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .founders-cta__slots a:hover {
+    border-color: var(--c-hero);
+    background: var(--c-hero);
+    color: var(--c-white);
+  }
+  .founders-cta__btn {
+    margin-top: var(--space-lg);
+    border-color: transparent; /* the white edge is for the dark hero */
+    color: var(--c-on-primary);
+  }
+  .founders-cta .founders-cta__assure {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: var(--space-sm);
+    font-size: var(--text-small);
+  }
+  .founders-cta__assure::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c47a1e; /* the accent, darkened, as the TL/DR icon */
+  }
+
+  /* "on this page": the quiet call to action at the list's foot, below the short-version link */
+  .toc-cta {
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-xs);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--rule);
+  }
+  .toc-cta__faces {
+    display: flex;
+    margin-bottom: var(--space-xs);
+  }
+  .toc-cta__faces img {
+    width: calc(40 * var(--px));
+    height: calc(40 * var(--px));
+    border: 2px solid var(--c-paper);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .toc-cta__faces img + img {
+    margin-left: calc(-10 * var(--px));
+  }
+  .toc-cta p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .toc-cta .toc-cta__title {
+    color: var(--c-hero);
+    font-weight: 600;
+  }
+  .toc-cta a {
+    margin-top: var(--space-xs);
+    color: var(--c-primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .toc-cta a:hover {
+    color: var(--c-primary-hover);
+  }
+
   /* ---------- More findings ---------- */
   .more-findings {
     border-bottom: 1px solid var(--rule);
@@ -492,6 +796,24 @@ const sectors = efforts.map(({ name, value }, i) => {
     .efforts__body {
       grid-template-columns: 1fr;
     }
+    /* the faces above the text, the button full width */
+    .radar-cta {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 20px;
+    }
+    .radar-cta__faces img {
+      width: 40px;
+      height: 40px;
+    }
+    .radar-cta__faces img + img {
+      margin-left: -10px;
+    }
+    .radar-cta__btn {
+      justify-self: stretch;
+      justify-content: center;
+      min-height: 44px;
+    }
     .efforts__chart {
       justify-self: center;
       max-width: 380px; /* keeps the labels near the body text size */
@@ -499,6 +821,23 @@ const sectors = efforts.map(({ name, value }, i) => {
     .tldr {
       --tldr-indent: calc(20px + var(--tldr-icon) + var(--space-sm));
       padding: 32px 20px 0 var(--tldr-indent);
+    }
+    /* phones: the founders in a band on top, the text below on the backdrop */
+    .founders-cta {
+      --h: 340px;
+      height: auto;
+      margin-top: 48px;
+      padding: calc(var(--h) + 24px) var(--gutter) 40px;
+    }
+    .founders-cta :global(.founders-cta__photo) {
+      left: -10px;
+    }
+    .founders-cta__title {
+      font-size: 26px;
+    }
+    .founders-cta__btn {
+      display: flex;
+      justify-content: center;
     }
     .more-findings :global(.report) {
       padding-top: 32px;
