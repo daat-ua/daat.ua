@@ -7,7 +7,7 @@ import FindingsToc from "../../../../components/findings/FindingsToc.astro";
 import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
 import Heading from "../../../../components/portable-text/Heading.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
-import foundersStudio from "../../../../assets/images/founders-studio.jpg";
+import foundersStudio from "../../../../assets/images/founders-studio-dark.jpg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
 import { headingsOf } from "../../../../sanity/portable-text";
@@ -29,12 +29,12 @@ if (!finding) throw new Error(`No finding with the slug "${slug}"`);
 const founders = await sanityClient.fetch(FOUNDERS_QUERY);
 
 // The founders' next free slots. TODO: mocked (the next three working days after the build, at fixed times)
-// until the booking tool's API is wired up; each slot then opens the booking at its time.
+// until the booking tool's API is wired up; choosing one then books that time.
 const slotDay = new Intl.DateTimeFormat("uk-UA", { weekday: "short", day: "numeric", month: "short" });
-const slots: string[] = [];
+const slots: { day: string; time: string }[] = [];
 for (let d = new Date(), times = ["10:00", "15:30", "11:00"]; slots.length < times.length;) {
   d.setDate(d.getDate() + 1);
-  if (d.getDay() % 6 !== 0) slots.push(`${slotDay.format(d)} · ${times[slots.length]}`);
+  if (d.getDay() % 6 !== 0) slots.push({ day: slotDay.format(d), time: times[slots.length] });
 }
 
 const { title, image, author, teaser, body, summarisation } = finding;
@@ -185,21 +185,6 @@ const sectors = efforts.map(({ name, value }, i) => {
 
       <!-- Call to action under the radar: the reader's own company would split the effort differently -->
       <aside class="radar-cta" aria-label="Діагностика ATLAS">
-        {founders.length > 0 && (
-          <div class="radar-cta__faces">
-            {founders.map((f) => (
-              <img
-                src={urlFor(f.photo!).width(88).height(88).fit("crop").url()}
-                srcset={srcsetFor(f.photo!, [44, 88], 1)}
-                sizes="44px"
-                alt=""
-                width="44"
-                height="44"
-                loading="lazy"
-              />
-            ))}
-          </div>
-        )}
         <div class="radar-cta__body">
           <p>
             <strong>У вашій компанії розподіл буде іншим.</strong> ATLAS показує, які саме відділи стримують зростання,
@@ -261,7 +246,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     )}
   </div>
 
-  <!-- ═══ Call to action: the founders' studio photo across the page, the offer on its backdrop ═══ -->
+  <!-- ═══ Call to action: the founders' dark studio photo across the page, the offer on its backdrop ═══ -->
   <aside class="founders-cta" id="founders-cta" aria-labelledby="founders-cta-title">
     <!-- the founders stand at the left; the backdrop is extended (right and above) so the text sits on it -->
     <Picture
@@ -271,7 +256,7 @@ const sectors = efforts.map(({ name, value }, i) => {
       formats={["avif", "webp"]}
       widths={[900, 1300, 1800, 2400]}
       quality={80}
-      sizes="(width < 64rem) 907px, 111vw"
+      sizes="(width < 64rem) 1280px, 111vw"
       layout="none"
     />
     <div class="founders-cta__text">
@@ -281,27 +266,120 @@ const sectors = efforts.map(({ name, value }, i) => {
       <p>Олена й Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
       <div class="founders-cta__slots">
         <p id="founders-cta-slots">Найближчі вільні слоти</p>
-        <ul aria-labelledby="founders-cta-slots">
+        <!-- choosing a slot (again to unchoose) names it on the button below -->
+        <div class="founders-cta__slot-row" role="group" aria-labelledby="founders-cta-slots">
           {slots.map((slot) => (
-            <li>
-              <!-- TODO: the booking link at this time -->
-              <a href="#">{slot}</a>
-            </li>
+            <button
+              class="founders-cta__slot"
+              type="button"
+              aria-pressed="false"
+              data-day={slot.day}
+              data-time={slot.time}
+            >
+              {slot.day} · {slot.time}
+            </button>
           ))}
-        </ul>
+        </div>
       </div>
-      <!-- TODO: the booking link (Cal.com / Calendly) -->
-      <a class="btn btn--primary founders-cta__btn" href="#">
+      <!-- TODO: the booking link (Cal.com / Calendly), at the chosen slot's time when there is one -->
+      <a class="btn btn--primary founders-cta__btn" href="#" aria-live="polite">
         Обрати інший час
       </a>
       <p class="founders-cta__assure">30 хв, онлайн, безкоштовно</p>
     </div>
   </aside>
 
+  <script>
+    // the founders' block: one slot chosen at a time; the button then books it
+    for (const block of document.querySelectorAll<HTMLElement>(".founders-cta")) {
+      const slots = [...block.querySelectorAll<HTMLButtonElement>(".founders-cta__slot")];
+      const button = block.querySelector<HTMLAnchorElement>(".founders-cta__btn")!;
+      const label = button.textContent!.trim();
+      for (const slot of slots) {
+        slot.addEventListener("click", () => {
+          const on = slot.getAttribute("aria-pressed") !== "true";
+          for (const s of slots) s.setAttribute("aria-pressed", String(on && s === slot));
+          button.textContent = on ? `Забронювати ${slot.dataset.time}, ${slot.dataset.day}` : label;
+        });
+      }
+    }
+  </script>
+
   <!-- ═══ More findings: the ATLAS page's findings carousel, without this one ═══ -->
   <div class="more-findings">
     <AuditFindings title="Більше знахідок аудитів" catalogLink={false} intro={false} exclude={slug} />
   </div>
+
+  <!-- ═══ Phones: a slim bar that keeps the call in reach while reading (hidden on desktop: the TOC card) ═══ -->
+  <aside class="call-bar" aria-label="Запис на дзвінок" data-shown="false" inert>
+    {founders.length > 0 && (
+      <span class="call-bar__faces">
+        {founders.map((f) => (
+          <img
+            src={urlFor(f.photo!).width(72).height(72).fit("crop").url()}
+            srcset={srcsetFor(f.photo!, [36, 72], 1)}
+            sizes="36px"
+            alt=""
+            width="36"
+            height="36"
+            loading="lazy"
+          />
+        ))}
+      </span>
+    )}
+    <span class="call-bar__text">
+      Дзвінок 30 хв
+      <small>із засновниками Daat</small>
+    </span>
+    <a class="call-bar__btn" href="#founders-cta">
+      Записатися
+    </a>
+    <button class="call-bar__close" type="button" aria-label="Сховати">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </aside>
+
+  <script>
+    // The phone bar shows once the reader is past the call to action under the radar, and steps aside for
+    // the founders' block and everything below it. Closing it hides it for the rest of the visit.
+    const bar = document.querySelector<HTMLElement>(".call-bar");
+    const after = document.querySelector<HTMLElement>(".radar-cta");
+    const until = document.querySelector<HTMLElement>(".founders-cta");
+    if (bar && after && until) {
+      const key = "call-bar-closed";
+      let closed = false;
+      try {
+        closed = sessionStorage.getItem(key) === "1";
+      } catch {}
+      const set = (on: boolean) => {
+        bar.dataset.shown = String(on);
+        bar.inert = !on;
+      };
+      let queued = false;
+      const update = () => {
+        queued = false;
+        set(!closed && after.getBoundingClientRect().bottom < 0 && until.getBoundingClientRect().top > innerHeight);
+      };
+      const queue = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(update);
+      };
+      addEventListener("scroll", queue, { passive: true });
+      addEventListener("resize", queue);
+      bar.querySelector(".call-bar__close")!.addEventListener("click", () => {
+        closed = true;
+        try {
+          sessionStorage.setItem(key, "1");
+        } catch {}
+        update();
+      });
+      bar.querySelector(".call-bar__btn")!.addEventListener("click", () => set(false));
+      update();
+    }
+  </script>
 </FindingsLayout>
 
 <style>
@@ -485,17 +563,12 @@ const sectors = efforts.map(({ name, value }, i) => {
     color: var(--radar-link-hover);
   }
 
-  /* call to action under the radar: the founders, one line of offer, a quiet button (the main one is
-     the author's, below the article) */
+  /* call to action under the radar: one line of offer and a button to the founders' block */
   .radar-cta {
     --radar-cta-bg: color-mix(in srgb, var(--c-hero) 5%, var(--c-paper));
     --radar-cta-text: var(--text-body);
     position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: start;
-    gap: var(--space-md);
-    padding: var(--space-md) var(--space-lg) var(--space-lg) var(--space-md);
+    padding: var(--space-lg);
     border-radius: 6px; /* as the TL/DR */
     background: var(--radar-cta-bg);
     margin-bottom: var(--space-xl);
@@ -514,19 +587,6 @@ const sectors = efforts.map(({ name, value }, i) => {
     justify-items: start;
     row-gap: var(--space-sm);
   }
-  .radar-cta__faces {
-    display: flex;
-  }
-  .radar-cta__faces img {
-    width: calc(44 * var(--px));
-    height: calc(44 * var(--px));
-    border: 3px solid var(--radar-cta-bg);
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  .radar-cta__faces img + img {
-    margin-left: calc(-11 * var(--px));
-  }
   .radar-cta p {
     margin: 0;
     font-size: var(--radar-cta-text);
@@ -538,12 +598,12 @@ const sectors = efforts.map(({ name, value }, i) => {
   .radar-cta__btn {
     min-height: calc(40 * var(--px));
     padding-inline: var(--space-lg);
-    border: 1.5px solid currentColor;
-    color: var(--c-primary);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
     font-size: var(--radar-cta-text);
   }
   .radar-cta__btn:hover {
-    background: color-mix(in srgb, var(--c-primary) 6%, transparent);
+    background: var(--c-primary-hover);
   }
 
   /* article body: typography from .article-body (patterns.css) */
@@ -623,20 +683,22 @@ const sectors = efforts.map(({ name, value }, i) => {
   }
 
   /* ---------- Founders call to action ---------- */
-  /* The photo is drawn at the band's height from its left edge; the founders take ~1.1 of that height in
-     width, so the text starts at 1.17 × the height, on the plain backdrop. */
+  /* The photo is drawn at the band's height from its left edge; the founders take ~0.9 of that height in
+     width, so the text starts at 1.02 × the height, on the plain backdrop. */
   .founders-cta {
     --h: calc(600 * var(--px));
-    --backdrop: #cfd9df; /* the photo's backdrop, sampled */
+    --backdrop: rgb(38 36 34); /* the photo's backdrop at its foot, sampled */
+    --on-backdrop: var(--c-on-primary-muted);
+    --on-backdrop-soft: rgb(244 241 234 / 0.72);
     position: relative;
     display: grid;
     align-content: center;
     height: var(--h);
     margin-top: var(--space-2xl);
-    padding: var(--space-2xl) var(--gutter) var(--space-2xl) calc(var(--h) * 1.17);
+    padding: var(--space-2xl) var(--gutter) var(--space-2xl) calc(var(--h) * 1.02);
     overflow: hidden;
     background: var(--backdrop);
-    color: var(--c-hero);
+    color: var(--on-backdrop);
   }
   .founders-cta :global(.founders-cta__photo) {
     position: absolute;
@@ -663,11 +725,11 @@ const sectors = efforts.map(({ name, value }, i) => {
   }
   .founders-cta p {
     margin: var(--space-md) 0 0;
-    color: #3d4a58; /* 5.8:1 on the backdrop */
+    color: var(--on-backdrop-soft);
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
-  /* the slots: outlined pills, filled on hover */
+  /* the slots: light-outlined pills; the chosen one filled with the accent */
   .founders-cta__slots {
     margin-top: var(--space-lg);
   }
@@ -675,34 +737,41 @@ const sectors = efforts.map(({ name, value }, i) => {
     margin: 0;
     font-size: var(--text-small);
   }
-  .founders-cta__slots ul {
+  .founders-cta__slot-row {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-xs);
-    margin: var(--space-sm) 0 0;
-    padding: 0;
-    list-style: none;
+    margin-top: var(--space-sm);
   }
-  .founders-cta__slots a {
-    display: block;
-    padding: 0.7em 1.1em;
-    border: 1px solid rgb(28 38 50 / 0.3);
+  .founders-cta__slot {
+    padding: 0.87em 1.07em; /* 13 and 16 at 15px */
+    border: 1px solid rgb(244 241 234 / 0.35);
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.35);
-    color: var(--c-hero);
+    background: transparent;
+    color: var(--on-backdrop);
+    font: inherit;
     font-size: var(--text-small);
+    font-weight: 500;
     line-height: 1;
     font-variant-numeric: tabular-nums;
-    text-decoration: none;
     white-space: nowrap;
+    cursor: pointer;
     transition:
       background-color 0.2s ease,
+      border-color 0.2s ease,
       color 0.2s ease;
   }
-  .founders-cta__slots a:hover {
-    border-color: var(--c-hero);
-    background: var(--c-hero);
-    color: var(--c-white);
+  .founders-cta__slot:hover {
+    border-color: var(--c-accent);
+  }
+  .founders-cta__slot:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  .founders-cta__slot[aria-pressed="true"] {
+    border-color: var(--c-accent);
+    background: var(--c-accent);
+    color: var(--c-hero);
   }
   .founders-cta__btn {
     margin-top: var(--space-lg);
@@ -721,7 +790,7 @@ const sectors = efforts.map(({ name, value }, i) => {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #c47a1e; /* the accent, darkened, as the TL/DR icon */
+    background: var(--c-accent);
   }
 
   /* "on this page": the quiet call to action at the list's foot, below the short-version link */
@@ -766,6 +835,106 @@ const sectors = efforts.map(({ name, value }, i) => {
     color: var(--c-primary-hover);
   }
 
+  /* ---------- Phones: the call bar ---------- */
+  .call-bar {
+    display: none;
+  }
+  @media (width < 64rem) {
+    .call-bar {
+      position: fixed;
+      z-index: 5; /* above the page, under the menu dialog (top layer) */
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      left: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      max-width: 480px;
+      margin-inline: auto;
+      padding: 8px 6px 8px 8px;
+      border-radius: 999px;
+      background: var(--c-hero);
+      box-shadow: 0 10px 30px rgb(28 38 50 / 0.25);
+      color: var(--c-on-primary-muted);
+      transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.25s ease;
+    }
+    .call-bar[data-shown="false"] {
+      opacity: 0;
+      transform: translateY(calc(100% + 24px));
+    }
+  }
+  @media (width < 64rem) and (prefers-reduced-motion: reduce) {
+    .call-bar {
+      transition: opacity 0.2s ease;
+    }
+    .call-bar[data-shown="false"] {
+      transform: none;
+    }
+  }
+  .call-bar__faces {
+    display: flex;
+  }
+  .call-bar__faces img {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--c-hero);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .call-bar__faces img + img {
+    margin-left: -10px;
+  }
+  .call-bar__text {
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .call-bar__text small {
+    display: block;
+    color: rgb(244 241 234 / 0.72);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .call-bar__btn {
+    padding: 11px 16px;
+    border-radius: 999px;
+    background: var(--c-accent);
+    color: var(--c-hero);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .call-bar__close {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: rgb(244 241 234 / 0.72);
+    cursor: pointer;
+  }
+  .call-bar__close svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .call-bar :is(a, button):focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+
   /* ---------- More findings ---------- */
   .more-findings {
     border-bottom: 1px solid var(--rule);
@@ -796,18 +965,9 @@ const sectors = efforts.map(({ name, value }, i) => {
     .efforts__body {
       grid-template-columns: 1fr;
     }
-    /* the faces above the text, the button full width */
+    /* the button full width */
     .radar-cta {
-      grid-template-columns: 1fr;
-      gap: 12px;
       padding: 20px;
-    }
-    .radar-cta__faces img {
-      width: 40px;
-      height: 40px;
-    }
-    .radar-cta__faces img + img {
-      margin-left: -10px;
     }
     .radar-cta__btn {
       justify-self: stretch;
@@ -822,15 +982,24 @@ const sectors = efforts.map(({ name, value }, i) => {
       --tldr-indent: calc(20px + var(--tldr-icon) + var(--space-sm));
       padding: 32px 20px 0 var(--tldr-indent);
     }
-    /* phones: the founders in a band on top, the text below on the backdrop */
+    /* phones: the text on top, the founders in a band below it, standing on the block's foot; the
+       ground is the photo's colour at its top, so the text area runs into the photo */
     .founders-cta {
-      --h: 340px;
+      --h: clamp(340px, 112vw, 480px); /* the founders as wide as the screen (~0.9 of the height) */
+      --backdrop: rgb(27 25 26);
       height: auto;
       margin-top: 48px;
-      padding: calc(var(--h) + 24px) var(--gutter) 40px;
+      /* the photo's faded headroom runs under the text's foot */
+      padding: 40px var(--gutter) calc(var(--h) * 0.86);
     }
     .founders-cta :global(.founders-cta__photo) {
-      left: -10px;
+      top: auto;
+      bottom: 0;
+      /* the pair centred (they span ~0.06–0.9 of the height), but never starting inside the block: the
+         photo's own left edge is its backdrop, lighter than the ground */
+      left: min(0px, calc(50% - var(--h) * 0.485));
+      /* its top edge fades into the ground, so there is no line where the photo starts */
+      mask-image: linear-gradient(to bottom, transparent, #000 30%);
     }
     .founders-cta__title {
       font-size: 26px;
