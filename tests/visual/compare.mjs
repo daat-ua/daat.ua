@@ -44,18 +44,21 @@ const SECTIONS = {
   roadmap: "#roadmap",
   testimonials: "#testimonials-and-case-studies",
   methodology: "#methodology",
-  // "audit-findings" is left out: its cards now come from Sanity, not from the original page's copy
+  // "audit-findings" is added only against a build (--base-ref): against the original page its cards differ,
+  // since they now come from Sanity
   faq: "#faq",
   footer: "footer.footer",
 };
 
 const args = Object.fromEntries(
   process.argv.slice(2).map((a) => {
-    const [k, v] = a.replace(/^--/, "").split("=");
-    return [k, v ?? true];
+    const [k, ...v] = a.replace(/^--/, "").split("="); // a value may hold "=" (a branch name can)
+    return [k, v.length ? v.join("=") : true];
   }),
 );
 const widths = (args.widths ?? "1440,1280,1024,500").split(",").map(Number);
+// against another build of the site, the findings carousel compares too (both read the same Sanity content)
+if (args["base-ref"]) SECTIONS["audit-findings"] = "#audit-findings";
 const only = args.sections ? args.sections.split(",") : Object.keys(SECTIONS);
 const threshold = Number(args.threshold ?? 0.005); // share of differing pixels allowed per section
 const compareImages = Boolean(args.images);
@@ -178,7 +181,10 @@ try {
   for (const width of widths) {
     for (const name of only) {
       const selector = SECTIONS[name];
-      const before = await shoot(page, `http://${HOST}:${legacy.address().port}${refPath}`, width, selector);
+      // a reference without the page (a base branch before it existed) counts as the section missing there
+      const before = await shoot(page, `http://${HOST}:${legacy.address().port}${refPath}`, width, selector).catch(
+        () => null,
+      );
       const after = await shoot(page, `http://${HOST}:${build.address().port}/uk-UA/atlas`, width, selector);
       if (!before || !after) {
         if (!allowMissing) failed++;

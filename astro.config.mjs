@@ -76,7 +76,13 @@ export default defineConfig({
     schema: {
       // a string, checked in FoundersCta: Astro's number parsing would read "123abc" as 123
       PUBLIC_CAL_EVENT_TYPE_ID: envField.string({ context: "client", access: "public", optional: true }),
-      PUBLIC_CAL_BOOKING_URL: envField.string({ context: "client", access: "public", optional: true, url: true }),
+      // the founders' public booking page: where the block sends readers when slots can't be loaded
+      PUBLIC_CAL_BOOKING_URL: envField.string({
+        context: "client",
+        access: "public",
+        url: true,
+        default: "https://cal.com/serhii-herasymov-qrn95u/30min",
+      }),
     },
   },
   vite: {
