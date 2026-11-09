@@ -52,7 +52,7 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
   />
   <div class="founders-cta__text">
     <h2 class="founders-cta__title" id="founders-cta-title">
-      Ви говорите з тими, <strong>хто розбиратиме вашу компанію</strong>, а&nbsp;не з&nbsp;відділом продажу.
+      Ви говорите з&nbsp;тими, <strong>хто розбиратиме вашу компанію</strong>, а&nbsp;не з&nbsp;відділом продажу.
     </h2>
     <p>Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
 
@@ -133,8 +133,8 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
             <label for="fc-company">Компанія</label>
           </div>
           <p class="fc-legal">
-            Запрошення прийде на цей email. Деталі обробки даних у&nbsp;
-            <a href={privacyHref}>Політиці конфіденційності</a>.
+            Запрошення прийде на цей email. Деталі обробки даних&nbsp;—{" "}
+            <a href={privacyHref}>Політика конфіденційності</a>.
           </p>
           <p class="fc-error fc-error--submit" data-submit-error role="alert" hidden />
           <button class="btn btn--primary founders-cta__btn" type="submit" data-submit>
@@ -173,7 +173,7 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       <p class="fc-notice" data-fallback-notice hidden>
         Не вдалося завантажити вільні слоти. Оберіть час на сторінці бронювання.
       </p>
-      <a class="btn btn--primary founders-cta__btn" href={PUBLIC_CAL_BOOKING_URL ?? "#"} target="_blank" rel="noopener">
+      <a class="btn btn--primary founders-cta__btn" href={PUBLIC_CAL_BOOKING_URL} target="_blank" rel="noopener">
         Обрати час для розмови
       </a>
       <p class="founders-cta__assure">30&nbsp;хв, онлайн, безкоштовно</p>
@@ -288,7 +288,8 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       if (!res.ok || body.status !== "success") {
         // Cal.com says why (a missing booking field, a slot no longer free…): for whoever debugs it
         console.error("Cal.com booking failed", res.status, body?.error?.message ?? body, body?.error?.details ?? "");
-        throw new BookingError(res.status || 0);
+        // a 2xx without a readable "success" body, or a gateway's 5xx: the booking may exist, so "no answer"
+        throw new BookingError(res.ok || res.status >= 500 ? 0 : res.status);
       }
       return (body.data ?? {}) as Booking;
     }
@@ -599,10 +600,10 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       $("[data-booked-links]").hidden = !demo && !booking.uid;
       $<HTMLAnchorElement>("[data-reschedule]").href = demo
         ? "#founders-cta"
-        : `https://cal.com/reschedule/${booking.uid}`;
+        : `https://cal.com/reschedule/${encodeURIComponent(booking.uid ?? "")}`;
       $<HTMLAnchorElement>("[data-cancel]").href = demo
         ? "#founders-cta"
-        : `https://cal.com/booking/${booking.uid}?cancel=true`;
+        : `https://cal.com/booking/${encodeURIComponent(booking.uid ?? "")}?cancel=true`;
       await go("booked");
     });
 
@@ -970,6 +971,10 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
     display: flex;
     gap: var(--space-md);
     margin: 0;
+  }
+  /* the flex above would override [hidden] (no uid: no links) */
+  .founders-cta .fc-booked__links[hidden] {
+    display: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
