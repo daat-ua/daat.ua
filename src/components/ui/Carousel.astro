@@ -86,12 +86,15 @@ const Title = `h${headingLevel}` as "h3" | "h4";
   for (const root of document.querySelectorAll(".findings")) {
     const track = root.querySelector<HTMLElement>(".findings__track")!;
     const pagesEl = root.querySelector<HTMLElement>(".findings__pages")!;
+    const controls = root.querySelector<HTMLElement>(".findings__controls")!;
     const [prev, next] = root.querySelectorAll<HTMLButtonElement>(".findings__nav");
 
     const pageCount = () =>
       track.clientWidth ? Math.max(1, Math.ceil(track.scrollWidth / track.clientWidth - 0.05)) : 1; // 1 until laid out
     function update() {
       const n = pageCount();
+      // nothing to scroll to (every teaser already in view, at this width): no arrows, no page dashes
+      controls.hidden = n <= 1;
       if (pagesEl.children.length !== n) pagesEl.innerHTML = "<span></span>".repeat(n);
       const max = track.scrollWidth - track.clientWidth;
       const current = Math.round((max > 0 ? track.scrollLeft / max : 0) * (n - 1));

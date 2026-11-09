@@ -358,6 +358,9 @@
   gap: var(--space-sm);
   margin-top: var(--space-xl);
 }
+.findings__controls[hidden] {
+  display: none; /* the flex above would override [hidden] */
+}
 .findings__pages {
   display: flex;
   gap: var(--space-xs);
