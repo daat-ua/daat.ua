@@ -1,0 +1,987 @@
+---
+import { Picture } from "astro:assets";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { PUBLIC_CAL_BOOKING_URL, PUBLIC_CAL_EVENT_TYPE_ID } from "astro:env/client";
+import foundersStudio from "../../assets/images/founders-studio-dark.jpg";
+
+// The founders' block under a finding: their studio photo across the page, and booking a call with them
+// in place. Slots and the booking come from Cal.com's public API v2, called from the browser (no key:
+// slots and booking creation are public for a public event type; see DAA-226). Steps: loading → slots
+// (the nearest three, "another time" opens every free day) → form → booked; a slot someone just took
+// returns to fresh slots with a notice; if Cal.com can't be reached, a link to the booking page.
+//
+// Configured by PUBLIC_CAL_EVENT_TYPE_ID (the event to book) and PUBLIC_CAL_BOOKING_URL (the booking
+// page, the fallback). Without an event type the dev server simulates slots and the booking, so the flow
+// can be tried; a production build shows only the link, never made-up availability.
+
+interface Props {
+  /** the finding's slug: goes into the booking's metadata, so the founders see what led to the call */
+  finding: string;
+}
+
+const { finding } = Astro.props;
+// the numeric ID (Cal.com → Event Types → the event: the number in its URL), not a booking-link hash
+if (PUBLIC_CAL_EVENT_TYPE_ID && !/^\d+$/.test(PUBLIC_CAL_EVENT_TYPE_ID)) {
+  throw new Error(
+    `PUBLIC_CAL_EVENT_TYPE_ID must be the event type's numeric ID (got "${PUBLIC_CAL_EVENT_TYPE_ID}"); see .env.example`,
+  );
+}
+const live = Boolean(PUBLIC_CAL_EVENT_TYPE_ID);
+const demo = !live && import.meta.env.DEV;
+const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privacy-policy", { normalizeLocale: false });
+---
+
+<aside
+  class="founders-cta"
+  id="founders-cta"
+  aria-labelledby="founders-cta-title"
+  data-mode={live ? "live" : demo ? "demo" : "link"}
+  data-event-type={PUBLIC_CAL_EVENT_TYPE_ID}
+  data-finding={finding}
+>
+  <!-- the founders stand at the left; the backdrop is extended (right and above) so the text sits on it -->
+  <Picture
+    class="founders-cta__photo"
+    src={foundersStudio}
+    alt="Олена Кияновська і Сергій Герасимов"
+    formats={["avif", "webp"]}
+    widths={[900, 1300, 1800, 2400]}
+    quality={80}
+    sizes="(width < 64rem) 1280px, 111vw"
+    layout="none"
+  />
+  <div class="founders-cta__text">
+    <h2 class="founders-cta__title" id="founders-cta-title">
+      Ви говорите з тими, <strong>хто розбиратиме вашу компанію</strong>, а не з відділом продажу.
+    </h2>
+    <p>Олена й Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
+
+    {(live || demo) && (
+      <>
+        <div class="fc-step" data-step="loading">
+          <p class="fc-caption">Шукаємо найближчі вільні слоти…</p>
+          <div class="fc-skeleton" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </div>
+        </div>
+
+        <div class="fc-step" data-step="slots" hidden>
+          <p class="fc-notice" data-notice role="status" hidden />
+          <p class="fc-caption" id="founders-cta-slots">
+            Найближчі вільні слоти
+          </p>
+          <div class="fc-slot-row" data-near role="group" aria-labelledby="founders-cta-slots" />
+          <div class="fc-more" data-more hidden>
+            <p class="fc-caption" id="founders-cta-days">
+              Інші дні
+            </p>
+            <div class="fc-days" data-days role="group" aria-labelledby="founders-cta-days" />
+            <div class="fc-slot-row" data-day-slots />
+          </div>
+          <button class="btn btn--primary founders-cta__btn" type="button" data-more-btn aria-expanded="false">
+            Обрати інший час
+          </button>
+          <p class="founders-cta__assure">30 хв, онлайн, безкоштовно</p>
+        </div>
+
+        <form class="fc-step fc-form" data-step="form" hidden novalidate>
+          <p class="fc-chosen">
+            Ваш час: <b data-chosen />
+            <button type="button" data-back>
+              Змінити
+            </button>
+          </p>
+          <div class="fc-row">
+            <div class="fc-field">
+              <input
+                id="fc-name"
+                name="name"
+                autocomplete="name"
+                placeholder=" "
+                required
+                aria-describedby="fc-name-err"
+              />
+              <label for="fc-name">
+                Ім'я <i>*</i>
+              </label>
+              <span class="fc-error" id="fc-name-err" hidden>
+                Як до вас звертатися?
+              </span>
+            </div>
+            <div class="fc-field">
+              <input
+                id="fc-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder=" "
+                required
+                aria-describedby="fc-email-err"
+              />
+              <label for="fc-email">
+                Робочий email <i>*</i>
+              </label>
+              <span class="fc-error" id="fc-email-err" hidden>
+                Сюди прийде запрошення: перевірте адресу
+              </span>
+            </div>
+          </div>
+          <div class="fc-field">
+            <input id="fc-company" name="company" autocomplete="organization" placeholder=" " />
+            <label for="fc-company">Компанія</label>
+          </div>
+          <p class="fc-legal">
+            Запрошення прийде на цей email. Деталі обробки даних у <a href={privacyHref}>Політиці конфіденційності</a>.
+          </p>
+          <p class="fc-error fc-error--submit" data-submit-error role="alert" hidden />
+          <button class="btn btn--primary founders-cta__btn" type="submit" data-submit>
+            Забронювати
+          </button>
+        </form>
+
+        <div class="fc-step fc-booked" data-step="booked" role="status" hidden>
+          <div class="fc-booked__head">
+            <span class="fc-booked__mark">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16 2V6M8 2V6" />
+                <path d="M12 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3 19.6569 3 17.7712 3 14V12C3 8.22876 3 6.34315 4.17157 5.17157C5.34315 4 7.22876 4 11 4H13C16.7712 4 18.6569 4 19.8284 5.17157C21 6.34315 21 8.22876 21 12V12.5" />
+                <path d="M3 10H21" />
+                <path d="M17 22C17 22 21 20.1471 21 17.1389C21 15.9576 20.1579 15 19 15C18.0526 15 17.4211 15.4118 17 16.2353C16.5789 15.4118 15.9474 15 15 15C13.8421 15 13 15.9576 13 17.1389C13 20.1471 17 22 17 22Z" />
+              </svg>
+            </span>
+            <p class="fc-booked__when" data-booked-when tabindex="-1" />
+          </div>
+          <p>
+            Запрошення з посиланням на зустріч надіслано на <b data-booked-email />. До зустрічі!
+          </p>
+          <p class="fc-booked__links">
+            <a data-reschedule href="#" target="_blank" rel="noopener">
+              Змінити час
+            </a>
+            <a data-cancel href="#" target="_blank" rel="noopener">
+              Скасувати
+            </a>
+          </p>
+        </div>
+      </>
+    )}
+
+    <div class="fc-step" data-step="fallback" hidden={live || demo}>
+      <p class="fc-notice" data-fallback-notice hidden>
+        Не вдалося завантажити вільні слоти. Оберіть час на сторінці бронювання.
+      </p>
+      <a class="btn btn--primary founders-cta__btn" href={PUBLIC_CAL_BOOKING_URL ?? "#"} target="_blank" rel="noopener">
+        Обрати час для розмови
+      </a>
+      <p class="founders-cta__assure">30 хв, онлайн, безкоштовно</p>
+    </div>
+  </div>
+</aside>
+
+<script>
+  import { PUBLIC_CAL_BOOKING_URL } from "astro:env/client";
+
+  // ---- Cal.com API v2 (public endpoints; their versions are part of the contract) ----
+  const API = "https://api.cal.com/v2";
+  const SLOTS_VERSION = "2024-09-04";
+  const BOOKINGS_VERSION = "2026-02-25";
+  const DAYS_AHEAD = 14;
+
+  type Slot = { start: Date };
+
+  const block = document.querySelector<HTMLElement>(".founders-cta");
+  const root = block?.querySelector<HTMLElement>(".founders-cta__text");
+  if (block && root && block.dataset.mode !== "link") {
+    const band: HTMLElement = block; // narrowed once, for the function declarations below
+    const demo = block.dataset.mode === "demo";
+    const eventTypeId = Number(block.dataset.eventType);
+    const finding = block.dataset.finding ?? "";
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Kyiv";
+    const fmtDay = new Intl.DateTimeFormat("uk-UA", { weekday: "short", day: "numeric", month: "short", timeZone });
+    const fmtLong = new Intl.DateTimeFormat("uk-UA", { weekday: "long", day: "numeric", month: "long", timeZone });
+    const fmtTime = new Intl.DateTimeFormat("uk-UA", { hour: "2-digit", minute: "2-digit", timeZone });
+    const fmtKey = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone });
+    const zoneLabel = timeZone === "Europe/Kyiv" ? "Київ" : timeZone.split("/").pop()!.replace(/_/g, " ");
+
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const steps = [...root.querySelectorAll<HTMLElement>(".fc-step")];
+    const form = $<HTMLFormElement>("form");
+    const submit = $<HTMLButtonElement>("[data-submit]");
+    const moreBtn = $<HTMLButtonElement>("[data-more-btn]");
+
+    let slots: Slot[] = [];
+    let chosen: Slot | null = null;
+
+    // ---- data ----
+    const withTimeout = (ms: number) => {
+      const c = new AbortController();
+      setTimeout(() => c.abort(), ms);
+      return c.signal;
+    };
+
+    async function fetchSlots(): Promise<Slot[]> {
+      if (demo) return demoSlots();
+      const start = new Date();
+      const end = new Date(start.getTime() + DAYS_AHEAD * 864e5);
+      const q = new URLSearchParams({
+        eventTypeId: String(eventTypeId),
+        start: start.toISOString(),
+        end: end.toISOString(),
+        timeZone,
+      });
+      const res = await fetch(`${API}/slots?${q}`, {
+        headers: { "cal-api-version": SLOTS_VERSION },
+        signal: withTimeout(12000),
+      });
+      if (!res.ok) {
+        console.error("Cal.com slots failed", res.status, await res.text().catch(() => ""));
+        throw new Error(`slots ${res.status}`);
+      }
+      const body: { data?: Record<string, { start: string }[]> } = await res.json();
+      const now = Date.now();
+      return Object.values(body.data ?? {})
+        .flat()
+        .map((s) => ({ start: new Date(s.start) }))
+        .filter((s) => s.start.getTime() > now)
+        .sort((a, b) => a.start.getTime() - b.start.getTime());
+    }
+
+    type Booking = { uid: string; start: string; end: string };
+    async function book(slot: Slot, name: string, email: string, company: string): Promise<Booking> {
+      if (demo) {
+        await new Promise((r) => setTimeout(r, 900));
+        return {
+          uid: "demo",
+          start: slot.start.toISOString(),
+          end: new Date(slot.start.getTime() + 30 * 6e4).toISOString(),
+        };
+      }
+      const metadata: Record<string, string> = { finding, source: "daat.ua" };
+      if (company) metadata.company = company.slice(0, 40);
+      const res = await fetch(`${API}/bookings`, {
+        method: "POST",
+        headers: { "cal-api-version": BOOKINGS_VERSION, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          start: slot.start.toISOString(),
+          eventTypeId,
+          attendee: { name, email, timeZone, language: "uk" },
+          metadata,
+        }),
+        signal: withTimeout(20000),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || body.status !== "success") {
+        // Cal.com says why (a missing booking field, a slot no longer free…): for whoever debugs it
+        console.error("Cal.com booking failed", res.status, body?.error?.message ?? body, body?.error?.details ?? "");
+        throw new Error(`booking ${res.status}`);
+      }
+      return body.data as Booking;
+    }
+
+    // the dev server without an event type: working days ahead, a few free times each
+    function demoSlots(): Slot[] {
+      const out: Slot[] = [];
+      const times = [
+        ["10:00", "11:30", "15:30"],
+        ["11:00", "14:00", "16:30"],
+        ["10:30", "13:00"],
+        ["09:30", "12:00", "15:00", "16:00"],
+      ];
+      for (let d = new Date(), k = 0; out.length < 30 && k < 20;) {
+        d.setDate(d.getDate() + 1);
+        if (d.getDay() % 6 === 0) continue;
+        for (const t of times[k++ % times.length]) {
+          const [h, m] = t.split(":").map(Number);
+          out.push({ start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m) });
+        }
+      }
+      return out;
+    }
+
+    // ---- rendering ----
+    const label = (s: Slot) => `${fmtDay.format(s.start)} · ${fmtTime.format(s.start)}`;
+    // under a day tab the date is already there: the time alone
+    const slotButton = (s: Slot, timeOnly = false) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "fc-slot";
+      b.textContent = timeOnly ? fmtTime.format(s.start) : label(s);
+      if (timeOnly) b.setAttribute("aria-label", label(s));
+      b.dataset.start = s.start.toISOString();
+      b.addEventListener("click", () => {
+        chosen = s;
+        go("form", { from: b.getBoundingClientRect() });
+      });
+      return b;
+    };
+    function renderSlots() {
+      $("[data-near]").replaceChildren(...slots.slice(0, 3).map((s) => slotButton(s)));
+      const byDay = new Map<string, Slot[]>();
+      for (const s of slots) {
+        const key = fmtKey.format(s.start);
+        byDay.set(key, [...(byDay.get(key) ?? []), s]);
+      }
+      const days = [...byDay.values()];
+      const tabs = $("[data-days]");
+      tabs.replaceChildren(
+        ...days.map((day, i) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = fmtDay.format(day[0].start);
+          b.setAttribute("aria-pressed", String(i === 0));
+          b.addEventListener("click", () => {
+            for (const x of tabs.children) x.setAttribute("aria-pressed", String(x === b));
+            $("[data-day-slots]").replaceChildren(...day.map((s) => slotButton(s, true)));
+          });
+          return b;
+        }),
+      );
+      $("[data-day-slots]").replaceChildren(...(days[0] ?? []).map((s) => slotButton(s, true)));
+    }
+
+    function show(step: string) {
+      for (const el of steps) el.hidden = el.dataset.step !== step;
+      if (step === "form" && chosen) {
+        $("[data-chosen]").textContent = `${fmtLong.format(chosen.start)}, ${fmtTime.format(chosen.start)}`;
+        submit.replaceChildren(`Забронювати ${fmtTime.format(chosen.start)}, ${fmtDay.format(chosen.start)}`);
+        submit.disabled = false;
+        submit.style.width = "";
+        $("[data-submit-error]").hidden = true;
+      }
+    }
+
+    // ---- motion: one movement per change; exits faster than entrances; transform and opacity only, plus
+    // the block's height; a short crossfade with reduced motion (the plan in DAA-226) ----
+    const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const OUT = "cubic-bezier(0.4, 0, 1, 1)";
+    const IN = "cubic-bezier(0.22, 1, 0.36, 1)";
+    const current = () => steps.find((el) => !el.hidden);
+    const exit = (el?: HTMLElement) =>
+      el
+        ? el.animate(
+            calm()
+              ? [{ opacity: 1 }, { opacity: 0 }]
+              : [
+                  { opacity: 1, transform: "none" },
+                  { opacity: 0, transform: "translateY(-6px)" },
+                ],
+            { duration: calm() ? 120 : 150, easing: OUT, fill: "forwards" },
+          ).finished
+        : Promise.resolve();
+    const enter = (items: Element[], delay = 0) =>
+      items.forEach((el, n) =>
+        el.animate(
+          calm()
+            ? [{ opacity: 0 }, { opacity: 1 }]
+            : [
+                { opacity: 0, transform: "translateY(10px)" },
+                { opacity: 1, transform: "none" },
+              ],
+          { duration: calm() ? 120 : 280, delay: calm() ? 0 : delay + n * 40, easing: IN, fill: "backwards" },
+        ),
+      );
+    const fly = (el: HTMLElement, from?: DOMRect) => {
+      if (!from || calm()) return;
+      const to = el.getBoundingClientRect();
+      el.animate(
+        [
+          { transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)`, opacity: 0.6 },
+          { transform: "none", opacity: 1 },
+        ],
+        { duration: 320, easing: IN },
+      );
+    };
+    const glow = (el: HTMLElement) => {
+      if (calm()) return;
+      el.animate(
+        [
+          { borderColor: "#feb161", boxShadow: "0 0 0 3px rgb(254 177 97 / 0.35)" },
+          { borderColor: "rgb(244 241 234 / 0.35)", boxShadow: "0 0 0 0 transparent" },
+        ],
+        { duration: 900, easing: "ease-out" },
+      );
+    };
+    const growFrom = (h0: number) => {
+      const h1 = block.offsetHeight;
+      if (calm() || Math.abs(h1 - h0) < 2) return;
+      block.animate([{ height: `${h0}px` }, { height: `${h1}px` }], { duration: 260, easing: IN });
+    };
+
+    let busy = false;
+    async function go(step: string, { from, focus }: { from?: DOMRect; focus?: HTMLElement } = {}) {
+      if (busy) return;
+      busy = true;
+      const h0 = band.offsetHeight;
+      const old = current();
+      await exit(old);
+      show(step);
+      old?.getAnimations().forEach((a) => a.cancel());
+      growFrom(h0);
+      const now = current()!;
+      if (step === "booked") {
+        const mark = now.querySelector<HTMLElement>(".fc-booked__mark")!;
+        if (!calm())
+          mark.animate(
+            [
+              { opacity: 0, transform: "scale(.6)" },
+              { opacity: 1, transform: "none" },
+            ],
+            { duration: 320, easing: IN },
+          );
+        const [head, ...rest] = [...now.children];
+        enter([head.querySelector("[data-booked-when]")!, ...rest], 120);
+        now.querySelector<HTMLElement>("[data-booked-when]")!.focus({ preventScroll: true });
+      } else {
+        enter([...now.children].filter((el) => !(el as HTMLElement).hidden && !el.matches(".fc-chosen")));
+        if (step === "form") {
+          fly($("[data-chosen]"), from);
+          $("#fc-name").focus({ preventScroll: true });
+        }
+        if (focus) {
+          focus.focus({ preventScroll: true });
+          glow(focus);
+        }
+      }
+      busy = false;
+    }
+
+    // ---- flow ----
+    async function loadSlots(notice?: string) {
+      try {
+        slots = await fetchSlots();
+      } catch {
+        slots = [];
+      }
+      if (!slots.length) {
+        $("[data-fallback-notice]").hidden = false;
+        await go("fallback");
+        return;
+      }
+      renderSlots();
+      const n = $("[data-notice]");
+      n.textContent = notice ?? "";
+      n.hidden = !notice;
+      await go("slots");
+    }
+
+    moreBtn.addEventListener("click", () => {
+      const more = $("[data-more]");
+      more.hidden = !more.hidden;
+      moreBtn.setAttribute("aria-expanded", String(!more.hidden));
+      moreBtn.textContent = more.hidden ? "Обрати інший час" : "Сховати інші дні";
+      if (!more.hidden) enter([...more.children]);
+    });
+
+    $("[data-back]").addEventListener("click", async () => {
+      await go("slots");
+      const pill = [...root.querySelectorAll<HTMLElement>("[data-near] .fc-slot")].find(
+        (b) => b.dataset.start === chosen?.start.toISOString(),
+      );
+      if (pill) {
+        pill.focus({ preventScroll: true });
+        glow(pill);
+      }
+    });
+
+    // an error clears as soon as its field is fixed
+    const valid = (input: HTMLInputElement) => input.value.trim() !== "" && input.checkValidity();
+    const mark = (input: HTMLInputElement, ok: boolean) => {
+      input.closest(".fc-field")!.toggleAttribute("data-invalid", !ok);
+      input.setAttribute("aria-invalid", String(!ok));
+      document.getElementById(input.getAttribute("aria-describedby")!)!.hidden = ok;
+    };
+    for (const input of form.querySelectorAll<HTMLInputElement>("input[required]")) {
+      input.addEventListener("input", () => {
+        if (input.closest(".fc-field")!.hasAttribute("data-invalid") && valid(input)) mark(input, true);
+      });
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!chosen || submit.disabled) return;
+      let bad: HTMLInputElement | null = null;
+      for (const input of form.querySelectorAll<HTMLInputElement>("input[required]")) {
+        const ok = valid(input);
+        mark(input, ok);
+        bad ??= ok ? null : input;
+      }
+      if (bad) {
+        bad.focus();
+        return;
+      }
+      const data = new FormData(form);
+      submit.style.width = `${submit.offsetWidth}px`; // the label changes, the button doesn't jump
+      submit.disabled = true;
+      form.setAttribute("aria-busy", "true");
+      const spinner = document.createElement("span");
+      spinner.className = "fc-spinner";
+      submit.replaceChildren(spinner, " Бронюємо…");
+      try {
+        const booking = await book(
+          chosen,
+          String(data.get("name")).trim(),
+          String(data.get("email")).trim(),
+          String(data.get("company") ?? "").trim(),
+        );
+        const start = new Date(booking.start);
+        const end = new Date(booking.end);
+        $("[data-booked-when]").textContent =
+          `Зустріч заброньовано: ${fmtLong.format(start)}, ${fmtTime.format(start)}–${fmtTime.format(end)} (${zoneLabel})`;
+        $("[data-booked-email]").textContent = String(data.get("email")).trim();
+        $<HTMLAnchorElement>("[data-reschedule]").href = demo
+          ? "#founders-cta"
+          : `https://cal.com/reschedule/${booking.uid}`;
+        $<HTMLAnchorElement>("[data-cancel]").href = demo
+          ? "#founders-cta"
+          : `https://cal.com/booking/${booking.uid}?cancel=true`;
+        form.removeAttribute("aria-busy");
+        await go("booked");
+      } catch {
+        form.removeAttribute("aria-busy");
+        // the slot may have gone meanwhile: fresh slots tell
+        let fresh: Slot[] = [];
+        try {
+          fresh = await fetchSlots();
+        } catch {}
+        if (fresh.length && !fresh.some((s) => s.start.getTime() === chosen!.start.getTime())) {
+          slots = fresh;
+          renderSlots();
+          const n = $("[data-notice]");
+          n.textContent = "Цей час щойно зайняли. Ось актуальні слоти.";
+          n.hidden = false;
+          await go("slots");
+          return;
+        }
+        show("form");
+        const err = $("[data-submit-error]");
+        err.textContent = "Не вдалося забронювати. Спробуйте ще раз";
+        if (PUBLIC_CAL_BOOKING_URL) {
+          const a = document.createElement("a");
+          a.href = PUBLIC_CAL_BOOKING_URL;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.textContent = "або оберіть час на сторінці бронювання";
+          err.append(" ", a);
+        }
+        err.append(".");
+        err.hidden = false;
+      }
+    });
+
+    // slots load when the block comes near, not with the page
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          loadSlots();
+        }
+      },
+      { rootMargin: "800px 0px" },
+    );
+    io.observe(block);
+  }
+</script>
+
+<style>
+  /* The photo is drawn at the band's design height, standing on its foot: the founders take ~0.9 of that
+     height in width, so the text starts at 1.02 × the height, on the plain backdrop. When the form or the
+     other days make the block taller, it grows upward over the photo's backdrop colour. */
+  .founders-cta {
+    --h: calc(600 * var(--px));
+    --backdrop: rgb(27 25 26); /* the photo's colour at its top */
+    --on-backdrop: var(--c-on-primary-muted);
+    --on-backdrop-soft: rgb(244 241 234 / 0.72);
+    position: relative;
+    display: grid;
+    align-content: center;
+    min-height: var(--h);
+    margin-top: var(--space-2xl);
+    padding: var(--space-2xl) var(--gutter) var(--space-2xl) calc(var(--h) * 1.02);
+    overflow: hidden;
+    background: var(--backdrop);
+    color: var(--on-backdrop);
+  }
+  .founders-cta :global(.founders-cta__photo) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
+    height: var(--h);
+    /* its top edge fades into the ground, so there is no line when the block grows above it */
+    mask-image: linear-gradient(to bottom, transparent, #000 15%);
+  }
+  .founders-cta__text {
+    position: relative;
+    max-width: calc(560 * var(--px));
+  }
+  .founders-cta__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: calc(36 * var(--px));
+    font-weight: 300;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .founders-cta__title strong {
+    font-weight: 500;
+  }
+  .founders-cta p {
+    margin: var(--space-md) 0 0;
+    color: var(--on-backdrop-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .fc-step {
+    margin-top: var(--space-lg);
+  }
+  .fc-step[hidden] {
+    display: none;
+  }
+  .founders-cta .fc-caption {
+    margin: 0;
+    font-size: var(--text-small);
+  }
+  .founders-cta .fc-notice {
+    margin: 0 0 var(--space-md);
+    padding: 0.8em 1em;
+    border-radius: 10px;
+    background: rgb(254 177 97 / 0.14);
+    color: var(--on-backdrop);
+    font-size: var(--text-small);
+  }
+
+  /* slots: light-outlined pills */
+  .fc-slot-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+  }
+  .fc-slot-row :global(.fc-slot) {
+    padding: 0.87em 1.07em; /* 13 and 16 at 15px */
+    border: 1px solid rgb(244 241 234 / 0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--on-backdrop);
+    font: inherit;
+    font-size: var(--text-small);
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .fc-slot-row :global(.fc-slot:hover) {
+    border-color: var(--c-accent);
+  }
+  .founders-cta :global(:is(.fc-slot, .fc-days button):focus-visible) {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  .fc-skeleton {
+    display: flex;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+  }
+  .fc-skeleton i {
+    width: calc(170 * var(--px));
+    height: calc(46 * var(--px));
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgb(244 241 234 / 0.08), rgb(244 241 234 / 0.18), rgb(244 241 234 / 0.08)) 0 0 /
+      200% 100%;
+    animation: fc-shimmer 1.2s linear infinite;
+  }
+  @keyframes fc-shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  .fc-more {
+    margin-top: var(--space-md);
+  }
+  .fc-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--space-sm);
+  }
+  .fc-days :global(button) {
+    padding: 0.6em 0.8em;
+    border: 1px solid rgb(244 241 234 / 0.2);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--on-backdrop-soft);
+    font: inherit;
+    font-size: calc(var(--text-small) * 0.88);
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .fc-days :global(button[aria-pressed="true"]) {
+    border-color: var(--on-backdrop);
+    color: var(--on-backdrop);
+  }
+  .founders-cta__btn {
+    margin-top: var(--space-lg);
+    border-color: transparent; /* the white edge is for the dark hero */
+    color: var(--c-on-primary);
+    font: inherit;
+    font-size: var(--text-body);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .founders-cta .founders-cta__assure {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: var(--space-sm);
+    font-size: var(--text-small);
+  }
+  .founders-cta__assure::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--c-accent);
+  }
+
+  /* form: underline-only fields, the label inside, rising above the value on focus or once filled */
+  .fc-form {
+    display: grid;
+    gap: var(--space-lg);
+  }
+  .founders-cta .fc-chosen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5em;
+    margin: 0;
+    color: var(--on-backdrop);
+    font-size: var(--text-small);
+  }
+  .fc-chosen b {
+    display: inline-block;
+    color: var(--c-accent);
+    font-weight: 600;
+  }
+  .fc-chosen button {
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--on-backdrop-soft);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+  .fc-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg) var(--space-xl);
+  }
+  .fc-field {
+    position: relative;
+    display: grid;
+  }
+  .fc-field input {
+    width: 100%;
+    padding: 1.5em 0 0.55em;
+    border: 0;
+    border-bottom: 1px solid rgb(244 241 234 / 0.32);
+    border-radius: 0;
+    background: transparent;
+    color: var(--on-backdrop);
+    font: inherit;
+    font-size: var(--text-small);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .fc-field input:focus {
+    outline: none;
+    border-bottom-color: var(--on-backdrop);
+    box-shadow: 0 1px 0 var(--on-backdrop);
+  }
+  .fc-field input:-webkit-autofill {
+    -webkit-text-fill-color: var(--on-backdrop);
+    transition: background-color 9999s ease 0s;
+  }
+  .fc-field label {
+    position: absolute;
+    top: 1.5em;
+    left: 0;
+    color: var(--on-backdrop);
+    font-size: var(--text-small);
+    font-weight: 500;
+    line-height: 1.2;
+    pointer-events: none;
+    transform-origin: left top;
+    transition:
+      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.2s ease;
+  }
+  .fc-field label i {
+    color: var(--on-backdrop-soft);
+    font-style: normal;
+  }
+  .fc-field input:focus + label,
+  .fc-field input:not(:placeholder-shown) + label {
+    color: var(--on-backdrop-soft);
+    transform: translateY(-1.1em) scale(0.75);
+  }
+  .fc-error {
+    margin-top: 6px;
+    color: #ffb4a6;
+    font-size: calc(var(--text-small) * 0.82);
+  }
+  .fc-field[data-invalid] input {
+    border-bottom-color: #ff8f7c;
+  }
+  .founders-cta .fc-error--submit {
+    margin: 0;
+    font-size: var(--text-small);
+  }
+  .fc-error--submit :global(a) {
+    color: var(--on-backdrop);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .founders-cta .fc-legal {
+    margin: 0;
+    font-size: calc(var(--text-small) * 0.82);
+  }
+  .fc-legal a,
+  .fc-booked__links a {
+    color: var(--on-backdrop);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .fc-form .founders-cta__btn {
+    justify-self: start;
+    margin-top: 0;
+  }
+  .founders-cta :global(.fc-spinner) {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-right: 0.4em;
+    border: 2px solid rgb(250 248 243 / 0.35);
+    border-top-color: #faf8f3;
+    border-radius: 50%;
+    vertical-align: -0.15em;
+    animation: fc-spin 0.8s linear infinite;
+  }
+  @keyframes fc-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* booked */
+  .fc-booked {
+    display: grid;
+    gap: var(--space-sm);
+    margin-top: var(--space-xl);
+  }
+  .fc-booked__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+  .fc-booked__mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: calc(56 * var(--px));
+    height: calc(56 * var(--px));
+    border-radius: 50%;
+    background: var(--c-accent);
+    color: var(--c-hero);
+  }
+  .fc-booked__mark svg {
+    width: 50%;
+    height: 50%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .founders-cta .fc-booked__when {
+    margin: 0;
+    color: var(--on-backdrop);
+    font-family: var(--font-display);
+    font-size: calc(24 * var(--px));
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .fc-booked__when:focus {
+    outline: none;
+  }
+  .fc-booked b {
+    color: var(--on-backdrop);
+    font-weight: 600;
+  }
+  .founders-cta .fc-booked__links {
+    display: flex;
+    gap: var(--space-md);
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fc-skeleton i,
+    .founders-cta :global(.fc-spinner) {
+      animation: none;
+    }
+  }
+
+  /* phones: the text on top, the founders in a band below it, standing on the block's foot; the ground is
+     the photo's colour at its top, so the text area runs into the photo */
+  @media (width < 64rem) {
+    .founders-cta {
+      --h: clamp(340px, 112vw, 480px); /* the founders as wide as the screen (~0.9 of the height) */
+      min-height: 0;
+      margin-top: 48px;
+      /* the photo's faded headroom runs under the text's foot */
+      padding: 40px var(--gutter) calc(var(--h) * 0.86);
+    }
+    .founders-cta :global(.founders-cta__photo) {
+      /* the pair centred (they span ~0.06–0.9 of the height), but never starting inside the block: the
+         photo's own left edge is its backdrop, lighter than the ground */
+      left: min(0px, calc(50% - var(--h) * 0.485));
+      mask-image: linear-gradient(to bottom, transparent, #000 30%);
+    }
+    .founders-cta__title {
+      font-size: 26px;
+    }
+    .founders-cta__btn {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    .fc-row {
+      grid-template-columns: 1fr;
+    }
+    .fc-form .founders-cta__btn {
+      justify-self: stretch;
+    }
+    .fc-skeleton i {
+      width: 30%;
+    }
+    .fc-booked__mark {
+      width: 48px;
+      height: 48px;
+    }
+    .founders-cta .fc-booked__when {
+      font-size: 19px;
+    }
+  }
+</style>

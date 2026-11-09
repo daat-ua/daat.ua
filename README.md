@@ -40,6 +40,21 @@ Queries are written with `defineQuery` in `src/sanity/queries.ts`. After changin
 Findings from the previous daat.ua site (`/insights/delivery-audit-findings/<slug>`) redirect to their new
 URLs (301, in the `Caddyfile`).
 
+## Booking a call (Cal.com)
+
+The founders' block under each finding (`src/components/findings/FoundersCta.astro`) books a call in place:
+it loads the founders' free slots from Cal.com's public API v2 as the reader nears it, takes a name and email,
+and creates the booking (Cal.com then sends the invitation). Both calls go from the browser and need no API
+key, so the site stays static. Two public settings, declared in `astro.config.mjs` (`env`) and listed in
+`.env.example`:
+
+- `PUBLIC_CAL_EVENT_TYPE_ID`: the event type to book (its numeric ID)
+- `PUBLIC_CAL_BOOKING_URL`: the public booking page, shown when slots can't be loaded
+
+Locally they go in `.env`; on Railway they are service variables (the `Dockerfile` passes them to the build).
+Without an event type, `npm run dev` simulates the slots and the booking, and a production build shows only a
+link to the booking page. Never put a Cal.com API key in a `PUBLIC_` variable. Details and decisions: DAA-226.
+
 ## Locales and URLs
 
 Astro i18n with one locale, `uk-UA`, always in the URL. The ATLAS page lives at `/uk-UA/atlas`; `/` and `/uk-UA` redirect there (302 from Caddy in production, static redirect pages elsewhere). Pages are built as `.html` files (`dist/uk-UA/atlas.html`) and linked without the extension, so any other host must serve `/path` from `/path.html`: Caddy does it with `try_files {path} {path}.html`; on Netlify, Cloudflare Pages or Vercel this is the default ("pretty URLs"); nginx needs `try_files $uri $uri.html $uri/ =404`. A plain static server (e.g. `python -m http.server`) returns 404 for `/uk-UA/atlas`; use `npm run preview` locally. New locales go in `astro.config.mjs` (`i18n.locales`) with their pages under `src/pages/<locale>/`.
