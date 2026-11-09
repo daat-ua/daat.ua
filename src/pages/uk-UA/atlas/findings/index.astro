@@ -40,28 +40,31 @@ const intro =
     {intro}
   </p>
 
-  <div class="wrap catalogue-layout">
-    <FindingsToc
-      items={groups.map((g) => ({
-        id: g.id,
-        label: g.count ? `${g.label} · ${g.count}` : g.label,
-        disabled: g.count === 0,
-      }))}
-    />
+  <!-- full width, for the rule that sets the catalogue off from the footer (as "more findings" on a finding) -->
+  <div class="catalogue">
+    <div class="wrap catalogue-layout">
+      <FindingsToc
+        items={groups.map((g) => ({
+          id: g.id,
+          label: g.count ? `${g.label}\u00a0·\u00a0${g.count}` : g.label, // the count never wraps on its own
+          disabled: g.count === 0,
+        }))}
+      />
 
-    <div class="catalogue-groups">
-      {groups
-        .filter((g) => g.count > 0)
-        .map((g) => (
-          <AuditFindings
-            id={g.id}
-            title={g.label}
-            description={enablerDescriptions[g.enabler]}
-            enabler={g.enabler}
-            catalogLink={false}
-            intro={false}
-          />
-        ))}
+      <div class="catalogue-groups">
+        {groups
+          .filter((g) => g.count > 0)
+          .map((g) => (
+            <AuditFindings
+              id={g.id}
+              title={g.label}
+              description={enablerDescriptions[g.enabler]}
+              enabler={g.enabler}
+              catalogLink={false}
+              intro={false}
+            />
+          ))}
+      </div>
     </div>
   </div>
 </FindingsLayout>
@@ -77,16 +80,21 @@ const intro =
 
   /* the enablers on the left (20%), their findings on the right (80%), two column gaps between, as on a
      finding's page (minmax: the carousels' tracks mustn't widen the columns) */
+  .catalogue {
+    border-bottom: 1px solid var(--rule);
+  }
   .catalogue-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 4fr);
     column-gap: calc(var(--col-gap) * 2);
     padding-bottom: var(--space-3xl);
   }
-  /* the narrower column: the list takes all of it */
+  /* the narrower column: the list takes all of it but a column gap at its right, for more air between it
+     and the findings (which stay where the grid puts them) */
   .catalogue-layout :global(.finding-toc__inner) {
     width: auto;
     padding-left: 0;
+    padding-right: var(--col-gap);
   }
   .catalogue-groups {
     display: grid;
