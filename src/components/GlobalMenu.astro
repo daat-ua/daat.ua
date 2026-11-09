@@ -1,5 +1,5 @@
 ---
-import { directions, menu } from "../data/navigation";
+import { menu, projects } from "../data/navigation";
 import Burger from "./ui/Burger.astro";
 import Logo from "./ui/Logo.astro";
 
@@ -25,7 +25,12 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
         {menu.map((item, i) =>
           "items" in item ? (
             <li>
-              <button class="gmenu__toggle" type="button" aria-expanded="false" aria-controls={`gmenu-sub-${i}`}>
+              <button
+                class="gmenu__toggle"
+                type="button"
+                aria-expanded={item.open ? "true" : "false"}
+                aria-controls={`gmenu-sub-${i}`}
+              >
                 {item.label}
                 <Fragment set:html={CHEV} />
               </button>
@@ -49,21 +54,22 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
         )}
       </ul>
     </nav>
-    <p class="gmenu__eyebrow">Наші напрями</p>
+    <p class="gmenu__eyebrow">Наші проєкти</p>
     <ul class="gmenu__minor">
-      {directions.map((link) => (
+      {projects.map((link) => (
         <li>
           <a href={link.href}>{link.label}</a>
         </li>
       ))}
     </ul>
-    <a class="gmenu__lang" href="#">
+    <!-- the English site doesn't exist yet: shown, but not a link -->
+    <span class="gmenu__lang" lang="en" aria-disabled="true">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="9.5"></circle>
         <path d="M2.5 12h19M12 2.5c2.5 2.6 3.8 5.8 3.8 9.5s-1.3 6.9-3.8 9.5c-2.5-2.6-3.8-5.8-3.8-9.5s1.3-6.9 3.8-9.5z"></path>
       </svg>
-      Україна (українська)
-    </a>
+      English
+    </span>
   </div>
 </dialog>
 
@@ -110,7 +116,7 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
   });
   dialog.addEventListener("click", (e) => e.target === dialog && close()); // the dimmed page
 
-  // cascade order: main items, the directions label and links, then the language
+  // cascade order: main items, the projects label and links, then the language
   dialog
     .querySelectorAll<HTMLElement>(".gmenu__main > li, .gmenu__eyebrow, .gmenu__minor > li, .gmenu__lang")
     .forEach((el, i) => {
@@ -125,9 +131,11 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
       t.setAttribute("aria-expanded", String(t.getAttribute("aria-expanded") !== "true")),
     );
   }
-  // in-page links close the menu first, then scroll once the page is unlocked
-  for (const a of dialog.querySelectorAll<HTMLAnchorElement>('a[href^="#"]:not([href="#"])')) {
+  // links to a section of this page (the ATLAS sections, from the ATLAS page) close the menu first, then
+  // scroll once the page is unlocked; from any other page they navigate as usual
+  for (const a of dialog.querySelectorAll<HTMLAnchorElement>('a[href*="#"]:not([href="#"])')) {
     a.addEventListener("click", (e) => {
+      if (a.pathname !== location.pathname) return;
       const target = document.getElementById(a.hash.slice(1));
       if (!target) return;
       e.preventDefault();
@@ -304,9 +312,12 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
     transition-delay: calc(80ms + var(--j, 0) * 40ms);
   }
   .gmenu__sub a:hover,
-  .gmenu__minor a:hover,
-  .gmenu__lang:hover {
+  .gmenu__minor a:hover {
     color: var(--c-primary);
+  }
+  .gmenu__lang[aria-disabled="true"] {
+    color: rgb(28 38 50 / 0.4); /* not a link yet: muted, no hover */
+    cursor: default;
   }
   /* separators between the groups, as in the reference */
   .gmenu nav + .gmenu__eyebrow,

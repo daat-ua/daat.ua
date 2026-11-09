@@ -1,5 +1,6 @@
 // Navigation copy: table of contents, global menu and footer.
-// TODO content: the menu, directions, cookie settings, site map and social profiles are placeholders.
+// TODO content: the about, case studies and Daat talks pages don't exist yet; cookie settings, site map and
+// social profiles are placeholders.
 
 export interface Link {
   label: string;
@@ -19,25 +20,24 @@ export const toc: Link[] = [
   { label: "Часті питання", href: "#faq" },
 ];
 
-/** A main menu entry: a plain link, or a group that unfolds its sub-items */
-export type MenuItem = Link | { label: string; items: Link[] };
+/** A main menu entry: a plain link, or a group that unfolds its sub-items (`open`: unfolded at first) */
+export type MenuItem = Link | { label: string; items: Link[]; open?: boolean };
 
 const placeholder = (...labels: string[]): Link[] => labels.map((label) => ({ label, href: "#" }));
 
 export const menu: MenuItem[] = [
+  // the ATLAS page's sections, as in its table of contents; full URLs, so they work from every page
   {
-    label: "Що ми робимо",
-    items: placeholder("Діагностика ATLAS", "Дорожня карта зростання", "Супровід упровадження"),
+    label: "Діагностика ATLAS",
+    items: toc.map(({ label, href }) => ({ label, href: `/uk-UA/atlas${href}` })),
+    open: true,
   },
-  { label: "Галузі", items: placeholder("Аутсорс і аутстаф", "Продуктові компанії", "Інвестори та покупці") },
-  { label: "Про нас", items: placeholder("Команда", "Підхід і методологія", "Контакти") },
-  { label: "Кар’єра", href: "#" },
-  { label: "Кейси", href: "#testimonials-and-case-studies" },
-  { label: "Медіа", items: placeholder("Знахідки аудитів", "Статті", "Події") },
-  { label: "Актуальне", items: placeholder("AI у delivery", "Fixed-price без збитків", "Підготовка до інвестора") },
+  { label: "Про нас", href: "/uk-UA/about" },
+  { label: "Кейси", href: "/uk-UA/case-studies" },
 ];
 
-export const directions: Link[] = placeholder("Daat ATLAS", "Daat Delivery", "Daat Engineering", "Daat Advisory");
+/** "Наші проєкти": Daat's projects beside the consulting */
+export const projects: Link[] = [{ label: "Daat talks", href: "/uk-UA/daat-talks" }];
 
 export const legalLinks: Link[] = [
   { label: "Політика конфіденційності", href: "/uk-UA/privacy-policy" },
