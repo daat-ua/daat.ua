@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 
 /**
@@ -69,6 +69,16 @@ export default defineConfig({
       },
     },
   ],
+  // Booking a call with the founders (findings' founders block, DAA-226): Cal.com's public API v2 is called
+  // from the browser, so these are public identifiers, not secrets. Unset, a build shows only a link to
+  // the booking page (and the dev server simulates the flow). See .env.example.
+  env: {
+    schema: {
+      // a string, checked in FoundersCta: Astro's number parsing would read "123abc" as 123
+      PUBLIC_CAL_EVENT_TYPE_ID: envField.string({ context: "client", access: "public", optional: true }),
+      PUBLIC_CAL_BOOKING_URL: envField.string({ context: "client", access: "public", optional: true, url: true }),
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },
