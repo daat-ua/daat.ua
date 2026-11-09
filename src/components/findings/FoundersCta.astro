@@ -52,9 +52,9 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
   />
   <div class="founders-cta__text">
     <h2 class="founders-cta__title" id="founders-cta-title">
-      Ви говорите з тими, <strong>хто розбиратиме вашу компанію</strong>, а не з відділом продажу.
+      Ви говорите з тими, <strong>хто розбиратиме вашу компанію</strong>, а&nbsp;не з&nbsp;відділом продажу.
     </h2>
-    <p>Олена й Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
+    <p>Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
 
     {(live || demo) && (
       <>
@@ -83,7 +83,7 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
           <button class="btn btn--primary founders-cta__btn" type="button" data-more-btn aria-expanded="false">
             Обрати інший час
           </button>
-          <p class="founders-cta__assure">30 хв, онлайн, безкоштовно</p>
+          <p class="founders-cta__assure">30&nbsp;хв, онлайн, безкоштовно</p>
         </div>
 
         <form class="fc-step fc-form" data-step="form" hidden novalidate>
@@ -104,7 +104,7 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
                 aria-describedby="fc-name-err"
               />
               <label for="fc-name">
-                Ім'я <i>*</i>
+                Ім’я <i>*</i>
               </label>
               <span class="fc-error" id="fc-name-err" hidden>
                 Як до вас звертатися?
@@ -133,7 +133,8 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
             <label for="fc-company">Компанія</label>
           </div>
           <p class="fc-legal">
-            Запрошення прийде на цей email. Деталі обробки даних у <a href={privacyHref}>Політиці конфіденційності</a>.
+            Запрошення прийде на цей email. Деталі обробки даних у&nbsp;
+            <a href={privacyHref}>Політиці конфіденційності</a>.
           </p>
           <p class="fc-error fc-error--submit" data-submit-error role="alert" hidden />
           <button class="btn btn--primary founders-cta__btn" type="submit" data-submit>
@@ -154,9 +155,9 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
             <p class="fc-booked__when" data-booked-when tabindex="-1" />
           </div>
           <p>
-            Запрошення з посиланням на зустріч надіслано на <b data-booked-email />. До зустрічі!
+            Запрошення з&nbsp;посиланням на зустріч надіслано на <b data-booked-email />. До зустрічі!
           </p>
-          <p class="fc-booked__links">
+          <p class="fc-booked__links" data-booked-links>
             <a data-reschedule href="#" target="_blank" rel="noopener">
               Змінити час
             </a>
@@ -175,7 +176,7 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       <a class="btn btn--primary founders-cta__btn" href={PUBLIC_CAL_BOOKING_URL ?? "#"} target="_blank" rel="noopener">
         Обрати час для розмови
       </a>
-      <p class="founders-cta__assure">30 хв, онлайн, безкоштовно</p>
+      <p class="founders-cta__assure">30&nbsp;хв, онлайн, безкоштовно</p>
     </div>
   </div>
 </aside>
@@ -248,7 +249,14 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
         .sort((a, b) => a.start.getTime() - b.start.getTime());
     }
 
-    type Booking = { uid: string; start: string; end: string };
+    // what a booking reply should hold; read defensively, since it comes from outside
+    type Booking = { uid?: string; start?: string; end?: string };
+    /** status 0: no answer (timeout or network), so the booking may still have gone through */
+    class BookingError extends Error {
+      constructor(readonly status: number) {
+        super(`booking ${status}`);
+      }
+    }
     async function book(slot: Slot, name: string, email: string, company: string): Promise<Booking> {
       if (demo) {
         await new Promise((r) => setTimeout(r, 900));
@@ -260,24 +268,29 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       }
       const metadata: Record<string, string> = { finding, source: "daat.ua" };
       if (company) metadata.company = company.slice(0, 40);
-      const res = await fetch(`${API}/bookings`, {
-        method: "POST",
-        headers: { "cal-api-version": BOOKINGS_VERSION, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          start: slot.start.toISOString(),
-          eventTypeId,
-          attendee: { name, email, timeZone, language: "uk" },
-          metadata,
-        }),
-        signal: withTimeout(20000),
-      });
+      let res: Response;
+      try {
+        res = await fetch(`${API}/bookings`, {
+          method: "POST",
+          headers: { "cal-api-version": BOOKINGS_VERSION, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            start: slot.start.toISOString(),
+            eventTypeId,
+            attendee: { name, email, timeZone, language: "uk" },
+            metadata,
+          }),
+          signal: withTimeout(20000),
+        });
+      } catch {
+        throw new BookingError(0);
+      }
       const body = await res.json().catch(() => ({}));
       if (!res.ok || body.status !== "success") {
         // Cal.com says why (a missing booking field, a slot no longer free…): for whoever debugs it
         console.error("Cal.com booking failed", res.status, body?.error?.message ?? body, body?.error?.details ?? "");
-        throw new Error(`booking ${res.status}`);
+        throw new BookingError(res.status || 0);
       }
-      return body.data as Booking;
+      return (body.data ?? {}) as Booking;
     }
 
     // the dev server without an event type: working days ahead, a few free times each
@@ -498,6 +511,23 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       });
     }
 
+    // an error under the button, with the booking page as the way out
+    function submitError(text: string) {
+      show("form");
+      const err = $("[data-submit-error]");
+      err.textContent = text;
+      if (PUBLIC_CAL_BOOKING_URL) {
+        const a = document.createElement("a");
+        a.href = PUBLIC_CAL_BOOKING_URL;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = "або оберіть час на сторінці бронювання";
+        err.append(" ", a);
+      }
+      err.append(".");
+      err.hidden = false;
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!chosen || submit.disabled) return;
@@ -518,56 +548,62 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
       const spinner = document.createElement("span");
       spinner.className = "fc-spinner";
       submit.replaceChildren(spinner, " Бронюємо…");
+      let booking: Booking;
       try {
-        const booking = await book(
+        booking = await book(
           chosen,
           String(data.get("name")).trim(),
           String(data.get("email")).trim(),
           String(data.get("company") ?? "").trim(),
         );
-        const start = new Date(booking.start);
-        const end = new Date(booking.end);
-        $("[data-booked-when]").textContent =
-          `Зустріч заброньовано: ${fmtLong.format(start)}, ${fmtTime.format(start)}–${fmtTime.format(end)} (${zoneLabel})`;
-        $("[data-booked-email]").textContent = String(data.get("email")).trim();
-        $<HTMLAnchorElement>("[data-reschedule]").href = demo
-          ? "#founders-cta"
-          : `https://cal.com/reschedule/${booking.uid}`;
-        $<HTMLAnchorElement>("[data-cancel]").href = demo
-          ? "#founders-cta"
-          : `https://cal.com/booking/${booking.uid}?cancel=true`;
+      } catch (err) {
         form.removeAttribute("aria-busy");
-        await go("booked");
-      } catch {
-        form.removeAttribute("aria-busy");
-        // the slot may have gone meanwhile: fresh slots tell
-        let fresh: Slot[] = [];
-        try {
-          fresh = await fetchSlots();
-        } catch {}
-        if (fresh.length && !fresh.some((s) => s.start.getTime() === chosen!.start.getTime())) {
-          slots = fresh;
-          renderSlots();
-          const n = $("[data-notice]");
-          n.textContent = "Цей час щойно зайняли. Ось актуальні слоти.";
-          n.hidden = false;
-          await go("slots");
-          return;
+        const status = err instanceof BookingError ? err.status : 0;
+        // Cal.com refused it: the slot may have gone meanwhile, and fresh slots tell
+        if (status >= 400 && status < 500) {
+          let fresh: Slot[] = [];
+          try {
+            fresh = await fetchSlots();
+          } catch {}
+          if (fresh.length && !fresh.some((s) => s.start.getTime() === chosen!.start.getTime())) {
+            slots = fresh;
+            renderSlots();
+            const n = $("[data-notice]");
+            n.textContent = "Цей час щойно зайняли. Ось актуальні слоти.";
+            n.hidden = false;
+            await go("slots");
+            return;
+          }
         }
-        show("form");
-        const err = $("[data-submit-error]");
-        err.textContent = "Не вдалося забронювати. Спробуйте ще раз";
-        if (PUBLIC_CAL_BOOKING_URL) {
-          const a = document.createElement("a");
-          a.href = PUBLIC_CAL_BOOKING_URL;
-          a.target = "_blank";
-          a.rel = "noopener";
-          a.textContent = "або оберіть час на сторінці бронювання";
-          err.append(" ", a);
-        }
-        err.append(".");
-        err.hidden = false;
+        // no answer: the booking may have gone through, so no other slot is offered, only the inbox to check
+        submitError(
+          status === 0
+            ? "Не вдалося підтвердити бронювання. Перевірте пошту: якщо запрошення не прийде за кілька хвилин, спробуйте ще раз"
+            : "Не вдалося забронювати. Спробуйте ще раз",
+        );
+        return;
       }
+
+      // booked: rendered apart from the request, so nothing here can send the reader to book again
+      form.removeAttribute("aria-busy");
+      const parsed = (iso: string | undefined, fallback: Date) => {
+        const d = iso ? new Date(iso) : fallback;
+        return Number.isNaN(d.getTime()) ? fallback : d;
+      };
+      const start = parsed(booking.start, chosen.start);
+      const end = parsed(booking.end, new Date(start.getTime() + 30 * 6e4));
+      $("[data-booked-when]").textContent =
+        `Зустріч заброньовано: ${fmtLong.format(start)}, ${fmtTime.format(start)}–${fmtTime.format(end)} (${zoneLabel})`;
+      $("[data-booked-email]").textContent = String(data.get("email")).trim();
+      // without the booking's uid there is nothing to link: the invitation email has the same links
+      $("[data-booked-links]").hidden = !demo && !booking.uid;
+      $<HTMLAnchorElement>("[data-reschedule]").href = demo
+        ? "#founders-cta"
+        : `https://cal.com/reschedule/${booking.uid}`;
+      $<HTMLAnchorElement>("[data-cancel]").href = demo
+        ? "#founders-cta"
+        : `https://cal.com/booking/${booking.uid}?cancel=true`;
+      await go("booked");
     });
 
     // slots load when the block comes near, not with the page
