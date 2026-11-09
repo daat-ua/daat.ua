@@ -1,9 +1,13 @@
-// Visual parity: screenshots each section of the legacy single-file page and of the Astro build (dist/),
-// at several widths, and compares them pixel by pixel. The legacy page no longer lives in the tree; it's
-// read from git history (--legacy-ref, default: the last commit that had it), so the check stays usable
-// for regressions against the original design.
+// Visual check: screenshots each section of the ATLAS page in a reference and in the Astro build (dist/),
+// at several widths, and compares them pixel by pixel. Two references:
+// - --base-ref=<ref> (CI, on pull requests): the site as built at that ref (the PR's base branch), so only
+//   what the change itself does to the page shows up. The ref is checked out into a temporary git worktree,
+//   installed and built there.
+// - otherwise the original single-file page, read from git history (--legacy-ref, default: the last commit
+//   that had it), for checking the port against the original design.
 //
 //   npm run build && npm run test:visual
+//   npm run build && npm run test:visual -- --base-ref=origin/main
 //   npm run test:visual -- --widths=1440 --sections=hero,faq
 //   npm run test:visual -- --legacy-ref=<commit>
 //
@@ -56,6 +60,8 @@ const only = args.sections ? args.sections.split(",") : Object.keys(SECTIONS);
 const threshold = Number(args.threshold ?? 0.005); // share of differing pixels allowed per section
 const compareImages = Boolean(args.images);
 const legacyRef = args["legacy-ref"] ?? LEGACY_REF;
+const baseRef = typeof args["base-ref"] === "string" ? args["base-ref"] : null;
+const refName = baseRef ? "base" : "legacy";
 const allowMissing = Boolean(args["allow-missing"]);
 const HOST = "127.0.0.1"; // servers listen on loopback only
 
@@ -141,18 +147,29 @@ if (!existsSync(join(ROOT, "dist/uk-UA/atlas.html"))) {
 
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
-// extract the legacy page from git into a temporary folder
-const legacyDir = await mkdtemp(join(tmpdir(), "daat-legacy-"));
+// the reference: the site built at --base-ref, or the legacy page extracted from git
+const refDir = await mkdtemp(join(tmpdir(), `daat-${refName}-`));
 const rows = [];
 let failed = 0;
-let legacy, build, browser;
+let legacy, build, browser, refPath;
 try {
-  const archive = execFileSync("git", ["archive", legacyRef, "index.html", "assets", "fonts", "public/frames"], {
-    cwd: ROOT,
-    maxBuffer: 1 << 30,
-  });
-  execFileSync("tar", ["-x", "-C", legacyDir], { input: archive });
-  legacy = await serve(legacyDir);
+  if (baseRef) {
+    console.log(`Building ${baseRef} for reference…`);
+    const run = (cmd, argv) => execFileSync(cmd, argv, { cwd: refDir, stdio: ["ignore", "ignore", "inherit"] });
+    execFileSync("git", ["worktree", "add", "--detach", "--force", refDir, baseRef], { cwd: ROOT, stdio: "ignore" });
+    run("npm", ["ci", "--no-audit", "--no-fund"]);
+    run("npx", ["astro", "build"]);
+    legacy = await serve(join(refDir, "dist"));
+    refPath = "/uk-UA/atlas";
+  } else {
+    const archive = execFileSync("git", ["archive", legacyRef, "index.html", "assets", "fonts", "public/frames"], {
+      cwd: ROOT,
+      maxBuffer: 1 << 30,
+    });
+    execFileSync("tar", ["-x", "-C", refDir], { input: archive });
+    legacy = await serve(refDir);
+    refPath = "/index.html";
+  }
   build = await serve(join(ROOT, "dist"));
   browser = await chromium.launch({ channel: "chrome" });
   const context = await browser.newContext({ deviceScaleFactor: 1, reducedMotion: "reduce" });
@@ -161,11 +178,11 @@ try {
   for (const width of widths) {
     for (const name of only) {
       const selector = SECTIONS[name];
-      const before = await shoot(page, `http://${HOST}:${legacy.address().port}/index.html`, width, selector);
+      const before = await shoot(page, `http://${HOST}:${legacy.address().port}${refPath}`, width, selector);
       const after = await shoot(page, `http://${HOST}:${build.address().port}/uk-UA/atlas`, width, selector);
       if (!before || !after) {
         if (!allowMissing) failed++;
-        rows.push({ width, section: name, result: !before ? "missing in legacy" : "missing in build" });
+        rows.push({ width, section: name, result: !before ? `missing in ${refName}` : "missing in build" });
         continue;
       }
       const { ratio, diff, sizeMatch } = compare(before, after);
@@ -173,7 +190,7 @@ try {
       if (!ok) {
         failed++;
         const base = join(OUT, `${name}-${width}`);
-        await writeFile(`${base}-legacy.png`, PNG.sync.write(before));
+        await writeFile(`${base}-${refName}.png`, PNG.sync.write(before));
         await writeFile(`${base}-astro.png`, PNG.sync.write(after));
         await writeFile(`${base}-diff.png`, PNG.sync.write(diff));
       }
@@ -193,7 +210,12 @@ try {
   await browser?.close();
   legacy?.close();
   build?.close();
-  await rm(legacyDir, { recursive: true, force: true });
+  if (baseRef) {
+    try {
+      execFileSync("git", ["worktree", "remove", "--force", refDir], { cwd: ROOT, stdio: "ignore" });
+    } catch {}
+  }
+  await rm(refDir, { recursive: true, force: true });
 }
 
 console.table(rows);

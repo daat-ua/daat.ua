@@ -12,10 +12,10 @@ npm install
 npm run dev       # http://localhost:4321/uk-UA/atlas
 npm run build     # astro check + static build into dist/
 npm run preview   # serve dist/ locally
-npm run test:visual  # compare each section of the build with the original single-file page (needs a build)
+npm run test:visual  # compare each section of the build with a reference (needs a build; see below)
 ```
 
-`test:visual` screenshots every section of the original single-file page (read from git history, `--legacy-ref=<commit>`) and of `dist/` at 1440, 1280, 1024 and 500px wide and compares them pixel by pixel, using your installed Google Chrome. Options: `--widths=1440,500`, `--sections=hero,faq`, `--threshold=0.005`, `--allow-missing` (skip sections absent on either side instead of failing), `--images` (images are hidden by default, because Astro's resizing shifts their pixels without changing the design; their boxes are still compared). Diffs are saved to `tests/visual/output/`.
+`test:visual` screenshots every section of the ATLAS page in a reference and in `dist/` at 1440, 1280, 1024 and 500px wide and compares them pixel by pixel, using your installed Google Chrome. The reference is either another commit of the site, built in a temporary git worktree (`--base-ref=origin/main`), or by default the original single-file page (read from git history, `--legacy-ref=<commit>`). CI runs it on pull requests against the PR's base branch, so only what a change does to the page is flagged; a PR that changes the page on purpose gets the `visual-change` label, which skips the step. Options: `--widths=1440,500`, `--sections=hero,faq`, `--threshold=0.005`, `--allow-missing` (skip sections absent on either side instead of failing), `--images` (images are hidden by default, because Astro's resizing shifts their pixels without changing the design; their boxes are still compared). Diffs are saved to `tests/visual/output/`.
 
 ## Content (Sanity)
 

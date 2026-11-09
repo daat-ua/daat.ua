@@ -2,6 +2,8 @@ name: CI
 
 on:
   pull_request:
+    # labeled/unlabeled: adding or removing `visual-change` re-runs the checks
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
 
@@ -15,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # the visual check reads the original page from git history
+          fetch-depth: 0 # the visual check builds the PR's base branch from git history
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -25,8 +27,12 @@ jobs:
         run: npm run format:check
       - name: Type check and build
         run: npm run build
-      - name: Visual parity with the original page
-        run: npm run test:visual -- --widths=1440,500
+      # Only what a pull request changes on the ATLAS page: its build against its base branch's build. A PR that
+      # changes the page on purpose gets the `visual-change` label, which skips this step (diffs stay reviewable
+      # locally with `npm run test:visual -- --base-ref=origin/main`).
+      - name: Visual check against the base branch
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'visual-change')
+        run: npm run test:visual -- --base-ref=origin/${{ github.base_ref }} --widths=1440,500
       - name: Upload visual diffs
         if: failure()
         uses: actions/upload-artifact@v4
