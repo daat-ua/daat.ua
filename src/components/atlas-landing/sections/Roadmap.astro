@@ -1,5 +1,4 @@
 ---
-import ChevronMorph from "../../../assets/icons/chevron-morph.svg";
 import { horizons, impact } from "../../../data/roadmap";
 ---
 
@@ -115,30 +114,6 @@ import { horizons, impact } from "../../../data/roadmap";
               </tr>
             ))}
           </tbody>
-          <tbody class="impact__enablers" id="impact-enablers">
-            <tr class="impact__group">
-              <th scope="rowgroup" colspan="5">
-                <button class="impact__toggle" type="button" aria-expanded="false" aria-controls="impact-enablers">
-                  <ChevronMorph class="impact__icon" aria-hidden="true" />
-                  {impact.enablers.label}
-                </button>
-              </th>
-            </tr>
-            {impact.enablers.rows.map((row) => (
-              <tr class="impact__enabler" hidden>
-                <th scope="row" set:html={row.label} />
-                {row.cells.map((c) => (
-                  <td set:html={c} />
-                ))}
-              </tr>
-            ))}
-            <tr class="impact__total">
-              <th scope="row" set:html={impact.enablers.total.label} />
-              {impact.enablers.total.cells.map((c) => (
-                <td set:html={c} />
-              ))}
-            </tr>
-          </tbody>
         </table>
       </div>
     </div>
@@ -182,21 +157,6 @@ import { horizons, impact } from "../../../data/roadmap";
     });
     // clicking a horizon column selects its tab (keyboard users have the tabs themselves)
     panelOf(tab).addEventListener("click", () => select(tab));
-  }
-
-  // the enabler forecast folds under its sub-header (the total row stays visible)
-  const toggle = section.querySelector<HTMLButtonElement>(".impact__toggle");
-  if (toggle) {
-    const rows = [...section.querySelectorAll<HTMLElement>(".impact__enabler")];
-    toggle.addEventListener("click", () => {
-      const open = toggle.getAttribute("aria-expanded") !== "true";
-      toggle.setAttribute("aria-expanded", String(open));
-      rows.forEach((r, i) => {
-        r.hidden = !open;
-        r.classList.toggle("is-revealed", open);
-        r.style.animationDelay = open ? `${i * 30}ms` : "";
-      });
-    });
   }
 
   // the revenue table's H1–H3 columns select their horizon too (cells 2–4 → tabs 0–2)
@@ -470,6 +430,9 @@ import { horizons, impact } from "../../../data/roadmap";
     border-bottom: 1px solid rgb(237 233 222 / 0.12);
     transition: color 0.3s ease;
   }
+  .impact tbody tr:last-child :is(th, td) {
+    border-bottom: 0;
+  }
   .impact thead th {
     color: rgb(237 233 222 / 0.6);
     font-weight: 400;
@@ -544,73 +507,6 @@ import { horizons, impact } from "../../../data/roadmap";
     left: 75%; /* $3,0 млн of $4,0 млн */
     width: 2px;
     background: var(--c-night);
-  }
-  /* Enabler forecast: a merged sub-header row, then the enablers and a total */
-  .impact .impact__group th {
-    padding-top: var(--space-md);
-    color: var(--c-white);
-    font-size: var(--text-body);
-    font-weight: 600;
-  }
-  .impact__toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5em;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-  }
-  .impact__toggle:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1px;
-  }
-  .impact__icon {
-    flex: none;
-    width: 1.3em;
-    height: 1.3em;
-    overflow: visible;
-  }
-  .impact__icon path {
-    fill: none;
-    stroke: var(--c-peach);
-    stroke-width: 2px;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
-    transform-box: fill-box;
-    transform-origin: center;
-    transition: transform 0.4s var(--ease-out);
-  }
-  .impact__toggle[aria-expanded="true"] .chev--a {
-    transform: translateY(-7.5px) scaleY(0.83);
-  }
-  .impact__toggle[aria-expanded="true"] .chev--b {
-    transform: translateY(20px) scaleY(-0.83);
-  }
-  .impact__enabler.is-revealed {
-    animation: impact-reveal 0.35s var(--ease-out) both;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .impact__enabler.is-revealed {
-      animation: none;
-    }
-  }
-  @keyframes impact-reveal {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  .impact__total :is(th, td) {
-    border-top: 2px solid rgb(237 233 222 / 0.35);
-    color: var(--c-cream);
-    font-weight: 600;
   }
   .roadmap__poster,
   .roadmap__canvas {
