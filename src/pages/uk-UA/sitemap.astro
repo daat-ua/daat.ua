@@ -1,0 +1,172 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import FindingsLayout from "../../layouts/FindingsLayout.astro";
+import { enablerNames, type Enabler } from "../../data/enablers";
+import { legalLinks, menu, projects, toc, type Link } from "../../data/navigation";
+import { getFindingTeasers } from "../../sanity/findings";
+
+// The site map (DAA-219), modelled on bcg.com/sitemap: a section per part of the site, its sub-groups and their
+// links. It's rebuilt with the site: the findings come from Sanity at build time, and the menu's pages appear
+// as soon as their files exist under src/pages (until then the menu links to pages that aren't built yet).
+
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+const atlasHref = url("atlas");
+const catalogueHref = url("atlas/findings");
+
+// the pages built from files: "/src/pages/uk-UA/terms-of-use.astro" → "/uk-UA/terms-of-use"
+const routes = new Set(
+  Object.keys(import.meta.glob("/src/pages/**/*.astro"))
+    .filter((file) => !file.includes("["))
+    .map((file) => file.replace(/^\/src\/pages/, "").replace(/(\/index)?\.astro$/, "")),
+);
+const built = (links: Link[]) => links.filter((link) => routes.has(link.href.split("#")[0]));
+
+const teasers = await getFindingTeasers();
+const findingLinks = (enabler: Enabler | null) =>
+  teasers
+    .filter((t) => (t.enabler ?? null) === enabler && t.slug)
+    .map((t) => ({ label: t.title ?? t.slug!, href: url(`atlas/findings/${t.slug}`) }));
+
+interface Group {
+  title?: string;
+  links: Link[];
+}
+interface Section {
+  title: string;
+  href?: string;
+  groups: Group[];
+}
+
+const findingGroups: Group[] = [
+  ...(Object.entries(enablerNames) as [Enabler, string][]).map(([enabler, title]) => ({
+    title,
+    links: findingLinks(enabler),
+  })),
+  // findings whose enabler isn't chosen in the Studio yet still have pages
+  { title: "Інші знахідки", links: findingLinks(null) },
+];
+
+const companyLinks = built([
+  ...menu.flatMap((item) => ("href" in item ? [item] : [])),
+  ...projects,
+]);
+
+const sections: Section[] = [
+  {
+    title: "Діагностика ATLAS",
+    href: atlasHref,
+    groups: [{ title: "Розділи сторінки", links: toc.map(({ label, href }) => ({ label, href: atlasHref + href })) }],
+  },
+  { title: "Знахідки аудитів", href: catalogueHref, groups: findingGroups },
+  { title: "Про Daat", groups: [{ links: companyLinks }] },
+  { title: "Правова інформація", groups: [{ links: built(legalLinks).filter((l) => l.href !== url("sitemap")) }] },
+]
+  .map((section) => ({ ...section, groups: section.groups.filter((g) => g.links.length) }))
+  .filter((section) => section.groups.length || section.href);
+---
+
+<FindingsLayout
+  title="Карта сайту | Daat"
+  description="Усі сторінки daat.ua: діагностика ATLAS, знахідки аудитів і правова інформація."
+  heading="Карта сайту"
+>
+  <div class="wrap sitemap">
+    {
+      sections.map((section, i) => (
+        <section class="sitemap__section" aria-labelledby={`sitemap-${i}`}>
+          <h2 class="sitemap__title" id={`sitemap-${i}`}>
+            {section.href ? <a href={section.href}>{section.title}</a> : section.title}
+          </h2>
+          <div class="sitemap__groups">
+            {section.groups.map((group) => (
+              <div class="sitemap__group">
+                {group.title && <h3 class="sitemap__group-title">{group.title}</h3>}
+                <ul class:list={["sitemap__links", { "sitemap__links--cols": group.links.length > 4 }]}>
+                  {group.links.map((link) => (
+                    <li>
+                      <a href={link.href}>{link.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</FindingsLayout>
+
+<style>
+  /* BCG's site map, in this site's grid: a rule over each section, its title in the first column, the
+     sub-groups across the other two; the links in two columns once a group has more than a handful */
+  .sitemap {
+    padding-bottom: var(--space-3xl);
+  }
+  .sitemap__section {
+    display: grid;
+    grid-template-columns: var(--col) var(--span-2);
+    column-gap: var(--col-gap);
+    padding: var(--space-xl) 0;
+    border-top: 1px solid var(--rule);
+  }
+  .sitemap__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .sitemap a {
+    color: inherit;
+    text-decoration-line: none;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
+  }
+  .sitemap a:hover {
+    color: var(--c-primary);
+    text-decoration-line: underline;
+  }
+  .sitemap__groups {
+    display: grid;
+    row-gap: var(--space-lg);
+  }
+  .sitemap__group-title {
+    margin: 0 0 var(--space-sm);
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .sitemap__links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .sitemap__links li {
+    break-inside: avoid;
+    padding-bottom: var(--space-xs);
+  }
+  .sitemap__links--cols {
+    columns: 2;
+    column-gap: var(--col-gap);
+  }
+
+  @media (width < 64rem) {
+    .sitemap {
+      padding-bottom: 64px;
+    }
+    .sitemap__section {
+      grid-template-columns: 1fr;
+      row-gap: 24px;
+      padding: 32px 0;
+    }
+    .sitemap__links--cols {
+      columns: 1;
+    }
+  }
+</style>
