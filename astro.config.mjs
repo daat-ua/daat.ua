@@ -38,6 +38,7 @@ export default defineConfig({
   redirects: {
     "/": "/uk-UA/atlas",
     "/uk-UA": "/uk-UA/atlas",
+    "/sitemap": "/uk-UA/sitemap",
   },
   build: {
     format: "file",

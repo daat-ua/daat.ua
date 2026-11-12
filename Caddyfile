@@ -34,6 +34,7 @@
 	redir /uk-UA /uk-UA/atlas 302
 	redir /uk-UA/ /uk-UA/atlas 302
 	redir /uk-UA/atlas/ /uk-UA/atlas 301
+	redir /sitemap /uk-UA/sitemap 301
 
 	# findings on the previous daat.ua site moved to the ATLAS section (Sanity slugs are unchanged)
 	@oldFinding path_regexp oldFinding ^/insights/delivery-audit-findings/([^/]+)/?$

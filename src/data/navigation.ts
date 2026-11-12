@@ -1,6 +1,6 @@
 // Navigation copy: table of contents, global menu and footer.
-// TODO content: the about, case studies and Daat talks pages don't exist yet; cookie settings, site map and
-// social profiles are placeholders.
+// TODO content: the about, case studies and Daat talks pages don't exist yet; cookie settings and social
+// profiles are placeholders.
 
 export interface Link {
   label: string;
@@ -42,7 +42,8 @@ export const projects: Link[] = [{ label: "Daat talks", href: "/uk-UA/daat-talks
 export const legalLinks: Link[] = [
   { label: "Політика конфіденційності", href: "/uk-UA/privacy-policy" },
   { label: "Умови використання", href: "/uk-UA/terms-of-use" },
-  ...placeholder("Налаштування cookie", "Карта сайту"),
+  ...placeholder("Налаштування cookie"),
+  { label: "Карта сайту", href: "/uk-UA/sitemap" },
 ];
 
 export type SocialNetwork = "LinkedIn" | "Facebook" | "Instagram" | "YouTube";
