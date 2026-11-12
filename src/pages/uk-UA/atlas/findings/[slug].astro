@@ -291,9 +291,18 @@ const sectors = efforts.map(({ name, value }, i) => {
       try {
         closed = sessionStorage.getItem(key) === "1";
       } catch {}
+      // while the bar is up, other notices at the bottom (the cookie notice) rise above it by its height + a gap
+      const root = document.documentElement.style;
+      const space = () => {
+        const h = bar.dataset.shown === "true" ? bar.offsetHeight : 0; // 0 on desktop, where the bar isn't shown
+        if (h) root.setProperty("--call-bar-space", `${h + 8}px`);
+        else root.removeProperty("--call-bar-space");
+      };
+      new ResizeObserver(space).observe(bar); // its text can wrap on narrow phones or with larger text
       const set = (on: boolean) => {
         bar.dataset.shown = String(on);
         bar.inert = !on;
+        space();
       };
       let queued = false;
       const update = () => {
@@ -691,10 +700,6 @@ const sectors = efforts.map(({ name, value }, i) => {
     .call-bar[data-shown="false"] {
       opacity: 0;
       transform: translateY(calc(100% + 24px));
-    }
-    /* while the bar is up, other notices at the bottom (the cookie notice) sit above it: its height + a gap */
-    :global(body:has(.call-bar[data-shown="true"])) {
-      --call-bar-space: calc(53px + 8px);
     }
   }
   @media (width < 64rem) and (prefers-reduced-motion: reduce) {
