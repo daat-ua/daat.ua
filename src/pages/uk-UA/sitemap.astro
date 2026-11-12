@@ -22,11 +22,14 @@ const routes = new Set(
 );
 const built = (links: Link[]) => links.filter((link) => routes.has(link.href.split("#")[0]));
 
+// titles and labels are HTML (the brand's <span>); the findings' titles from Sanity are plain text, so escaped
+const escapeHtml = (s: string) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
+
 const teasers = await getFindingTeasers();
 const findingLinks = (enabler: Enabler | null) =>
   teasers
     .filter((t) => (t.enabler ?? null) === enabler && t.slug)
-    .map((t) => ({ label: t.title ?? t.slug!, href: url(`atlas/findings/${t.slug}`) }));
+    .map((t) => ({ label: escapeHtml(t.title ?? t.slug!), href: url(`atlas/findings/${t.slug}`) }));
 
 interface Group {
   title?: string;
@@ -56,7 +59,7 @@ const sections: Section[] = [
     groups: [{ title: "Розділи сторінки", links: toc.map(({ label, href }) => ({ label, href: atlasHref + href })) }],
   },
   { title: "Знахідки аудитів", href: catalogueHref, groups: findingGroups },
-  { title: "Про Daat", groups: [{ links: companyLinks }] },
+  { title: 'Про <span class="brand">Daat</span>', groups: [{ links: companyLinks }] },
   { title: "Правова інформація", groups: [{ links: built(legalLinks).filter((l) => l.href !== url("sitemap")) }] },
 ]
   .map((section) => ({ ...section, groups: section.groups.filter((g) => g.links.length) }))
@@ -72,7 +75,7 @@ const sections: Section[] = [
     {sections.map((section, i) => (
       <section class="sitemap__section" aria-labelledby={`sitemap-${i}`}>
         <h2 class="sitemap__title" id={`sitemap-${i}`}>
-          {section.href ? <a href={section.href}>{section.title}</a> : section.title}
+          {section.href ? <a href={section.href} set:html={section.title} /> : <Fragment set:html={section.title} />}
         </h2>
         <div class="sitemap__groups">
           {section.groups.map((group) => (
@@ -81,7 +84,7 @@ const sections: Section[] = [
               <ul class:list={["sitemap__links", { "sitemap__links--cols": group.links.length > 4 }]}>
                 {group.links.map((link) => (
                   <li>
-                    <a href={link.href}>{link.label}</a>
+                    <a href={link.href} set:html={link.label} />
                   </li>
                 ))}
               </ul>

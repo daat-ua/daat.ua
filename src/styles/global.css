@@ -191,6 +191,13 @@
 .nowrap {
   white-space: nowrap;
 }
+/* "Daat" as the logo draws it: the single-storey a (ss01, in both TT Turns and TT Commons); dlig too, which the
+   display titles use and which would otherwise be switched off inside them */
+.brand {
+  font-feature-settings:
+    "dlig" 1,
+    "ss01" 1;
+}
 /* the page's container: full width with the gutters (named `wrap` because Tailwind's `container` is a max-width box) */
 .wrap {
   position: relative;
