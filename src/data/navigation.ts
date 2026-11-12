@@ -2,6 +2,11 @@
 // TODO content: the about, case studies and Daat talks pages don't exist yet; cookie settings and social
 // profiles are placeholders.
 
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+/** A page's URL, the locale keeping its casing ("uk-UA", not "uk-ua") */
+const page = (path: string) => getRelativeLocaleUrl("uk-UA", path, { normalizeLocale: false });
+
 export interface Link {
   label: string;
   href: string;
@@ -40,10 +45,10 @@ export const menu: MenuItem[] = [
 export const projects: Link[] = [{ label: "Daat talks", href: "/uk-UA/daat-talks" }];
 
 export const legalLinks: Link[] = [
-  { label: "Політика конфіденційності", href: "/uk-UA/privacy-policy" },
-  { label: "Умови використання", href: "/uk-UA/terms-of-use" },
+  { label: "Політика конфіденційності", href: page("privacy-policy") },
+  { label: "Умови використання", href: page("terms-of-use") },
   ...placeholder("Налаштування cookie"),
-  { label: "Карта сайту", href: "/uk-UA/sitemap" },
+  { label: "Карта сайту", href: page("sitemap") },
 ];
 
 export type SocialNetwork = "LinkedIn" | "Facebook" | "Instagram" | "YouTube";
