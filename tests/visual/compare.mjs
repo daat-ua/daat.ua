@@ -108,6 +108,8 @@ async function settle(page) {
   await page.addStyleTag({
     content:
       "*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}" +
+      // the cookie notice floats over whatever section is on screen
+      ".cookie-consent{display:none!important}" +
       (compareImages ? "" : "img{visibility:hidden!important}"),
   });
   await page.waitForTimeout(300);
