@@ -316,7 +316,7 @@
   top: var(--space-sm);
   left: var(--space-sm);
   padding: 0.6em 0.75em 0.5em; /* fallback: TT Commons sits high, so a little more on top */
-  background: var(--c-primary);
+  background: var(--c-hero); /* the "Як працює ATLAS" navy */
   color: var(--c-white);
   font-size: calc(14 * var(--px));
   font-weight: 400;
