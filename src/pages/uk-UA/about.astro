@@ -5,15 +5,11 @@ import Footer from "../../components/Footer.astro";
 import TreeOfLife from "../../assets/images/tree-of-life.svg";
 import heroImage from "../../assets/images/about-hero.jpg";
 import externalIcon from "../../assets/icons/icon-link-external.svg?raw";
+import { founders, stats, type Founder } from "../../data/about";
 
 // About Daat (DAA-227): the copy of beta.daat.ua/about (the previous site's src/pages/about.astro), on this
 // site's grid. A first draft, to be adjusted: the hero photo fills the first screen, then the numbers and the
 // meaning of the name.
-
-const founders = [
-  { name: "Сергій Герасимов", href: "https://www.linkedin.com/in/serhiiherasymov/" },
-  { name: "Олена Кияновська", href: "https://www.linkedin.com/in/helenkyianovska/" },
-];
 
 // a link to another site: opens in a new tab, with the "external" icon inside it, kept on the line of the last word
 const icon = externalIcon
@@ -21,32 +17,9 @@ const icon = externalIcon
   .replace("<svg ", '<svg class="external-icon" aria-hidden="true" ');
 const external = (href: string, label: string) =>
   `<a href="${href}" target="_blank" rel="noopener">${label.replace(/(\S+)$/, `<span class="nowrap">$1${icon}</span>`)}</a>`;
-const link = (f: (typeof founders)[number]) => external(f.href, f.name);
+const link = (f: Founder) => external(f.href, f.name);
 // one string, so no line break sneaks a space in before the colon
 const lead = `<span class="brand">Daat</span> заснували ${link(founders[0])} та ${link(founders[1])}: понад 15 років вони працюють керівниками в українських і міжнародних <span class="nowrap">IT-компаніях</span>.`;
-
-const stats = [
-  {
-    title: "Рік заснування",
-    text: "Олена та Сергій перетворили багаторічний досвід керівників в IT на консалтинг для інших компаній.",
-    value: "2024",
-  },
-  {
-    title: "Проведені аудити",
-    text: "Діагностика зростання для сервісних компаній та продуктових команд різного масштабу.",
-    value: "30+",
-  },
-  {
-    title: "Років досвіду",
-    text: "Сумарний досвід команди в управлінні розробкою, процесами та продуктами.",
-    value: "25+",
-  },
-  {
-    title: "Фокус на результат",
-    text: "Кожен аудит завершується конкретним планом дій, а не абстрактними рекомендаціями.",
-    value: "100%",
-  },
-];
 ---
 
 <Base
@@ -264,7 +237,7 @@ const stats = [
     margin-top: auto;
     padding-top: var(--space-md);
     font-family: var(--font-display);
-    font-size: calc(72 * var(--px));
+    font-size: var(--text-display);
     font-weight: 600;
     line-height: 1;
   }
@@ -333,9 +306,6 @@ const stats = [
     }
     .about-stat {
       padding: 24px;
-    }
-    .about-stat strong {
-      font-size: 56px;
     }
     .about-name :global(.about-name__tree) {
       justify-self: center;
