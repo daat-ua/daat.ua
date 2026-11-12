@@ -2,6 +2,7 @@
 import { Font, getImage } from "astro:assets";
 import faviconSource from "../assets/images/favicon.png";
 import GlobalMenu from "../components/GlobalMenu.astro";
+import CookieConsent from "../components/CookieConsent.astro";
 import Header from "../components/Header.astro";
 import "../styles/global.css";
 
@@ -51,6 +52,7 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <Header />
     <slot />
     <GlobalMenu />
+    <CookieConsent />
     <script>
       import "../scripts/in-page-links";
     </script>
