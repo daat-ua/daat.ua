@@ -1,0 +1,345 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../../layouts/Base.astro";
+import Footer from "../../components/Footer.astro";
+import TreeOfLife from "../../assets/images/tree-of-life.svg";
+import heroImage from "../../assets/images/about-hero.jpg";
+import externalIcon from "../../assets/icons/icon-link-external.svg?raw";
+
+// About Daat (DAA-227): the copy of beta.daat.ua/about (the previous site's src/pages/about.astro), on this
+// site's grid. A first draft, to be adjusted: the hero photo fills the first screen, then the numbers and the
+// meaning of the name.
+
+const founders = [
+  { name: "Сергій Герасимов", href: "https://www.linkedin.com/in/serhiiherasymov/" },
+  { name: "Олена Кияновська", href: "https://www.linkedin.com/in/helenkyianovska/" },
+];
+
+// a link to another site: opens in a new tab, with the "external" icon inside it, kept on the line of the last word
+const icon = externalIcon
+  .replace(/ (width|height|color)="[^"]*"/g, "")
+  .replace("<svg ", '<svg class="external-icon" aria-hidden="true" ');
+const external = (href: string, label: string) =>
+  `<a href="${href}" target="_blank" rel="noopener">${label.replace(/(\S+)$/, `<span class="nowrap">$1${icon}</span>`)}</a>`;
+const link = (f: (typeof founders)[number]) => external(f.href, f.name);
+// one string, so no line break sneaks a space in before the colon
+const lead = `<span class="brand">Daat</span> заснували ${link(founders[0])} та ${link(founders[1])}: понад 15 років вони працюють керівниками в українських і міжнародних <span class="nowrap">IT-компаніях</span>.`;
+
+const stats = [
+  {
+    title: "Рік заснування",
+    text: "Олена та Сергій перетворили багаторічний досвід керівників в IT на консалтинг для інших компаній.",
+    value: "2024",
+  },
+  {
+    title: "Проведені аудити",
+    text: "Діагностика зростання для сервісних компаній та продуктових команд різного масштабу.",
+    value: "30+",
+  },
+  {
+    title: "Років досвіду",
+    text: "Сумарний досвід команди в управлінні розробкою, процесами та продуктами.",
+    value: "25+",
+  },
+  {
+    title: "Фокус на результат",
+    text: "Кожен аудит завершується конкретним планом дій, а не абстрактними рекомендаціями.",
+    value: "100%",
+  },
+];
+---
+
+<Base
+  title="Про нас | Daat"
+  description="Daat заснували Сергій Герасимов та Олена Кияновська: понад 15 років досвіду управління delivery в українських і міжнародних IT-компаніях."
+>
+  <main id="main" class="about">
+    <!-- ═══ First screen: the founders' photo, full width ═══ -->
+    <header class="about-hero">
+      <!-- WebP only: the photo's film grain makes AVIF larger than WebP at the same quality -->
+      <Picture
+        class="about-hero__photo"
+        src={heroImage}
+        alt="Олена Кияновська та Сергій Герасимов у студії"
+        formats={["webp"]}
+        fallbackFormat="webp"
+        widths={[640, 960, 1440, 1920, 2560, 3200]}
+        sizes="100vw"
+        quality={85}
+        loading="eager"
+        fetchpriority="high"
+        layout="none"
+      />
+      <div class="wrap about-hero__inner">
+        <h1 class="about-hero__title">
+          Про <span class="brand">Daat</span>
+        </h1>
+        <p class="about-hero__lead" set:html={lead} />
+        <p class="about-hero__lead">
+          Ми допомагаємо малим і середнім <span class="nowrap">IT-компаніям</span> з досвідом людей, які самі керували
+          командами, процесами й великими проєктами, а не з теорією.
+        </p>
+      </div>
+    </header>
+
+    <!-- ═══ The numbers ═══ -->
+    <section class="about-section" aria-labelledby="about-numbers">
+      <div class="wrap about-numbers">
+        <div>
+          <h2 class="about-heading" id="about-numbers">
+            <span class="brand">Daat</span> у цифрах
+          </h2>
+          <p class="about-note">Декілька фактів про те, хто ми і чому працюємо швидко.</p>
+        </div>
+        <ul class="about-stats">
+          {stats.map((s) => (
+            <li class="about-stat">
+              <h3>{s.title}</h3>
+              <p set:html={s.text} />
+              <strong>{s.value}</strong>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- ═══ The name ═══ -->
+    <section class="about-section" aria-labelledby="about-name">
+      <div class="wrap about-name">
+        <TreeOfLife class="about-name__tree" aria-hidden="true" />
+        <div class="about-name__text">
+          <h2 class="about-heading" id="about-name">
+            Що означає «<span class="brand">Daat</span>»
+          </h2>
+          <p>
+            <strong class="brand">Daat</strong> (דעת)&nbsp;— поняття з каббалістичної традиції, яке означає «знання» в
+            найглибшому сенсі: не просто накопичення інформації, а усвідомлене, прожите розуміння. На Дереві Життя{" "}
+            <span class="brand">Daat</span> займає унікальне місце&nbsp;— це невидима сефіра, яка з’єднує інтелектуальне
+            пізнання з практичною мудрістю. Вона знаходиться на перетині розуміння та дії, перетворюючи абстрактне
+            знання на реальний досвід.
+          </p>
+          <p>
+            Саме цю ідею ми вклали в назву компанії: ми не просто аналізуємо процеси&nbsp;— ми з’єднуємо глибоке
+            розуміння з конкретними діями. Кожен проєкт&nbsp;— це міст між тим, що команда знає, і тим, що вона робить.
+          </p>
+          <p>
+            <Fragment set:html={external("https://en.wikipedia.org/wiki/Da%27at", "Wikipedia для допитливих")} />
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .about {
+    --ink-soft: rgb(28 38 50 / 0.72);
+    --rule: rgb(28 38 50 / 0.12);
+    background: var(--c-paper);
+    color: var(--c-hero);
+    border-bottom: 1px solid var(--rule); /* sets the page off from the footer, as on the findings pages */
+  }
+  .about :global(a) {
+    color: inherit;
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
+  }
+  /* the "external" icon spans the x-height: its square is drawn 3 → 21 in a 24 box, so a box 4/3 ex tall,
+     dropped by its 1/8 margin, puts the drawing's top on the x-height and its bottom on the baseline */
+  .about :global(.external-icon) {
+    width: calc(4ex / 3);
+    height: calc(4ex / 3);
+    margin-left: 0.2em;
+    vertical-align: calc(-1ex / 6);
+  }
+  .about :global(a:hover) {
+    color: var(--c-primary);
+  }
+
+  /* ---------- First screen: the photo fills it; the text sits on the light wall, left ---------- */
+  .about-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    /* the first screen, but no taller than the photo at full width (3 : 2), so its sides aren't cut; taller
+       only when the text needs it */
+    min-height: min(calc(100svh - var(--header-h)), 66.667vw);
+    overflow: hidden;
+  }
+  .about-hero :global(.about-hero__photo),
+  .about-hero :global(.about-hero__photo img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 35%;
+  }
+  .about-hero__inner {
+    position: relative;
+    width: 100%;
+    padding-block: var(--space-3xl);
+  }
+  .about-hero__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: var(--leading-display);
+  }
+  .about-hero__lead {
+    max-width: calc(440 * var(--px));
+    margin: var(--space-lg) 0 0;
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+  .about-hero__lead + .about-hero__lead {
+    margin-top: var(--space-md);
+  }
+
+  /* ---------- Sections ---------- */
+  .about-section {
+    padding-block: var(--space-3xl);
+  }
+  /* sections follow one another without a rule, a smaller step apart */
+  .about-section + .about-section {
+    padding-top: 0;
+  }
+  .about-section:has(+ .about-section) {
+    padding-bottom: calc(var(--space-3xl) + var(--space-lg));
+  }
+  .about-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-heading);
+    font-weight: 500;
+    line-height: var(--leading-heading);
+  }
+  .about-note {
+    margin: var(--space-md) 0 0;
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+
+  /* the numbers: heading in the first column, a 2 × 2 grid of cards across the rest of the row */
+  .about-numbers {
+    display: grid;
+    grid-template-columns: var(--col) 1fr; /* the cards run to the right gutter */
+    column-gap: var(--col-gap);
+  }
+  .about-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .about-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-lg);
+    background: var(--c-paper);
+  }
+  .about-stat h3 {
+    margin: 0;
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .about-stat p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .about-stat strong {
+    margin-top: auto;
+    padding-top: var(--space-md);
+    font-family: var(--font-display);
+    font-size: calc(72 * var(--px));
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* the name: the Tree of Life in the first column, the text across the next two */
+  .about-name {
+    display: grid;
+    grid-template-columns: var(--col) var(
+        --span-2
+      ); /* the Tree of Life under the numbers' heading, the text beside it */
+    column-gap: var(--col-gap);
+    align-items: center;
+  }
+  .about-name__text p {
+    margin: var(--space-md) 0 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .about-name__text .about-heading + p {
+    margin-top: var(--space-lg);
+  }
+  .about-name :global(.about-name__tree) {
+    justify-self: start;
+    width: 100%;
+    max-width: calc(260 * var(--px));
+    height: auto;
+    color: rgb(28 38 50 / 0.7);
+  }
+
+  @media (width < 64rem) {
+    /* the photo on top, the text below it on the paper */
+    .about-hero {
+      display: block;
+      min-height: 0;
+    }
+    .about-hero :global(.about-hero__photo),
+    .about-hero :global(.about-hero__photo img) {
+      position: static;
+      display: block;
+      height: auto;
+      aspect-ratio: 3 / 2;
+    }
+    .about-hero__inner {
+      padding-block: 40px 16px;
+    }
+    .about-hero__lead {
+      max-width: none;
+      margin-top: 16px;
+    }
+    .about-section {
+      padding-block: 48px;
+    }
+    .about-section + .about-section {
+      padding-top: 0;
+    }
+    .about-section:has(+ .about-section) {
+      padding-bottom: 72px;
+    }
+    .about-numbers,
+    .about-name {
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+    }
+    .about-stats {
+      grid-template-columns: 1fr;
+    }
+    .about-stat {
+      padding: 24px;
+    }
+    .about-stat strong {
+      font-size: 56px;
+    }
+    .about-name :global(.about-name__tree) {
+      justify-self: center;
+      max-width: 200px;
+    }
+  }
+</style>
