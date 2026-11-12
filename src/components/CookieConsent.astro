@@ -1,7 +1,11 @@
 ---
+import { getRelativeLocaleUrl } from "astro:i18n";
+
 // Cookie notice (DAA-217), carried over from the previous site (src/components/layout/CookieConsent.astro): a
 // pill at the bottom right with one "OK". It slides in a moment after the page loads and, once accepted, never
 // shows again in that browser. The key is the previous site's, so visitors who accepted there aren't asked again.
+
+const policyHref = `${getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privacy-policy", { normalizeLocale: false })}#cookies`;
 ---
 
 <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Файли cookie" data-shown="false" hidden>
@@ -11,7 +15,7 @@
     </svg>
     <p class="cookie-consent__text">
       Ми використовуємо аналітичні файли cookie, щоб розуміти, як відвідувачі користуються сайтом.
-      <a href="/uk-UA/privacy-policy#cookies">Детальніше</a>
+      <a href={policyHref}>Детальніше</a>
     </p>
     <button class="cookie-consent__ok" type="button">
       OK
@@ -56,7 +60,8 @@
     bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
     transition:
       transform 0.5s var(--ease-out),
-      opacity 0.4s var(--ease-out);
+      opacity 0.4s var(--ease-out),
+      bottom 0.35s var(--ease-out);
   }
   .cookie-consent[data-shown="false"] {
     opacity: 0;
@@ -69,8 +74,8 @@
     gap: var(--space-sm);
     padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-md);
     border-radius: 999px;
-    background: rgb(28 38 50 / 0.9); /* --c-hero */
-    box-shadow: 0 10px 30px rgb(28 38 50 / 0.25);
+    background: color-mix(in srgb, var(--c-hero) 90%, transparent);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--c-hero) 25%, transparent);
     color: var(--c-white);
     backdrop-filter: blur(12px);
   }
@@ -101,7 +106,7 @@
     padding: 0.45em 1.15em 0.35em; /* TT Commons sits high */
     border: 0;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.15);
+    background: color-mix(in srgb, var(--c-white) 15%, transparent);
     color: inherit;
     font: inherit;
     font-size: calc(15 * var(--px));
@@ -110,10 +115,10 @@
     transition: background-color 0.12s ease;
   }
   .cookie-consent__ok:hover {
-    background: rgb(255 255 255 / 0.25);
+    background: color-mix(in srgb, var(--c-white) 25%, transparent);
   }
   .cookie-consent__ok:focus-visible {
-    outline: 2px solid rgb(255 255 255 / 0.6);
+    outline: 2px solid color-mix(in srgb, var(--c-white) 60%, transparent);
     outline-offset: 2px;
   }
 
@@ -129,7 +134,8 @@
   @media (width < 64rem) {
     .cookie-consent {
       right: 12px;
-      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      /* above the finding pages' call bar while it's up (they set --call-bar-space) */
+      bottom: calc(12px + var(--call-bar-space, 0px) + env(safe-area-inset-bottom, 0px));
       left: 12px;
       max-width: 480px;
       margin-inline: auto;

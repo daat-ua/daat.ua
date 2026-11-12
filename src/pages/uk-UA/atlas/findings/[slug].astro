@@ -692,6 +692,10 @@ const sectors = efforts.map(({ name, value }, i) => {
       opacity: 0;
       transform: translateY(calc(100% + 24px));
     }
+    /* while the bar is up, other notices at the bottom (the cookie notice) sit above it: its height + a gap */
+    :global(body:has(.call-bar[data-shown="true"])) {
+      --call-bar-space: calc(53px + 8px);
+    }
   }
   @media (width < 64rem) and (prefers-reduced-motion: reduce) {
     .call-bar {
