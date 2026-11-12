@@ -71,7 +71,7 @@ export const horizons: Horizon[] = [
       },
       {
         title: "Повторний аудит ATLAS",
-        text: '<span class="horizon__key">Відповідальні:</span> Daat + CEO · <span class="horizon__key">Готово, коли:</span> індекс зрілості переоцінено з вужчими інтервалами; прогрес підтверджено.',
+        text: '<span class="horizon__key">Відповідальні:</span> <span class="brand">Daat</span> + CEO · <span class="horizon__key">Готово, коли:</span> індекс зрілості переоцінено з вужчими інтервалами; прогрес підтверджено.',
       },
     ],
   },

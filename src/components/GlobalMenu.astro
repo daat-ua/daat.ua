@@ -58,7 +58,7 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
     <ul class="gmenu__minor">
       {projects.map((link) => (
         <li>
-          <a href={link.href}>{link.label}</a>
+          <a href={link.href} set:html={link.label} />
         </li>
       ))}
     </ul>
