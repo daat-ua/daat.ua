@@ -10,7 +10,7 @@ export interface Deliverable {
 export const deliverables: Deliverable[] = [
   {
     title: "Одне чесне число",
-    text: 'Індекс зрілості за шкалою <span class="nowrap">1–5</span>&nbsp;— для кожного енейблера й загалом&nbsp;— із довірчим інтервалом.',
+    text: 'Індекс зрілості за шкалою <span class="nowrap">1–5</span>&nbsp;— для кожної складової й загалом&nbsp;— із позначкою, наскільки оцінка надійна.',
     benefit: "Ви одразу бачите, наскільки компанія готова до наступного етапу зростання.",
   },
   {

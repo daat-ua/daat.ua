@@ -30,7 +30,7 @@ export const notes = [
 
 export const phases = [
   {
-    title: "Рамка",
+    title: "Ініціація",
     text: "Скоуп, доступи, NDA",
     artifact: "Хартія проєкту",
   },
