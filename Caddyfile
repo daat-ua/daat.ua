@@ -35,6 +35,7 @@
 	redir /uk-UA/ /uk-UA/atlas 302
 	redir /uk-UA/atlas/ /uk-UA/atlas 301
 	redir /sitemap /uk-UA/sitemap 301
+	redir /delivery-management /uk-UA/delivery-management 301
 
 	# case studies moved under the ATLAS section
 	@oldCases path_regexp oldCases ^/uk-UA/case-studies(/.*)?$

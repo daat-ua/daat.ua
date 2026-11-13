@@ -39,6 +39,7 @@ export default defineConfig({
     "/": "/uk-UA/atlas",
     "/uk-UA": "/uk-UA/atlas",
     "/sitemap": "/uk-UA/sitemap",
+    "/delivery-management": "/uk-UA/delivery-management",
   },
   build: {
     format: "file",
