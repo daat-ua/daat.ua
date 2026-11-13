@@ -4,6 +4,7 @@ import { PortableText, toPlainText } from "astro-portabletext";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
 import FindingsToc from "../../../../components/findings/FindingsToc.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
+import TocCta from "../../../../components/findings/TocCta.astro";
 import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
 import Heading from "../../../../components/portable-text/Heading.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
@@ -24,7 +25,7 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const finding = await sanityClient.fetch(FINDING_QUERY, { slug });
 if (!finding) throw new Error(`No finding with the slug "${slug}"`);
-// the founders' faces on the call to action under the efforts radar
+// the founders' faces on the phones' call bar
 const founders = await sanityClient.fetch(FOUNDERS_QUERY);
 
 const { title, image, author, teaser, body, summarisation } = finding;
@@ -212,28 +213,7 @@ const sectors = efforts.map(({ name, value }, i) => {
           </a>
         )}
         <!-- a quiet call to action that stays beside the article; leads to the founders' block -->
-        <div class="toc-cta">
-          {founders.length > 0 && (
-            <div class="toc-cta__faces">
-              {founders.map((f) => (
-                <img
-                  src={urlFor(f.photo!).width(80).height(80).fit("crop").url()}
-                  srcset={srcsetFor(f.photo!, [40, 80], 1)}
-                  sizes="40px"
-                  alt=""
-                  width="40"
-                  height="40"
-                  loading="lazy"
-                />
-              ))}
-            </div>
-          )}
-          <p class="toc-cta__title">Впізнали свою компанію?</p>
-          <p>
-            30&nbsp;хвилин із засновниками <span class="brand">Daat</span>. Без продажу.
-          </p>
-          <a href="#founders-cta">Записатися на дзвінок</a>
-        </div>
+        <TocCta title="Впізнали свою компанію?" />
       </FindingsToc>
     )}
   </div>
@@ -627,48 +607,6 @@ const sectors = efforts.map(({ name, value }, i) => {
   .finding-toc__tldr:hover span {
     text-decoration: underline;
     text-underline-offset: 0.2em;
-  }
-
-  /* "on this page": the quiet call to action at the list's foot, below the short-version link */
-  .toc-cta {
-    display: grid;
-    justify-items: start;
-    row-gap: var(--space-xs);
-    margin-top: var(--space-lg);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--rule);
-  }
-  .toc-cta__faces {
-    display: flex;
-    margin-bottom: var(--space-xs);
-  }
-  .toc-cta__faces img {
-    width: calc(40 * var(--px));
-    height: calc(40 * var(--px));
-    border: 2px solid var(--c-paper);
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  .toc-cta__faces img + img {
-    margin-left: calc(-10 * var(--px));
-  }
-  .toc-cta p {
-    margin: 0;
-    color: var(--ink-soft);
-  }
-  .toc-cta .toc-cta__title {
-    color: var(--c-hero);
-    font-weight: 600;
-  }
-  .toc-cta a {
-    margin-top: var(--space-xs);
-    color: var(--c-primary);
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-  .toc-cta a:hover {
-    color: var(--c-primary-hover);
   }
 
   /* ---------- Phones: the call bar ---------- */

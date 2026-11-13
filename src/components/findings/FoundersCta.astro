@@ -15,11 +15,19 @@ import foundersStudio from "../../assets/images/founders-studio-dark.jpg";
 // can be tried; a production build shows only the link, never made-up availability.
 
 interface Props {
-  /** the finding's slug: goes into the booking's metadata, so the founders see what led to the call */
+  /** the page's slug (a finding's, or "case:<slug>"): goes into the booking's metadata, so the founders see what
+   * led to the call */
   finding: string;
+  /** the heading and the line under it (HTML); a finding page's by default */
+  title?: string;
+  lead?: string;
 }
 
-const { finding } = Astro.props;
+const {
+  finding,
+  title = "Ви говорите з&nbsp;тими, <strong>хто розбиратиме вашу компанію</strong>, а&nbsp;не з&nbsp;відділом продажу.",
+  lead = "Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.",
+} = Astro.props;
 // the numeric ID (Cal.com → Event Types → the event: the number in its URL), not a booking-link hash
 if (PUBLIC_CAL_EVENT_TYPE_ID && !/^\d+$/.test(PUBLIC_CAL_EVENT_TYPE_ID)) {
   throw new Error(
@@ -51,10 +59,8 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
     layout="none"
   />
   <div class="founders-cta__text">
-    <h2 class="founders-cta__title" id="founders-cta-title">
-      Ви говорите з&nbsp;тими, <strong>хто розбиратиме вашу компанію</strong>, а&nbsp;не з&nbsp;відділом продажу.
-    </h2>
-    <p>Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови.</p>
+    <h2 class="founders-cta__title" id="founders-cta-title" set:html={title} />
+    <p set:html={lead} />
 
     {(live || demo) && (
       <>
@@ -662,7 +668,7 @@ const privacyHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "privac
     line-height: 1.15;
     text-wrap: balance;
   }
-  .founders-cta__title strong {
+  .founders-cta__title :global(strong) {
     font-weight: 500;
   }
   .founders-cta p {

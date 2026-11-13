@@ -1,0 +1,81 @@
+---
+import { sanityClient } from "../../sanity/client";
+import { srcsetFor, urlFor } from "../../sanity/image";
+import { FOUNDERS_QUERY } from "../../sanity/queries";
+
+// A quiet call to action at the foot of "on this page" (FindingsToc's slot), on finding and case pages: the
+// founders' faces, a question and a link down to the founders' block (#founders-cta), where the call is booked.
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const founders = await sanityClient.fetch(FOUNDERS_QUERY);
+---
+
+<div class="toc-cta">
+  {founders.length > 0 && (
+    <div class="toc-cta__faces">
+      {founders.map((f) => (
+        <img
+          src={urlFor(f.photo!).width(80).height(80).fit("crop").url()}
+          srcset={srcsetFor(f.photo!, [40, 80], 1)}
+          sizes="40px"
+          alt=""
+          width="40"
+          height="40"
+          loading="lazy"
+        />
+      ))}
+    </div>
+  )}
+  <p class="toc-cta__title" set:html={title} />
+  <p>
+    30&nbsp;хвилин із засновниками <span class="brand">Daat</span>. Без продажу.
+  </p>
+  <a href="#founders-cta">Записатися на дзвінок</a>
+</div>
+
+<style>
+  .toc-cta {
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-xs);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--rule);
+  }
+  .toc-cta__faces {
+    display: flex;
+    margin-bottom: var(--space-xs);
+  }
+  .toc-cta__faces img {
+    width: calc(40 * var(--px));
+    height: calc(40 * var(--px));
+    border: 2px solid var(--c-paper);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .toc-cta__faces img + img {
+    margin-left: calc(-10 * var(--px));
+  }
+  .toc-cta p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .toc-cta .toc-cta__title {
+    color: var(--c-hero);
+    font-weight: 600;
+  }
+  .toc-cta a {
+    margin-top: var(--space-xs);
+    color: var(--c-primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .toc-cta a:hover {
+    color: var(--c-primary-hover);
+  }
+</style>
