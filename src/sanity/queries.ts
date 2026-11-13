@@ -81,7 +81,7 @@ export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.curr
   horizons[]{ _key, tab, label, title, text },
   changes[]{ _key, metric, before, after, period },
   changesText,
-  testimonial{ quote, name, role, showName, transcript },
+  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },
   "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },
   seo_title,
   seo_description,
