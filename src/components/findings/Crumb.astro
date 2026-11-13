@@ -1,0 +1,53 @@
+---
+import ArrowLeft from "../../assets/icons/icon-arrow-left.svg";
+
+// The breadcrumb above a page title (findings, case studies): one link back, an arrow and a label.
+
+interface Props {
+  href: string;
+  label: string;
+}
+
+const { href, label } = Astro.props;
+---
+
+<nav aria-label="Хлібні крихти">
+  <a class="finding-crumb" href={href}>
+    <ArrowLeft class="finding-crumb__icon" aria-hidden="true" />
+    <span>{label}</span>
+  </a>
+</nav>
+
+<style>
+  .finding-crumb {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: top; /* an inline-flex box on the baseline would add the descender space below it */
+    gap: 0.35em;
+    /* the lead paragraph's type, in Medium */
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: var(--leading-body);
+    text-decoration-line: none; /* the longhands: the shorthand would reset the thickness */
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
+    transition: color 0.2s ease;
+  }
+  .finding-crumb:hover {
+    color: var(--c-primary);
+  }
+  /* only the words are underlined, not the arrow */
+  .finding-crumb:hover span {
+    text-decoration-line: underline;
+  }
+  .finding-crumb :global(.finding-crumb__icon) {
+    flex: none;
+    width: 1.2em;
+    height: 1.2em;
+    transition: translate 0.2s var(--ease-out);
+  }
+  /* the arrow nudges the way it points, as "Дивитися каталог" does on the ATLAS page */
+  .finding-crumb:is(:hover, :focus-visible) :global(.finding-crumb__icon) {
+    translate: -3px 0;
+  }
+</style>
