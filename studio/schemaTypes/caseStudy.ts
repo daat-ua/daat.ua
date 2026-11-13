@@ -173,7 +173,8 @@ export const caseStudy = defineType({
     // ---------- Key figures ----------
     defineField({
       name: 'figures',
-      description: 'Up to four figures under the first screen, e.g. "5" / "інтерв’ю з керівниками"',
+      description:
+        'Up to four figures under the first screen, e.g. "2,5 → 3,4" / "цільовий індекс зрілості за 18 місяців". Put the main result first: the case studies index shows the first one',
       type: 'array',
       group: 'figures',
       of: [
