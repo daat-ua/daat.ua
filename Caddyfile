@@ -36,6 +36,10 @@
 	redir /uk-UA/atlas/ /uk-UA/atlas 301
 	redir /sitemap /uk-UA/sitemap 301
 
+	# case studies moved under the ATLAS section
+	@oldCases path_regexp oldCases ^/uk-UA/case-studies(/.*)?$
+	redir @oldCases /uk-UA/atlas/case-studies{re.oldCases.1} 301
+
 	# findings on the previous daat.ua site moved to the ATLAS section (Sanity slugs are unchanged)
 	@oldFinding path_regexp oldFinding ^/insights/delivery-audit-findings/([^/]+)/?$
 	redir @oldFinding /uk-UA/atlas/findings/{re.oldFinding.1} 301

@@ -1,6 +1,6 @@
 import {ALL_FIELDS_GROUP, defineArrayMember, defineField, defineType} from 'sanity'
 
-// A case study (DAA-230): one field per block of the case page (src/pages/uk-UA/case-studies/[slug].astro),
+// A case study (DAA-230): one field per block of the case page (src/pages/uk-UA/atlas/case-studies/[slug].astro),
 // one tab per section of the page. Keys of the lists below are mapped to Ukrainian by the website
 // (src/data/case-studies.ts): keep them stable.
 
@@ -48,7 +48,7 @@ export const caseStudy = defineType({
     }),
     defineField({
       name: 'slug',
-      description: 'The URL: /uk-UA/case-studies/<slug>',
+      description: 'The URL: /uk-UA/atlas/case-studies/<slug>',
       type: 'slug',
       options: {source: 'title'},
       group: 'main',

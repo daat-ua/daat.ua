@@ -1,6 +1,5 @@
 // Navigation copy: table of contents, global menu and footer.
-// TODO content: the about, case studies and Daat talks pages don't exist yet; cookie settings and social
-// profiles are placeholders.
+// TODO content: the Daat talks page doesn't exist yet; cookie settings and social profiles are placeholders.
 
 import { getRelativeLocaleUrl } from "astro:i18n";
 
@@ -38,7 +37,7 @@ export const menu: MenuItem[] = [
     open: true,
   },
   { label: "Про нас", href: "/uk-UA/about" },
-  { label: "Кейси", href: "/uk-UA/case-studies" },
+  { label: "Кейси", href: "/uk-UA/atlas/case-studies" },
 ];
 
 /** "Наші проєкти": Daat's projects beside the consulting */

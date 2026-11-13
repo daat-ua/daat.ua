@@ -1,19 +1,19 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText } from "astro-portabletext";
-import Base from "../../../layouts/Base.astro";
-import Footer from "../../../components/Footer.astro";
-import Crumb from "../../../components/findings/Crumb.astro";
-import FindingsToc from "../../../components/findings/FindingsToc.astro";
-import TocCta from "../../../components/findings/TocCta.astro";
-import FoundersCta from "../../../components/findings/FoundersCta.astro";
-import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
-import { commissionedByNames, industryCompany, industryNames, maturityFields } from "../../../data/case-studies";
-import { cases as placeholderCases } from "../../../data/testimonials";
-import { enablerNames } from "../../../data/enablers";
-import { sanityClient } from "../../../sanity/client";
-import { srcsetFor, urlFor } from "../../../sanity/image";
-import { CASE_STUDY_QUERY, CASE_STUDY_SLUGS_QUERY, CASE_STUDY_TEASERS_QUERY } from "../../../sanity/queries";
+import Base from "../../../../layouts/Base.astro";
+import Footer from "../../../../components/Footer.astro";
+import Crumb from "../../../../components/findings/Crumb.astro";
+import FindingsToc from "../../../../components/findings/FindingsToc.astro";
+import TocCta from "../../../../components/findings/TocCta.astro";
+import FoundersCta from "../../../../components/findings/FoundersCta.astro";
+import Carousel, { type Teaser } from "../../../../components/ui/Carousel.astro";
+import { commissionedByNames, industryCompany, industryNames, maturityFields } from "../../../../data/case-studies";
+import { cases as placeholderCases } from "../../../../data/testimonials";
+import { enablerNames } from "../../../../data/enablers";
+import { sanityClient } from "../../../../sanity/client";
+import { srcsetFor, urlFor } from "../../../../sanity/image";
+import { CASE_STUDY_QUERY, CASE_STUDY_SLUGS_QUERY, CASE_STUDY_TEASERS_QUERY } from "../../../../sanity/queries";
 
 // A case study (DAA-230), after the mockup "Шаблон сторінки кейсу", in the findings pages' language: the
 // breadcrumb and title over the faded hero image with the client's profile beside them, the key figures, then
@@ -111,7 +111,7 @@ const toTeaser = (c: CaseTeaser): Teaser => ({
   },
   tag: c.cardTag || `${industryNames[c.industry]} · ${c.companySize}`,
   title: escape(c.title),
-  href: url(`case-studies/${c.slug}`),
+  href: url(`atlas/case-studies/${c.slug}`),
 });
 const others = [...picked, ...latest].filter((c) => c.heroImage?.asset).map(toTeaser);
 const otherTeasers = others.length ? others : placeholderCases;
@@ -137,8 +137,7 @@ const otherTeasers = others.length ? others : placeholderCases;
       </div>
       <div class="wrap case-hero__inner">
         <div class="case-hero__main">
-          <!-- TODO DAA-229: to /uk-UA/case-studies once the index exists; until then the ATLAS page's cases -->
-          <Crumb href={`${url("atlas")}#testimonials-and-case-studies`} label="Кейси" />
+          <Crumb href={url("atlas/case-studies")} label="Кейси" />
           <h1 class="case-hero__title">{study.title}</h1>
           <p class="case-hero__lead">{study.lead}</p>
         </div>
