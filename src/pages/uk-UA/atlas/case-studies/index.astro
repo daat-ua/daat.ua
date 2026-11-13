@@ -188,6 +188,11 @@ const intro =
   .cases :is(.cases-featured__media, .cases-row__media):hover img {
     transform: scale(1.03);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .cases :is(.cases-featured__media, .cases-row__media):hover img {
+      transform: none;
+    }
+  }
 
   /* ---------- The featured case: photo beside a navy panel ---------- */
   .cases-featured {
