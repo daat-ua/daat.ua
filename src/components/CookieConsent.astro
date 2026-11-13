@@ -58,8 +58,10 @@ const policyHref = `${getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "priv
     z-index: 6; /* above the page and the call bar (5), under the menu dialog (top layer) */
     right: var(--space-lg);
     bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
-    /* above the finding pages' call bar while it's up: they set --call-bar-space to its height + a gap */
-    translate: 0 calc(-1 * var(--call-bar-space, 0px));
+    /* above the finding pages' call bar while it's up (they set --call-bar-space to its height + a gap), but never
+       past the top of a short window (zoom, landscape phones): there it covers the bar until OK. In translate, 100%
+       is the notice's own height; 24px keeps the 12px phone inset at both ends */
+    translate: 0 calc(-1 * max(0px, min(var(--call-bar-space, 0px), 100dvh - 100% - 24px)));
     transition:
       transform 0.5s var(--ease-out),
       opacity 0.4s var(--ease-out),
