@@ -88,14 +88,18 @@ export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.curr
   no_index
 }`);
 
-/** Teaser cards for the case studies carousels, newest first */
+/** The case studies' teasers, newest first: the index page (featured case and list) and "other cases" carousels */
 export const CASE_STUDY_TEASERS_QUERY =
   defineQuery(`*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){
   _id,
   title,
   "slug": slug.current,
+  lead,
+  featured,
   cardTag,
   industry,
   companySize,
-  heroImage{ hotspot, crop, asset->{ _id } }
+  commissionedBy,
+  "figure": figures[0]{ value, label },
+  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }
 }`);

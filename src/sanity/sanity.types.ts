@@ -920,19 +920,29 @@ export type CASE_STUDY_QUERY_RESULT = {
 
 // Source: ../src/sanity/queries.ts
 // Variable: CASE_STUDY_TEASERS_QUERY
-// Query: *[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  cardTag,  industry,  companySize,  heroImage{ hotspot, crop, asset->{ _id } }}
+// Query: *[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  lead,  featured,  cardTag,  industry,  companySize,  commissionedBy,  "figure": figures[0]{ value, label },  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }}
 export type CASE_STUDY_TEASERS_QUERY_RESULT = Array<{
   _id: string;
   title: string;
   slug: string;
+  lead: string;
+  featured: boolean | null;
   cardTag: string | null;
   industry: "it-services" | "other" | "outstaffing" | "product";
   companySize: string;
+  commissionedBy: "ceo" | "coo" | "cto" | "founder-ceo" | "investor" | null;
+  figure: {
+    value: string;
+    label: string;
+  } | null;
   heroImage: {
     hotspot: SanityImageHotspot | null;
     crop: SanityImageCrop | null;
     asset: {
       _id: string;
+      metadata: {
+        lqip: string | null;
+      } | null;
     } | null;
   };
 }>;
@@ -946,7 +956,7 @@ declare global {
     '*[_type == "authors" && defined(photo.asset)] | order(name asc){\n  _id,\n  name,\n  photo{ hotspot, crop, asset->{ _id } }\n}': FOUNDERS_QUERY_RESULT;
     '*[_type == "caseStudy" && defined(slug.current)].slug.current': CASE_STUDY_SLUGS_QUERY_RESULT;
     '*[_type == "caseStudy" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  industry,\n  companySize,\n  market,\n  commissionedBy,\n  duration,\n  year,\n  figures[]{ _key, value, label },\n  context,\n  contextQuote,\n  phases[]{ _key, label, title, text },\n  phasesText,\n  findingsIntro,\n  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },\n  maturity,\n  roadmapLead,\n  horizons[]{ _key, tab, label, title, text },\n  changes[]{ _key, metric, before, after, period },\n  changesText,\n  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },\n  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },\n  seo_title,\n  seo_description,\n  no_index\n}': CASE_STUDY_QUERY_RESULT;
-    '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  cardTag,\n  industry,\n  companySize,\n  heroImage{ hotspot, crop, asset->{ _id } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
+    '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

@@ -1,20 +1,34 @@
 ---
-import { Picture } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
-import { caseListSample, featuredCaseSample } from "../../../../data/case-studies";
+import { commissionedByNames, industryNames } from "../../../../data/case-studies";
+import { sanityClient } from "../../../../sanity/client";
+import { srcsetFor, urlFor } from "../../../../sanity/image";
+import { CASE_STUDY_TEASERS_QUERY } from "../../../../sanity/queries";
 import heroImage from "../../../../assets/images/case-studies-hero.jpg";
 
 // The case studies index (DAA-229), design B4 of the "Case studies index" canvas: the findings pages' title
 // block, the featured case on navy with its main figure, then every other case as a wide row, photo and text
-// alternating sides; the founders' block closes the page. Placeholder content for now (src/data/case-studies.ts).
+// alternating sides; the founders' block closes the page. Cases: Sanity's published "Case Studies", newest
+// first; the featured one is the newest marked "featured", else the newest.
 
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 const caseHref = (slug: string) => url(`atlas/case-studies/${slug}`);
 
-const featured = featuredCaseSample;
+const all = (await sanityClient.fetch(CASE_STUDY_TEASERS_QUERY)).filter((c) => c.heroImage?.asset);
+const featured = all.find((c) => c.featured) ?? all[0];
+const rest = all.filter((c) => c !== featured);
+/** "IT-сервіси / аутсорс · ~50 людей · Засновник-CEO": the card tag (or industry and size), then who commissioned it */
+const meta = (c: (typeof all)[number]) =>
+  [
+    c.cardTag || `${industryNames[c.industry]} · ${c.companySize}`,
+    c.commissionedBy && commissionedByNames[c.commissionedBy],
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
 const intro =
   "Як діагностика ATLAS працювала в реальних компаніях: з чим прийшов клієнт, що знайшли і що змінилося. Назви компаній приховано за їхньою згодою.";
 ---
@@ -31,71 +45,88 @@ const intro =
   </p>
 
   <div class="wrap cases">
-    <!-- ═══ The featured case ═══ -->
-    <article class="cases-featured" aria-labelledby="cases-featured-title">
-      <a class="cases-featured__media" href={caseHref(featured.slug)} tabindex="-1" aria-hidden="true">
-        <Picture
-          src={featured.image}
-          alt=""
-          formats={["avif", "webp"]}
-          widths={[640, 960, 1280, 1920].filter((w) => w <= featured.image.width)}
-          sizes="(width < 64rem) 100vw, 50vw"
-          loading="eager"
-          layout="none"
-        />
-      </a>
-      <div class="cases-featured__text">
-        <p class="cases-meta">
-          {featured.tag} · {featured.role}
-        </p>
-        <h2 class="cases-featured__title" id="cases-featured-title">
-          <a href={caseHref(featured.slug)} set:html={featured.title} />
-        </h2>
-        <p set:html={featured.lead} />
-        {featured.figure && (
-          <p class="cases-featured__figure">
-            <strong set:html={featured.figure.value} />
-            <span>{featured.figure.label}</span>
-          </p>
-        )}
-        <a class="cases-button cases-button--primary" href={caseHref(featured.slug)}>
-          Читати кейс
+    {featured ? (
+      <article class="cases-featured" aria-labelledby="cases-featured-title">
+        <a
+          class="cases-featured__media"
+          href={caseHref(featured.slug)}
+          tabindex="-1"
+          aria-hidden="true"
+          style={
+            featured.heroImage.asset?.metadata?.lqip
+              ? `background-image: url(${featured.heroImage.asset.metadata.lqip})`
+              : undefined
+          }
+        >
+          <img
+            src={urlFor(featured.heroImage).width(960).url()}
+            srcset={srcsetFor(featured.heroImage, [640, 960, 1280, 1920])}
+            sizes="(width < 64rem) 100vw, 50vw"
+            alt=""
+          />
         </a>
-      </div>
-    </article>
+        <div class="cases-featured__text">
+          <p class="cases-meta">{meta(featured)}</p>
+          <h2 class="cases-featured__title" id="cases-featured-title">
+            <a href={caseHref(featured.slug)}>{featured.title}</a>
+          </h2>
+          <p>{featured.lead}</p>
+          {featured.figure?.value && (
+            <p class="cases-featured__figure">
+              <strong>{featured.figure.value}</strong>
+              <span>{featured.figure.label}</span>
+            </p>
+          )}
+          <a class="cases-button cases-button--primary" href={caseHref(featured.slug)}>
+            Читати кейс
+          </a>
+        </div>
+      </article>
+    ) : (
+      <p class="cases-empty">Кейси з’являться тут незабаром.</p>
+    )}
 
     <!-- ═══ Every other case: wide rows, photo and text alternating sides ═══ -->
-    <section class="cases-all" aria-labelledby="cases-all-title">
-      <h2 class="cases-all__title" id="cases-all-title">
-        Усі кейси
-      </h2>
-      {caseListSample.map((c) => (
-        <article class="cases-row">
-          <a class="cases-row__media" href={caseHref(c.slug)} tabindex="-1" aria-hidden="true">
-            <Picture
-              src={c.image}
-              alt=""
-              formats={["avif", "webp"]}
-              widths={[480, 640, 800].filter((w) => w <= c.image.width)}
-              sizes="(width < 64rem) 100vw, 50vw"
-              layout="none"
-            />
-          </a>
-          <div class="cases-row__text">
-            <p class="cases-meta">
-              {c.tag} · {c.role}
-            </p>
-            <h3 class="cases-row__title">
-              <a href={caseHref(c.slug)} set:html={c.title} />
-            </h3>
-            <p set:html={c.lead} />
-            <a class="cases-button cases-button--outline" href={caseHref(c.slug)}>
-              Читати кейс
+    {rest.length > 0 && (
+      <section class="cases-all" aria-labelledby="cases-all-title">
+        <h2 class="cases-all__title" id="cases-all-title">
+          Усі кейси
+        </h2>
+        {rest.map((c) => (
+          <article class="cases-row">
+            <a
+              class="cases-row__media"
+              href={caseHref(c.slug)}
+              tabindex="-1"
+              aria-hidden="true"
+              style={
+                c.heroImage.asset?.metadata?.lqip
+                  ? `background-image: url(${c.heroImage.asset.metadata.lqip})`
+                  : undefined
+              }
+            >
+              <img
+                src={urlFor(c.heroImage).width(800).height(500).fit("crop").url()}
+                srcset={srcsetFor(c.heroImage, [480, 800, 1200], 16 / 10)}
+                sizes="(width < 64rem) 100vw, 50vw"
+                alt=""
+                loading="lazy"
+              />
             </a>
-          </div>
-        </article>
-      ))}
-    </section>
+            <div class="cases-row__text">
+              <p class="cases-meta">{meta(c)}</p>
+              <h3 class="cases-row__title">
+                <a href={caseHref(c.slug)}>{c.title}</a>
+              </h3>
+              <p>{c.lead}</p>
+              <a class="cases-button cases-button--outline" href={caseHref(c.slug)}>
+                Читати кейс
+              </a>
+            </div>
+          </article>
+        ))}
+      </section>
+    )}
   </div>
 
   <!-- ═══ The founders, with booking a call in place ═══ -->
@@ -107,6 +138,10 @@ const intro =
 </FindingsLayout>
 
 <style>
+  .cases-empty {
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+  }
   .cases-intro {
     max-width: var(--span-2);
     margin: 0;
@@ -136,20 +171,21 @@ const intro =
     font-size: var(--text-small);
     line-height: var(--leading-small);
   }
+  /* Sanity's blurred preview (LQIP) shows until the photo loads */
   .cases :is(.cases-featured__media, .cases-row__media) {
     display: block;
     overflow: hidden;
     border-radius: 6px; /* as the carousels' cards */
-    background: var(--c-night);
+    background: var(--c-night) center / cover no-repeat;
   }
-  .cases :is(.cases-featured__media, .cases-row__media) :global(img) {
+  .cases :is(.cases-featured__media, .cases-row__media) img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.6s var(--ease-out);
   }
-  .cases :is(.cases-featured__media, .cases-row__media):hover :global(img) {
+  .cases :is(.cases-featured__media, .cases-row__media):hover img {
     transform: scale(1.03);
   }
 
@@ -168,7 +204,7 @@ const intro =
     min-height: 100%;
     border-radius: 0;
   }
-  .cases .cases-featured__media :global(img) {
+  .cases .cases-featured__media img {
     position: absolute;
     inset: 0;
   }
