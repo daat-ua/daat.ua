@@ -1,0 +1,312 @@
+---
+import { Picture } from "astro:assets";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
+import FoundersCta from "../../../../components/findings/FoundersCta.astro";
+import { caseListSample, featuredCaseSample } from "../../../../data/case-studies";
+import heroImage from "../../../../assets/images/case-studies-hero.jpg";
+
+// The case studies index (DAA-229), design B4 of the "Case studies index" canvas: the findings pages' title
+// block, the featured case on navy with its main figure, then every other case as a wide row, photo and text
+// alternating sides; the founders' block closes the page. Placeholder content for now (src/data/case-studies.ts).
+
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+const caseHref = (slug: string) => url(`atlas/case-studies/${slug}`);
+
+const featured = featuredCaseSample;
+const intro =
+  "Як діагностика ATLAS працювала в реальних компаніях: з чим прийшов клієнт, що знайшли і що змінилося. Назви компаній приховано за їхньою згодою.";
+---
+
+<FindingsLayout
+  title="Кейси | Daat"
+  description={intro}
+  image={heroImage}
+  crumb={{ href: url("atlas"), label: "ATLAS" }}
+  heading="Кейси"
+>
+  <p class="cases-intro" slot="hero">
+    {intro}
+  </p>
+
+  <div class="wrap cases">
+    <!-- ═══ The featured case ═══ -->
+    <article class="cases-featured" aria-labelledby="cases-featured-title">
+      <a class="cases-featured__media" href={caseHref(featured.slug)} tabindex="-1" aria-hidden="true">
+        <Picture
+          src={featured.image}
+          alt=""
+          formats={["avif", "webp"]}
+          widths={[640, 960, 1280, 1920].filter((w) => w <= featured.image.width)}
+          sizes="(width < 64rem) 100vw, 50vw"
+          loading="eager"
+          layout="none"
+        />
+      </a>
+      <div class="cases-featured__text">
+        <p class="cases-meta">
+          {featured.tag} · {featured.role}
+        </p>
+        <h2 class="cases-featured__title" id="cases-featured-title">
+          <a href={caseHref(featured.slug)} set:html={featured.title} />
+        </h2>
+        <p set:html={featured.lead} />
+        {featured.figure && (
+          <p class="cases-featured__figure">
+            <strong set:html={featured.figure.value} />
+            <span>{featured.figure.label}</span>
+          </p>
+        )}
+        <a class="cases-button cases-button--primary" href={caseHref(featured.slug)}>
+          Читати кейс
+        </a>
+      </div>
+    </article>
+
+    <!-- ═══ Every other case: wide rows, photo and text alternating sides ═══ -->
+    <section class="cases-all" aria-labelledby="cases-all-title">
+      <h2 class="cases-all__title" id="cases-all-title">
+        Усі кейси
+      </h2>
+      {caseListSample.map((c) => (
+        <article class="cases-row">
+          <a class="cases-row__media" href={caseHref(c.slug)} tabindex="-1" aria-hidden="true">
+            <Picture
+              src={c.image}
+              alt=""
+              formats={["avif", "webp"]}
+              widths={[480, 640, 800].filter((w) => w <= c.image.width)}
+              sizes="(width < 64rem) 100vw, 50vw"
+              layout="none"
+            />
+          </a>
+          <div class="cases-row__text">
+            <p class="cases-meta">
+              {c.tag} · {c.role}
+            </p>
+            <h3 class="cases-row__title">
+              <a href={caseHref(c.slug)} set:html={c.title} />
+            </h3>
+            <p set:html={c.lead} />
+            <a class="cases-button cases-button--outline" href={caseHref(c.slug)}>
+              Читати кейс
+            </a>
+          </div>
+        </article>
+      ))}
+    </section>
+  </div>
+
+  <!-- ═══ The founders, with booking a call in place ═══ -->
+  <FoundersCta
+    finding="case-studies"
+    title="Впізнали свою компанію? <strong>Розберімо її</strong> з&nbsp;тими, хто вів ці діагностики."
+    lead="Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови."
+  />
+</FindingsLayout>
+
+<style>
+  .cases-intro {
+    max-width: var(--span-2);
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .cases {
+    display: grid;
+    row-gap: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .cases a {
+    color: inherit;
+    text-decoration-line: none;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  .cases :is(.cases-featured__title, .cases-row__title) a:hover {
+    text-decoration-line: underline;
+  }
+  .cases p {
+    margin: 0;
+  }
+  .cases-meta {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .cases :is(.cases-featured__media, .cases-row__media) {
+    display: block;
+    overflow: hidden;
+    border-radius: 6px; /* as the carousels' cards */
+    background: var(--c-night);
+  }
+  .cases :is(.cases-featured__media, .cases-row__media) :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .cases :is(.cases-featured__media, .cases-row__media):hover :global(img) {
+    transform: scale(1.03);
+  }
+
+  /* ---------- The featured case: photo beside a navy panel ---------- */
+  .cases-featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--c-hero);
+    color: var(--c-cream);
+  }
+  /* the photo covers its half of the panel, however tall the text makes it */
+  .cases .cases-featured__media {
+    position: relative;
+    min-height: 100%;
+    border-radius: 0;
+  }
+  .cases .cases-featured__media :global(img) {
+    position: absolute;
+    inset: 0;
+  }
+  .cases-featured__text {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    row-gap: var(--space-md);
+    padding: var(--space-2xl);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .cases-featured .cases-meta {
+    color: rgb(237 233 222 / 0.7);
+  }
+  .cases-featured__title {
+    margin: 0;
+    color: var(--c-white);
+    font-family: var(--font-display);
+    font-size: var(--text-heading);
+    font-weight: 600;
+    line-height: var(--leading-heading);
+  }
+  .cases-featured__figure {
+    display: grid;
+    row-gap: var(--space-xs);
+    width: 100%;
+    padding-top: var(--space-md);
+    border-top: 1px solid rgb(237 233 222 / 0.15);
+  }
+  .cases-featured__figure strong {
+    color: var(--c-white);
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: 1;
+  }
+  .cases-featured__figure span {
+    color: rgb(237 233 222 / 0.7);
+    font-size: var(--text-small);
+  }
+
+  /* ---------- Every other case: alternating rows ---------- */
+  .cases-all {
+    display: grid;
+    row-gap: var(--space-2xl);
+  }
+  .cases-all__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .cases-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    align-items: center;
+  }
+  /* every second row puts its photo on the right */
+  .cases-row:nth-of-type(even) .cases-row__media {
+    order: 2;
+  }
+  .cases .cases-row__media {
+    aspect-ratio: 16 / 10;
+  }
+  .cases-row__text {
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-md);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .cases-row__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+
+  /* ---------- Buttons: blue on navy, outline on the paper ---------- */
+  .cases .cases-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: calc(52 * var(--px));
+    padding: 0 var(--space-lg);
+    border: 2px solid currentColor;
+    border-radius: 999px;
+    font-size: var(--text-small);
+    font-weight: 500;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .cases .cases-button--primary {
+    border-color: var(--c-primary);
+    background: var(--c-primary);
+    color: var(--c-on-primary);
+  }
+  .cases .cases-button--primary:hover {
+    border-color: var(--c-primary-hover);
+    background: var(--c-primary-hover);
+  }
+  .cases .cases-button--outline:hover {
+    background: var(--c-hero);
+    border-color: var(--c-hero);
+    color: var(--c-white);
+  }
+  .cases .cases-button:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  @media (width < 64rem) {
+    .cases {
+      row-gap: 64px;
+      padding-bottom: 64px;
+    }
+    .cases-featured,
+    .cases-row {
+      grid-template-columns: 1fr;
+    }
+    .cases .cases-featured__media {
+      aspect-ratio: 4 / 3;
+    }
+    .cases-featured__text {
+      padding: 24px;
+    }
+    .cases-row {
+      row-gap: 20px;
+    }
+    .cases-row:nth-of-type(even) .cases-row__media {
+      order: 0;
+    }
+    .cases .cases-button {
+      min-height: 48px;
+    }
+  }
+</style>
