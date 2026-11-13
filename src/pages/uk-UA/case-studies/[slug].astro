@@ -1,30 +1,83 @@
 ---
-import { Picture } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { PortableText } from "astro-portabletext";
 import Base from "../../../layouts/Base.astro";
 import Footer from "../../../components/Footer.astro";
 import Crumb from "../../../components/findings/Crumb.astro";
 import FindingsToc from "../../../components/findings/FindingsToc.astro";
 import TocCta from "../../../components/findings/TocCta.astro";
 import FoundersCta from "../../../components/findings/FoundersCta.astro";
-import Carousel from "../../../components/ui/Carousel.astro";
-import { caseStudies, type CaseStudy } from "../../../data/case-studies";
-import { cases } from "../../../data/testimonials";
-import { enablerNames, type Enabler } from "../../../data/enablers";
+import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
+import { commissionedByNames, industryCompany, industryNames, maturityFields } from "../../../data/case-studies";
+import { cases as placeholderCases } from "../../../data/testimonials";
+import { enablerNames } from "../../../data/enablers";
+import { sanityClient } from "../../../sanity/client";
+import { srcsetFor, urlFor } from "../../../sanity/image";
+import { CASE_STUDY_QUERY, CASE_STUDY_SLUGS_QUERY, CASE_STUDY_TEASERS_QUERY } from "../../../sanity/queries";
 
 // A case study (DAA-230), after the mockup "Шаблон сторінки кейсу", in the findings pages' language: the
-// breadcrumb and title with the client's profile beside them, the key figures, then the story on the left two
-// thirds with "on this page" (the findings pages' own) and its call to action on the right; the founders'
-// block (booking a call) and the other cases below. The copy is typed data in src/data/case-studies.ts.
+// breadcrumb and title over the faded hero image with the client's profile beside them, the key figures, then
+// the story on the left two thirds with "on this page" (the findings pages' own) and its call to action on the
+// right; the founders' block (booking a call) and the other cases below. Content: Sanity's "Case Studies"
+// (`caseStudy`); a section without content is left out, and so is its entry in "on this page".
 
-export function getStaticPaths() {
-  return caseStudies.map((study) => ({ params: { slug: study.slug }, props: { study } }));
+export async function getStaticPaths() {
+  const slugs = await sanityClient.fetch(CASE_STUDY_SLUGS_QUERY);
+  return slugs.map((slug) => ({ params: { slug } }));
 }
 
-const { study } = Astro.props as { study: CaseStudy };
+const { slug } = Astro.params;
+const study = await sanityClient.fetch(CASE_STUDY_QUERY, { slug });
+if (!study) throw new Error(`No case study with the slug "${slug}"`);
+
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
+const hero = study.heroImage;
+const lqip = hero.asset?.metadata?.lqip;
+
+const profile = [
+  { label: "Галузь", value: industryNames[study.industry] },
+  { label: "Розмір", value: study.companySize },
+  { label: "Ринок", value: study.market },
+  { label: "Замовник", value: study.commissionedBy ? commissionedByNames[study.commissionedBy] : null },
+  { label: "Тривалість", value: study.duration },
+  { label: "Рік", value: study.year ? String(study.year) : null },
+].filter((p): p is { label: string; value: string } => Boolean(p.value));
+
+// the maturity profile, highest first; the scale runs 1–5 and the marker is "Визначений" (3,0)
+const scores = study.maturity
+  ? (
+      Object.entries(maturityFields) as [
+        keyof typeof maturityFields,
+        (typeof maturityFields)[keyof typeof maturityFields],
+      ][]
+    )
+      .map(([field, enabler]) => [enabler, study.maturity![field]] as const)
+      .filter((pair): pair is [(typeof pair)[0], number] => typeof pair[1] === "number")
+      .sort((a, b) => b[1] - a[1])
+  : [];
+const DEFINED = 3;
+const pct = (v: number) => `${((v / 5) * 100).toFixed(1)}%`;
+const fmt = (v: number) => v.toFixed(1).replace(".", ",");
+
+const testimonial = study.testimonial?.quote ? study.testimonial : null;
+// named only with the client's written consent; otherwise "CEO, IT-сервісна компанія"
+const testimonialAuthor = testimonial
+  ? testimonial.showName && testimonial.name
+    ? [testimonial.name, testimonial.role].filter(Boolean).join(", ")
+    : `${testimonial.role || "Керівник"}, ${industryCompany[study.industry]}`
+  : "";
+
+const sections = {
+  context: Boolean(study.context?.length),
+  process: Boolean(study.phases?.length),
+  findings: Boolean(study.conclusions?.length),
+  maturity: scores.length > 0,
+  roadmap: study.horizons?.length === 3,
+  changes: Boolean(study.changes?.length || study.changesText?.length),
+  testimonial: Boolean(testimonial),
+};
 const toc = [
   { id: "context", label: "Контекст: з чим прийшов клієнт" },
   { id: "process", label: "Як проходила діагностика" },
@@ -33,235 +86,274 @@ const toc = [
   { id: "roadmap", label: "Дорожня карта зростання" },
   { id: "changes", label: "Що змінилося" },
   { id: "testimonial", label: "Відгук клієнта" },
-];
+].filter((item) => sections[item.id as keyof typeof sections]);
 
-// the maturity profile, highest first; the scale runs 1–5 and the marker is "Визначений" (3,0)
-const scores = (Object.entries(study.maturity.scores) as [Enabler, number][]).sort((a, b) => b[1] - a[1]);
-const DEFINED = 3;
-const pct = (v: number) => `${((v / 5) * 100).toFixed(1)}%`;
-const fmt = (v: number) => v.toFixed(1).replace(".", ",");
+// other cases: picked in the Studio, else the latest others; until there are any, the ATLAS page's examples
+type CaseTeaser = {
+  title: string;
+  slug: string;
+  cardTag: string | null;
+  industry: keyof typeof industryNames;
+  companySize: string;
+  heroImage: { asset: { _id: string } | null } & Record<string, unknown>;
+};
+const picked = (study.otherCases ?? []) as CaseTeaser[];
+const latest = picked.length
+  ? []
+  : ((await sanityClient.fetch(CASE_STUDY_TEASERS_QUERY)) as CaseTeaser[]).filter((c) => c.slug !== study.slug);
+const toTeaser = (c: CaseTeaser): Teaser => ({
+  image: {
+    src: urlFor(c.heroImage).width(640).height(640).fit("crop").url(),
+    srcset: srcsetFor(c.heroImage, [320, 480, 640, 800], 1),
+  },
+  tag: c.cardTag || `${industryNames[c.industry]} · ${c.companySize}`,
+  title: c.title,
+  href: url(`case-studies/${c.slug}`),
+});
+const others = [...picked, ...latest].filter((c) => c.heroImage?.asset).map(toTeaser);
+const otherTeasers = others.length ? others : placeholderCases;
 ---
 
-<Base title={`${study.title} | Кейси Daat`} description={study.lead.replace(/<[^>]+>/g, "")} noindex={study.draft}>
+<Base
+  title={`${study.seo_title || study.title} | Кейси Daat`}
+  description={study.seo_description || study.lead}
+  noindex={Boolean(study.no_index)}
+>
   <main id="main" class="case">
     <!-- ═══ Hero: the breadcrumb, title and lead; the client's profile beside them ═══ -->
     <header class="case-hero">
-      <!-- the artwork fades into the paper, as on a finding's page -->
-      <div class="case-hero__art" aria-hidden="true">
-        <Picture
-          src={study.image}
-          alt=""
-          formats={["avif", "webp"]}
-          fallbackFormat="webp"
-          widths={[640, 960, 1440, 1920, 2400].filter((w) => w <= study.image.width)}
+      <!-- the artwork fades into the paper, as on a finding's page; its blurred preview shows until it loads -->
+      <div class="case-hero__art" aria-hidden="true" style={lqip ? `background-image: url(${lqip})` : undefined}>
+        <img
+          src={urlFor(hero).width(1440).url()}
+          srcset={srcsetFor(hero, [640, 960, 1440, 1920, 2400])}
           sizes="100vw"
-          loading="eager"
+          alt=""
           fetchpriority="high"
-          layout="none"
         />
       </div>
       <div class="wrap case-hero__inner">
         <div class="case-hero__main">
           <Crumb href={url("case-studies")} label="Кейси" />
-          <h1 class="case-hero__title" set:html={study.title} />
-          <p class="case-hero__lead" set:html={study.lead} />
+          <h1 class="case-hero__title">{study.title}</h1>
+          <p class="case-hero__lead">{study.lead}</p>
         </div>
-        <aside class="case-profile" aria-labelledby="case-profile-title">
-          <h2 class="case-profile__title" id="case-profile-title">
-            Профіль клієнта
-          </h2>
-          <dl>
-            {study.profile.map((p) => (
-              <div>
-                <dt>{p.label}</dt>
-                <dd>{p.href ? <a href={p.href} set:html={p.value} /> : <Fragment set:html={p.value} />}</dd>
-              </div>
-            ))}
-          </dl>
-        </aside>
+        {profile.length > 0 && (
+          <aside class="case-profile" aria-labelledby="case-profile-title">
+            <h2 class="case-profile__title" id="case-profile-title">
+              Профіль клієнта
+            </h2>
+            <dl>
+              {profile.map((p) => (
+                <div>
+                  <dt>{p.label}</dt>
+                  <dd>{p.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </aside>
+        )}
       </div>
     </header>
 
     <!-- ═══ Key figures, as the About page's "Daat у цифрах" ═══ -->
-    <div class="wrap">
-      <ul class="case-figures">
-        {study.figures.map((f) => (
-          <li>
-            <span set:html={f.label} />
-            <strong set:html={f.value} />
-          </li>
-        ))}
-      </ul>
-    </div>
+    {study.figures && study.figures.length > 0 && (
+      <div class="wrap">
+        <ul class="case-figures" style={`--n: ${study.figures.length}`}>
+          {study.figures.map((f) => (
+            <li>
+              <span>{f.label}</span>
+              <strong>{f.value}</strong>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
 
     <!-- ═══ The story, with "on this page" and its call to action beside it ═══ -->
     <div class="wrap case-layout">
       <article class="case-body">
-        <section id="context" class="case-section">
-          <h2>Контекст: з чим прийшов клієнт</h2>
-          {study.context.paragraphs.map((p) => (
-            <p set:html={p} />
-          ))}
-          <blockquote class="case-quote">
-            <p set:html={`«${study.context.quote}»`} />
-          </blockquote>
-        </section>
+        {sections.context && (
+          <section id="context" class="case-section">
+            <h2>Контекст: з чим прийшов клієнт</h2>
+            <PortableText value={study.context!} />
+            {study.contextQuote && (
+              <blockquote class="case-quote">
+                <p>«{study.contextQuote}»</p>
+              </blockquote>
+            )}
+          </section>
+        )}
 
-        <section id="process" class="case-section">
-          <h2>Як проходила діагностика</h2>
-          <ol class="case-phases">
-            {study.phases.map((ph) => (
-              <li>
-                <p class="case-phases__label" set:html={ph.label} />
-                <h3 set:html={ph.title} />
-                <p set:html={ph.text} />
-              </li>
-            ))}
-          </ol>
-          {study.phasesText.map((p) => (
-            <p set:html={p} />
-          ))}
-        </section>
-
-        <section id="findings" class="case-section">
-          <h2>Що знайшла діагностика</h2>
-          <p set:html={study.findings.intro} />
-          <ol class="case-conclusions">
-            {study.findings.items.map((item, i) => (
-              <li>
-                <p class="case-conclusions__label">Висновок {i + 1}</p>
-                <h3 set:html={item.title} />
-                <p set:html={item.text} />
-                <p class="case-conclusions__finding">
-                  Знахідка аудиту:{" "}
-                  {item.finding.slug ? (
-                    <a href={url(`atlas/findings/${item.finding.slug}`)} set:html={item.finding.label} />
-                  ) : (
-                    <span set:html={item.finding.label} />
-                  )}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section id="maturity" class="case-section">
-          <h2>Профіль зрілості за складовими</h2>
-          <table class="case-table case-maturity">
-            <thead>
-              <tr>
-                <th scope="col">Складова зрілості</th>
-                <th scope="col">Індекс</th>
-                <th scope="col">1–5 · риска&nbsp;— «Визначений» (3,0)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {scores.map(([enabler, value]) => (
-                <tr>
-                  <th scope="row">{enablerNames[enabler]}</th>
-                  <td class="case-maturity__value">{fmt(value)}</td>
-                  <td>
-                    <span class="case-maturity__bar" style={`--v: ${pct(value)}; --mark: ${pct(DEFINED)}`} />
-                  </td>
-                </tr>
+        {sections.process && (
+          <section id="process" class="case-section">
+            <h2>Як проходила діагностика</h2>
+            <ol class="case-phases" style={`--n: ${study.phases!.length}`}>
+              {study.phases!.map((ph) => (
+                <li>
+                  <p class="case-phases__label">{ph.label}</p>
+                  <h3>{ph.title}</h3>
+                  {ph.text && <p>{ph.text}</p>}
+                </li>
               ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th scope="row">Загальний індекс зрілості</th>
-                <td class="case-maturity__value">{fmt(study.maturity.total)}</td>
-                <td set:html={study.maturity.totalNote} />
-              </tr>
-            </tfoot>
-          </table>
-        </section>
+            </ol>
+            {study.phasesText && <PortableText value={study.phasesText} />}
+          </section>
+        )}
 
-        <!-- the ATLAS page's roadmap, without its animation: a tab per horizon, the selected column at full strength -->
-        <section id="roadmap" class="case-section case-roadmap">
-          <h2>Дорожня карта зростання</h2>
-          <p set:html={study.roadmap.lead} />
-          <div class="audience-tabs case-roadmap__tabs" role="tablist" aria-label="Горизонти дорожньої карти">
-            {study.roadmap.horizons.map((h, i) => (
-              <button
-                class="audience-tab"
-                type="button"
-                role="tab"
-                id={`case-tab-${i}`}
-                aria-controls={`case-panel-${i}`}
-                aria-selected={i === 0 ? "true" : "false"}
-                tabindex={i === 0 ? 0 : -1}
-              >
-                <span class="audience-tab__title" set:html={h.tab} />
-              </button>
-            ))}
-          </div>
-          <div class="case-horizons">
-            {study.roadmap.horizons.map((h, i) => (
-              <div
-                class:list={["case-horizon", { "is-active": i === 0 }]}
-                role="tabpanel"
-                id={`case-panel-${i}`}
-                aria-labelledby={`case-tab-${i}`}
-                aria-hidden={i === 0 ? undefined : "true"}
-              >
-                <p class="case-horizon__label" set:html={h.label} />
-                <h3 set:html={h.title} />
-                <p set:html={h.text} />
-              </div>
-            ))}
-          </div>
-          <a class="case-roadmap__more" href={`${url("atlas")}#roadmap`}>
-            Як будується дорожня карта ATLAS&nbsp;→
-          </a>
-        </section>
+        {sections.findings && (
+          <section id="findings" class="case-section">
+            <h2>Що знайшла діагностика</h2>
+            {study.findingsIntro && <p>{study.findingsIntro}</p>}
+            <ol class="case-conclusions">
+              {study.conclusions!.map((item, i) => {
+                const label = item.findingLabel || item.finding?.title;
+                return (
+                  <li>
+                    <p class="case-conclusions__label">Висновок {i + 1}</p>
+                    <h3>{item.title}</h3>
+                    <p>{item.text}</p>
+                    {label && (
+                      <p class="case-conclusions__finding">
+                        Знахідка аудиту:{" "}
+                        {item.finding?.slug ? (
+                          <a href={url(`atlas/findings/${item.finding.slug}`)}>{label}</a>
+                        ) : (
+                          <span>{label}</span>
+                        )}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
 
-        <section id="changes" class="case-section">
-          <h2>Що змінилося</h2>
-          <table class="case-table case-changes">
-            <thead>
-              <tr>
-                <th scope="col">Показник</th>
-                <th scope="col">До</th>
-                <th scope="col">Після</th>
-                <th scope="col">Період</th>
-              </tr>
-            </thead>
-            <tbody>
-              {study.changes.rows.map((r) => (
+        {sections.maturity && (
+          <section id="maturity" class="case-section">
+            <h2>Профіль зрілості за складовими</h2>
+            <table class="case-table case-maturity">
+              <thead>
                 <tr>
-                  <th scope="row" set:html={r.metric} />
-                  <td set:html={r.before} />
-                  <td class="case-changes__after" set:html={r.after} />
-                  <td set:html={r.period} />
+                  <th scope="col">Складова зрілості</th>
+                  <th scope="col">Індекс</th>
+                  <th scope="col">1–5 · риска&nbsp;— «Визначений» (3,0)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {study.changes.text.map((p) => (
-            <p set:html={p} />
-          ))}
-        </section>
-
-        <section id="testimonial" class="case-section">
-          <h2>Відгук клієнта</h2>
-          <!-- TODO: the client's video; a placeholder until there is one -->
-          <div class="case-video" role="img" aria-label="Відеовідгук клієнта (буде додано)">
-            <span class="case-video__note">Відеовідгук · 16:9</span>
-            <span class="case-video__play" aria-hidden="true"></span>
-          </div>
-          <blockquote class="case-testimonial">
-            <p set:html={`«${study.testimonial.quote}»`} />
-            <footer>
-              <span set:html={study.testimonial.author} />
-              {study.testimonial.transcriptHref && (
-                <>
-                  {" · "}
-                  <a href={study.testimonial.transcriptHref}>Читати транскрипт</a>
-                </>
+              </thead>
+              <tbody>
+                {scores.map(([enabler, value]) => (
+                  <tr>
+                    <th scope="row">{enablerNames[enabler]}</th>
+                    <td class="case-maturity__value">{fmt(value)}</td>
+                    <td>
+                      <span class="case-maturity__bar" style={`--v: ${pct(value)}; --mark: ${pct(DEFINED)}`} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {typeof study.maturity?.total === "number" && (
+                <tfoot>
+                  <tr>
+                    <th scope="row">Загальний індекс зрілості</th>
+                    <td class="case-maturity__value">{fmt(study.maturity.total)}</td>
+                    <td>{study.maturity.totalNote}</td>
+                  </tr>
+                </tfoot>
               )}
-            </footer>
-          </blockquote>
-        </section>
+            </table>
+          </section>
+        )}
+
+        {sections.roadmap && (
+          <section id="roadmap" class="case-section case-roadmap">
+            <h2>Дорожня карта зростання</h2>
+            {study.roadmapLead && <p>{study.roadmapLead}</p>}
+            <div class="audience-tabs case-roadmap__tabs" role="tablist" aria-label="Горизонти дорожньої карти">
+              {study.horizons!.map((h, i) => (
+                <button
+                  class="audience-tab"
+                  type="button"
+                  role="tab"
+                  id={`case-tab-${i}`}
+                  aria-controls={`case-panel-${i}`}
+                  aria-selected={i === 0 ? "true" : "false"}
+                  tabindex={i === 0 ? 0 : -1}
+                >
+                  <span class="audience-tab__title nowrap">{h.tab}</span>
+                </button>
+              ))}
+            </div>
+            <div class="case-horizons">
+              {study.horizons!.map((h, i) => (
+                <div
+                  class:list={["case-horizon", { "is-active": i === 0 }]}
+                  role="tabpanel"
+                  id={`case-panel-${i}`}
+                  aria-labelledby={`case-tab-${i}`}
+                  aria-hidden={i === 0 ? undefined : "true"}
+                >
+                  <p class="case-horizon__label">{h.label}</p>
+                  <h3>{h.title}</h3>
+                  {h.text && <p>{h.text}</p>}
+                </div>
+              ))}
+            </div>
+            <a class="case-roadmap__more" href={`${url("atlas")}#roadmap`}>
+              Як будується дорожня карта ATLAS&nbsp;→
+            </a>
+          </section>
+        )}
+
+        {sections.changes && (
+          <section id="changes" class="case-section">
+            <h2>Що змінилося</h2>
+            {study.changes && study.changes.length > 0 && (
+              <table class="case-table case-changes">
+                <thead>
+                  <tr>
+                    <th scope="col">Показник</th>
+                    <th scope="col">До</th>
+                    <th scope="col">Після</th>
+                    <th scope="col">Період</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {study.changes.map((r) => (
+                    <tr>
+                      <th scope="row">{r.metric}</th>
+                      <td>{r.before}</td>
+                      <td class="case-changes__after">{r.after}</td>
+                      <td>{r.period}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {study.changesText && <PortableText value={study.changesText} />}
+          </section>
+        )}
+
+        {testimonial && (
+          <section id="testimonial" class="case-section">
+            <h2>Відгук клієнта</h2>
+            <!-- TODO: the client's video (where videos live is still to be decided); a placeholder until then -->
+            <div class="case-video" role="img" aria-label="Відеовідгук клієнта (буде додано)">
+              <span class="case-video__note">Відеовідгук · 16:9</span>
+              <span class="case-video__play" aria-hidden="true" />
+            </div>
+            <blockquote class="case-testimonial">
+              <p>«{testimonial.quote}»</p>
+              <footer>{testimonialAuthor}</footer>
+            </blockquote>
+            {testimonial.transcript && testimonial.transcript.length > 0 && (
+              <details class="case-transcript">
+                <summary>Читати транскрипт</summary>
+                <PortableText value={testimonial.transcript} />
+              </details>
+            )}
+          </section>
+        )}
       </article>
 
       <FindingsToc items={toc}>
@@ -284,7 +376,7 @@ const fmt = (v: number) => v.toFixed(1).replace(".", ",");
         </h2>
         <Carousel
           label="Інші кейси"
-          items={cases}
+          items={otherTeasers}
           more="Читати кейс"
           prevLabel="Попередні кейси"
           nextLabel="Наступні кейси"
@@ -344,8 +436,9 @@ const fmt = (v: number) => v.toFixed(1).replace(".", ",");
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
-  .case p {
-    margin: 0;
+  .case p,
+  .case-body :global(p) {
+    margin: 0; /* the sections' grids space the paragraphs, Portable Text's included */
   }
   .case h2 {
     margin: 0;
@@ -381,12 +474,16 @@ const fmt = (v: number) => v.toFixed(1).replace(".", ",");
     overflow: hidden;
   }
   .case-hero__art,
-  .case-hero__art :global(img) {
+  .case-hero__art img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  /* the blurred preview (Sanity's LQIP) shows until the artwork loads */
+  .case-hero__art {
+    background: center / cover no-repeat;
   }
   .case-hero__art::after {
     content: "";
@@ -466,9 +563,10 @@ const fmt = (v: number) => v.toFixed(1).replace(".", ",");
   }
 
   /* ---------- Key figures: the About page's cards ---------- */
+  /* one column per figure (up to four), so there are no empty cells */
   .case-figures {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
     gap: 1px;
     margin: 0;
     padding: 0;
@@ -536,7 +634,7 @@ const fmt = (v: number) => v.toFixed(1).replace(".", ",");
   }
   .case-phases {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
     gap: var(--space-md);
   }
   .case-phases li {
@@ -756,6 +854,18 @@ const fmt = (v: number) => v.toFixed(1).replace(".", ",");
   .case-testimonial footer {
     color: var(--ink-soft);
     font-size: var(--text-small);
+  }
+  .case-transcript summary {
+    color: var(--c-primary);
+    font-size: var(--text-small);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .case-transcript[open] summary {
+    margin-bottom: var(--space-sm);
+  }
+  .case-transcript :global(p + p) {
+    margin-top: var(--space-sm);
   }
 
   /* ---------- Other cases: the ATLAS page's carousel under its subheading ---------- */

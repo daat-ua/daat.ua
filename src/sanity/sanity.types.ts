@@ -15,18 +15,25 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
-export type AuthorsReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "authors";
-};
-
 export type SanityImageAssetReference = {
   _ref: string;
   _type: "reference";
   _weak?: boolean;
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type PostReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "post";
+};
+
+export type CaseStudyReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "caseStudy";
 };
 
 export type CaseStudy = {
@@ -37,9 +44,32 @@ export type CaseStudy = {
   _rev: string;
   title: string;
   slug: Slug;
-  author: AuthorsReference;
-  tags?: Array<string>;
-  teaser?: Array<{
+  lead: string;
+  heroImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  cardTag?: string;
+  publishedAt?: string;
+  featured?: boolean;
+  industry: "it-services" | "product" | "outstaffing" | "other";
+  companySize: string;
+  market?: string;
+  commissionedBy?: "founder-ceo" | "ceo" | "cto" | "coo" | "investor";
+  duration?: string;
+  year?: number;
+  anonymised?: boolean;
+  clientApproved?: boolean;
+  figures?: Array<{
+    value: string;
+    label: string;
+    _type: "figure";
+    _key: string;
+  }>;
+  context: Array<{
     children?: Array<{
       marks?: Array<string>;
       text?: string;
@@ -57,37 +87,118 @@ export type CaseStudy = {
     _type: "block";
     _key: string;
   }>;
-  body?: Array<
-    | {
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
+  contextQuote?: string;
+  phases?: Array<{
+    label: string;
+    title: string;
+    text?: string;
+    _type: "phase";
+    _key: string;
+  }>;
+  phasesText?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  findingsIntro?: string;
+  conclusions?: Array<{
+    title: string;
+    text: string;
+    finding?: PostReference;
+    findingLabel?: string;
+    _type: "conclusion";
+    _key: string;
+  }>;
+  maturity?: {
+    strategy_portfolio: number;
+    structure_governance: number;
+    delivery_operating_system: number;
+    engineering_delivery_culture: number;
+    leadership_decision_making: number;
+    people_capacity: number;
+    capabilities_competency: number;
+    total: number;
+    totalNote?: string;
+  };
+  roadmapLead?: string;
+  horizons?: Array<{
+    tab: string;
+    label: string;
+    title: string;
+    text?: string;
+    _type: "horizon";
+    _key: string;
+  }>;
+  changes?: Array<{
+    metric: string;
+    before?: string;
+    after?: string;
+    period?: string;
+    _type: "change";
+    _key: string;
+  }>;
+  changesText?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  testimonial?: {
+    quote: string;
+    name?: string;
+    role?: string;
+    showName?: boolean;
+    transcript?: Array<{
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
         _key: string;
-      }
-    | {
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        _type: "image";
+      }>;
+      style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
         _key: string;
-      }
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }>;
+  };
+  otherCases?: Array<
+    {
+      _key: string;
+    } & CaseStudyReference
   >;
   seo_title?: string;
   seo_description?: string;
-  seo_keywords?: Array<string>;
   seo_image?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -96,6 +207,8 @@ export type CaseStudy = {
     alt?: string;
     _type: "image";
   };
+  canonical?: string;
+  seo_keywords?: Array<string>;
   no_index?: boolean;
 };
 
@@ -119,6 +232,13 @@ export type Slug = {
   _type: "slug";
   current: string;
   source?: string;
+};
+
+export type AuthorsReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "authors";
 };
 
 export type BlogPost = {
@@ -442,12 +562,14 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
-  | AuthorsReference
   | SanityImageAssetReference
+  | PostReference
+  | CaseStudyReference
   | CaseStudy
   | SanityImageCrop
   | SanityImageHotspot
   | Slug
+  | AuthorsReference
   | BlogPost
   | Post
   | Authors
@@ -616,6 +738,205 @@ export type FOUNDERS_QUERY_RESULT = Array<{
   };
 }>;
 
+// Source: ../src/sanity/queries.ts
+// Variable: CASE_STUDY_SLUGS_QUERY
+// Query: *[_type == "caseStudy" && defined(slug.current)].slug.current
+export type CASE_STUDY_SLUGS_QUERY_RESULT = Array<string>;
+
+// Source: ../src/sanity/queries.ts
+// Variable: CASE_STUDY_QUERY
+// Query: *[_type == "caseStudy" && slug.current == $slug][0]{  _id,  title,  "slug": slug.current,  lead,  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },  industry,  companySize,  market,  commissionedBy,  duration,  year,  figures[]{ _key, value, label },  context,  contextQuote,  phases[]{ _key, label, title, text },  phasesText,  findingsIntro,  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },  maturity,  roadmapLead,  horizons[]{ _key, tab, label, title, text },  changes[]{ _key, metric, before, after, period },  changesText,  testimonial{ quote, name, role, showName, transcript },  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },  seo_title,  seo_description,  no_index}
+export type CASE_STUDY_QUERY_RESULT = {
+  _id: string;
+  title: string;
+  slug: string;
+  lead: string;
+  heroImage: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+      metadata: {
+        lqip: string | null;
+        dimensions: {
+          width: number;
+          height: number;
+        } | null;
+      } | null;
+    } | null;
+  };
+  industry: "it-services" | "other" | "outstaffing" | "product";
+  companySize: string;
+  market: string | null;
+  commissionedBy: "ceo" | "coo" | "cto" | "founder-ceo" | "investor" | null;
+  duration: string | null;
+  year: number | null;
+  figures: Array<{
+    _key: string;
+    value: string;
+    label: string;
+  }> | null;
+  context: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  contextQuote: string | null;
+  phases: Array<{
+    _key: string;
+    label: string;
+    title: string;
+    text: string | null;
+  }> | null;
+  phasesText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }> | null;
+  findingsIntro: string | null;
+  conclusions: Array<{
+    _key: string;
+    title: string;
+    text: string;
+    findingLabel: string | null;
+    finding: {
+      title: string;
+      slug: string;
+    } | null;
+  }> | null;
+  maturity: {
+    strategy_portfolio: number;
+    structure_governance: number;
+    delivery_operating_system: number;
+    engineering_delivery_culture: number;
+    leadership_decision_making: number;
+    people_capacity: number;
+    capabilities_competency: number;
+    total: number;
+    totalNote?: string;
+  } | null;
+  roadmapLead: string | null;
+  horizons: Array<{
+    _key: string;
+    tab: string;
+    label: string;
+    title: string;
+    text: string | null;
+  }> | null;
+  changes: Array<{
+    _key: string;
+    metric: string;
+    before: string | null;
+    after: string | null;
+    period: string | null;
+  }> | null;
+  changesText: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }> | null;
+  testimonial: {
+    quote: string;
+    name: string | null;
+    role: string | null;
+    showName: boolean | null;
+    transcript: Array<{
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
+        _key: string;
+      }>;
+      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
+        _key: string;
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }> | null;
+  } | null;
+  otherCases: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    cardTag: string | null;
+    industry: "it-services" | "other" | "outstaffing" | "product";
+    companySize: string;
+    heroImage: {
+      hotspot: SanityImageHotspot | null;
+      crop: SanityImageCrop | null;
+      asset: {
+        _id: string;
+      } | null;
+    };
+  }> | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  no_index: boolean | null;
+} | null;
+
+// Source: ../src/sanity/queries.ts
+// Variable: CASE_STUDY_TEASERS_QUERY
+// Query: *[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  cardTag,  industry,  companySize,  heroImage{ hotspot, crop, asset->{ _id } }}
+export type CASE_STUDY_TEASERS_QUERY_RESULT = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  cardTag: string | null;
+  industry: "it-services" | "other" | "outstaffing" | "product";
+  companySize: string;
+  heroImage: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  };
+}>;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -623,6 +944,9 @@ declare global {
     '*[_type == "post" && slug.current == $slug][0]{\n  title,\n  "slug": slug.current,\n  image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  art_description,\n  artist,\n  "author": author.author->{\n    name,\n    bio,\n    linkedin_link,\n    photo{ alt, hotspot, crop, asset->{ _id } }\n  },\n  teaser,\n  body,\n  summarisation,\n  "efforts": [\n    efforts_strategic_management,\n    efforts_delivery_excellence,\n    efforts_sales,\n    efforts_marketing,\n    efforts_company_operations,\n    efforts_people_management,\n    efforts_financial_control\n  ],\n  seo_title,\n  seo_description,\n  no_index\n}': FINDING_QUERY_RESULT;
     '*[_type == "post" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  enabler,\n  image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': FINDING_TEASERS_QUERY_RESULT;
     '*[_type == "authors" && defined(photo.asset)] | order(name asc){\n  _id,\n  name,\n  photo{ hotspot, crop, asset->{ _id } }\n}': FOUNDERS_QUERY_RESULT;
+    '*[_type == "caseStudy" && defined(slug.current)].slug.current': CASE_STUDY_SLUGS_QUERY_RESULT;
+    '*[_type == "caseStudy" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  industry,\n  companySize,\n  market,\n  commissionedBy,\n  duration,\n  year,\n  figures[]{ _key, value, label },\n  context,\n  contextQuote,\n  phases[]{ _key, label, title, text },\n  phasesText,\n  findingsIntro,\n  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },\n  maturity,\n  roadmapLead,\n  horizons[]{ _key, tab, label, title, text },\n  changes[]{ _key, metric, before, after, period },\n  changesText,\n  testimonial{ quote, name, role, showName, transcript },\n  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },\n  seo_title,\n  seo_description,\n  no_index\n}': CASE_STUDY_QUERY_RESULT;
+    '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  cardTag,\n  industry,\n  companySize,\n  heroImage{ hotspot, crop, asset->{ _id } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too
