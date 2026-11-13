@@ -1,7 +1,8 @@
 import { defineQuery } from "groq";
 
-// GROQ queries for the "Delivery audit findings" collection (`post` in the Studio). Types are generated
-// from these by `npm run typegen` (src/sanity/sanity.types.ts), and sanityClient.fetch() returns them.
+// GROQ queries for the "Delivery audit findings" (`post`) and "Case Studies" (`caseStudy`) collections. Types
+// are generated from these by `npm run typegen` (src/sanity/sanity.types.ts), and sanityClient.fetch() returns
+// them.
 
 /** Slugs of all findings, for getStaticPaths */
 export const FINDING_SLUGS_QUERY = defineQuery(`*[_type == "post" && defined(slug.current)].slug.current`);
@@ -50,4 +51,51 @@ export const FOUNDERS_QUERY = defineQuery(`*[_type == "authors" && defined(photo
   _id,
   name,
   photo{ hotspot, crop, asset->{ _id } }
+}`);
+
+/** Slugs of all case studies, for getStaticPaths */
+export const CASE_STUDY_SLUGS_QUERY = defineQuery(`*[_type == "caseStudy" && defined(slug.current)].slug.current`);
+
+/** One case study, everything its page shows */
+export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.current == $slug][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  lead,
+  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
+  industry,
+  companySize,
+  market,
+  commissionedBy,
+  duration,
+  year,
+  figures[]{ _key, value, label },
+  context,
+  contextQuote,
+  phases[]{ _key, label, title, text },
+  phasesText,
+  findingsIntro,
+  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },
+  maturity,
+  roadmapLead,
+  horizons[]{ _key, tab, label, title, text },
+  changes[]{ _key, metric, before, after, period },
+  changesText,
+  testimonial{ quote, name, role, showName, transcript },
+  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },
+  seo_title,
+  seo_description,
+  no_index
+}`);
+
+/** Teaser cards for the case studies carousels, newest first */
+export const CASE_STUDY_TEASERS_QUERY =
+  defineQuery(`*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){
+  _id,
+  title,
+  "slug": slug.current,
+  cardTag,
+  industry,
+  companySize,
+  heroImage{ hotspot, crop, asset->{ _id } }
 }`);
