@@ -1,0 +1,353 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import Base from "../../../layouts/Base.astro";
+import Footer from "../../../components/Footer.astro";
+import Crumb from "../../../components/findings/Crumb.astro";
+import FindingsToc from "../../../components/findings/FindingsToc.astro";
+import TocCta from "../../../components/findings/TocCta.astro";
+import FoundersCta from "../../../components/findings/FoundersCta.astro";
+import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
+import { episodes, thumbnail, thumbnailSrcset, timecode, type Episode } from "../../../data/delivery-management";
+
+// An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
+// faded behind the title, the player across the content width (YouTube loads only when the reader presses play),
+// the episode retold as prose with "on this page" beside it, each section starting the video at its moment;
+// then the other episodes as the site's carousel and the founders' block.
+
+export function getStaticPaths() {
+  return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode } }));
+}
+
+const { episode } = Astro.props as { episode: Episode };
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+
+const sections = episode.sections.map((s, i) => ({ ...s, id: `part-${i + 1}` }));
+const watchUrl = (start = 0) => `https://www.youtube.com/watch?v=${episode.youtubeId}${start ? `&t=${start}s` : ""}`;
+
+// card titles go to the carousel as HTML, so the plain-text titles are escaped
+const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const others: Teaser[] = episodes
+  .filter((e) => e.slug !== episode.slug)
+  .map((e) => ({
+    image: { src: thumbnail(e.youtubeId, "mqdefault"), srcset: thumbnailSrcset(e.youtubeId) },
+    title: escape(e.title),
+    href: url(`delivery-management/${e.slug}`),
+  }));
+---
+
+<Base title={`${episode.title} | Все про менеджмент делівері`} description={episode.teaser}>
+  <main id="main" class="ep">
+    <!-- ═══ First screen: the cover, blurred and faded into the paper ═══ -->
+    <header class="ep-hero">
+      <div class="ep-hero__art" aria-hidden="true">
+        <img src={thumbnail(episode.youtubeId, "maxresdefault")} alt="" fetchpriority="high" />
+      </div>
+      <div class="wrap ep-hero__inner">
+        <Crumb href={url("delivery-management")} label="Все про менеджмент делівері" />
+        <h1 class="ep-title">{episode.title}</h1>
+      </div>
+    </header>
+
+    <!-- ═══ The player, across the content width: the cover until the reader presses play ═══ -->
+    <div class="wrap">
+      <div class="ep-player" data-video={episode.youtubeId} data-title={episode.title}>
+        <a class="ep-player__poster" href={watchUrl()} aria-label={`Дивитися відео «${episode.title}»`}>
+          <img
+            src={thumbnail(episode.youtubeId, "maxresdefault")}
+            srcset={thumbnailSrcset(episode.youtubeId)}
+            sizes="(width < 64rem) 100vw, 83vw"
+            alt=""
+          />
+          <span class="ep-player__play" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══ The episode as prose, "on this page" beside it ═══ -->
+    <div class="wrap ep-layout">
+      <article class="ep-body">
+        <p class="ep-lead">{episode.lead}</p>
+        {sections.map((s) => (
+          <section id={s.id} class="ep-section">
+            <h2>{s.title}</h2>
+            {s.paragraphs.map((p) => (
+              <p>{p}</p>
+            ))}
+            <a class="ep-moment" href={watchUrl(s.start)} data-start={s.start}>
+              У відео з {timecode(s.start)}
+            </a>
+          </section>
+        ))}
+      </article>
+
+      <FindingsToc items={sections.map(({ id, title }) => ({ id, label: title }))}>
+        <TocCta title="Впізнали свою компанію?" />
+      </FindingsToc>
+    </div>
+
+    <!-- ═══ The other episodes: the site's carousel, three same-sized cards to a screen ═══ -->
+    <section class="ep-others" aria-labelledby="ep-others-title">
+      <div class="wrap">
+        <h2 class="ep-others__title" id="ep-others-title">
+          Інші випуски
+        </h2>
+        <Carousel
+          label="Інші випуски"
+          items={others}
+          more="Дивитися"
+          prevLabel="Попередні випуски"
+          nextLabel="Наступні випуски"
+        />
+      </div>
+    </section>
+
+    <FoundersCta
+      finding={`delivery-management:${episode.slug}`}
+      title="Впізнали свою компанію? <strong>Розберімо її</strong> з&nbsp;тими, хто вів ці діагностики."
+      lead="Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови."
+    />
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  // The player: YouTube (its privacy-enhanced domain) loads only when the reader presses play, or a section's
+  // "У відео з …" link, which starts it at that moment. Without JavaScript the links open YouTube.
+  const player = document.querySelector<HTMLElement>(".ep-player");
+  if (player) {
+    const play = (start = 0) => {
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube-nocookie.com/embed/${player.dataset.video}?autoplay=1&rel=0&start=${start}`;
+      iframe.title = player.dataset.title ?? "";
+      iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      iframe.allowFullscreen = true;
+      player.replaceChildren(iframe);
+    };
+    player.querySelector("a")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      play();
+    });
+    for (const link of document.querySelectorAll<HTMLAnchorElement>(".ep-moment")) {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        play(Number(link.dataset.start) || 0);
+        player.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      });
+    }
+  }
+</script>
+
+<style>
+  /* the findings pages' lighter paper */
+  :global(body:has(.ep)) {
+    --c-paper: color-mix(in srgb, var(--color-paper) 50%, var(--color-white));
+  }
+  .ep {
+    --ink-soft: rgb(28 38 50 / 0.72);
+    --rule: rgb(28 38 50 / 0.12);
+    background: var(--c-paper);
+    color: var(--c-hero);
+  }
+  .ep p {
+    margin: 0;
+  }
+
+  /* ---------- First screen ---------- */
+  .ep-hero {
+    position: relative;
+    overflow: hidden;
+  }
+  .ep-hero__art {
+    position: absolute;
+    inset: 0;
+  }
+  .ep-hero__art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(28px) saturate(1.1);
+    transform: scale(1.15); /* the blur's soft edge falls outside */
+  }
+  .ep-hero__art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-paper) 20%, transparent),
+      color-mix(in srgb, var(--c-paper) 72%, transparent) 55%,
+      var(--c-paper)
+    );
+  }
+  .ep-hero__inner {
+    position: relative;
+    display: grid;
+    row-gap: var(--space-xl);
+    padding-top: calc(200 * var(--px));
+    padding-bottom: var(--space-2xl);
+  }
+  .ep-title {
+    max-width: var(--span-3);
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: var(--leading-display);
+    font-feature-settings: "dlig" 1;
+  }
+
+  /* ---------- The player ---------- */
+  .ep-player {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    background: var(--c-night);
+  }
+  .ep-player__poster,
+  .ep-player :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .ep-player__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ep-player__play {
+    position: absolute;
+    inset: 0;
+    width: calc(104 * var(--px));
+    height: calc(104 * var(--px));
+    margin: auto;
+    border-radius: 50%;
+    background: var(--c-primary);
+    box-shadow: 0 10px 30px rgb(14 21 27 / 0.35);
+    transition: transform 0.2s var(--ease-out);
+  }
+  .ep-player__play::after {
+    content: "";
+    position: absolute;
+    inset: 32% 30% 32% 38%;
+    background: var(--c-white);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .ep-player__poster:hover .ep-player__play {
+    transform: scale(1.06);
+  }
+  .ep-player__poster:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: -3px;
+  }
+
+  /* ---------- The episode as prose: the findings pages' grid ---------- */
+  .ep-layout {
+    display: grid;
+    grid-template-columns: var(--span-2) 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    padding-block: var(--space-3xl);
+  }
+  .ep-body {
+    display: grid;
+    row-gap: var(--space-xl);
+    min-width: 0;
+  }
+  .ep-lead {
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+  .ep-section {
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-sm);
+    scroll-margin-top: var(--space-xl);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .ep-section h2 {
+    margin: 0 0 var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .ep-moment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    color: var(--c-primary);
+    font-size: var(--text-small);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .ep-moment::before {
+    content: "";
+    width: 0.7em;
+    height: 0.8em;
+    background: currentColor;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .ep-moment:hover {
+    color: var(--c-primary-hover);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* ---------- Other episodes: the site's carousel, three equal 16:9 cards ---------- */
+  .ep-others {
+    padding-block: var(--space-3xl);
+    border-top: 1px solid var(--rule);
+  }
+  .ep-others__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .ep-others :global(.findings) {
+    width: 100%;
+  }
+  .ep-others :global(.finding),
+  .ep-others :global(.finding:nth-child(3n + 2)),
+  .ep-others :global(.finding:nth-child(3n)) {
+    width: calc((100% - 2 * var(--col-gap)) / 3);
+  }
+  .ep-others :global(.finding__media) {
+    aspect-ratio: 16 / 9;
+  }
+  .ep-others :global(.finding__title) {
+    font-weight: 600;
+  }
+
+  @media (width < 64rem) {
+    .ep-hero__inner {
+      row-gap: 24px;
+      padding-top: 104px;
+      padding-bottom: 32px;
+    }
+    .ep-layout {
+      grid-template-columns: 1fr;
+      padding-block: 56px;
+    }
+    .ep-body {
+      row-gap: 40px;
+    }
+    .ep-player__play {
+      width: 72px;
+      height: 72px;
+    }
+    .ep-others {
+      padding-block: 64px;
+    }
+    .ep-others :global(.finding),
+    .ep-others :global(.finding:nth-child(3n + 2)),
+    .ep-others :global(.finding:nth-child(3n)) {
+      width: 78%;
+    }
+  }
+</style>

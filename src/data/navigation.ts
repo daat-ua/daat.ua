@@ -41,7 +41,10 @@ export const menu: MenuItem[] = [
 ];
 
 /** "Наші проєкти": Daat's projects beside the consulting */
-export const projects: Link[] = [{ label: '<span class="brand">Daat</span> talks', href: "/uk-UA/daat-talks" }];
+export const projects: Link[] = [
+  { label: "Все про менеджмент делівері", href: "/uk-UA/delivery-management" },
+  { label: '<span class="brand">Daat</span> talks', href: "/uk-UA/daat-talks" },
+];
 
 export const legalLinks: Link[] = [
   { label: "Політика конфіденційності", href: page("privacy-policy") },
