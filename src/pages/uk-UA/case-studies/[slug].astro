@@ -71,8 +71,8 @@ const testimonialAuthor = testimonial
 
 const sections = {
   context: Boolean(study.context?.length),
-  process: Boolean(study.phases?.length),
-  findings: Boolean(study.conclusions?.length),
+  process: Boolean(study.phases?.length || study.phasesText?.length),
+  findings: Boolean(study.conclusions?.length || study.findingsIntro),
   maturity: scores.length > 0,
   roadmap: study.horizons?.length === 3,
   changes: Boolean(study.changes?.length || study.changesText?.length),
@@ -97,17 +97,20 @@ type CaseTeaser = {
   companySize: string;
   heroImage: { asset: { _id: string } | null } & Record<string, unknown>;
 };
-const picked = (study.otherCases ?? []) as CaseTeaser[];
+// a referenced case that no longer resolves (unpublished in a release) comes back as null: leave it out
+const picked = ((study.otherCases ?? []) as (CaseTeaser | null)[]).filter((c): c is CaseTeaser => c !== null);
 const latest = picked.length
   ? []
   : ((await sanityClient.fetch(CASE_STUDY_TEASERS_QUERY)) as CaseTeaser[]).filter((c) => c.slug !== study.slug);
+// card titles go to the carousel as HTML, so the plain-text titles from Sanity are escaped
+const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const toTeaser = (c: CaseTeaser): Teaser => ({
   image: {
     src: urlFor(c.heroImage).width(640).height(640).fit("crop").url(),
     srcset: srcsetFor(c.heroImage, [320, 480, 640, 800], 1),
   },
   tag: c.cardTag || `${industryNames[c.industry]} · ${c.companySize}`,
-  title: c.title,
+  title: escape(c.title),
   href: url(`case-studies/${c.slug}`),
 });
 const others = [...picked, ...latest].filter((c) => c.heroImage?.asset).map(toTeaser);
@@ -134,7 +137,8 @@ const otherTeasers = others.length ? others : placeholderCases;
       </div>
       <div class="wrap case-hero__inner">
         <div class="case-hero__main">
-          <Crumb href={url("case-studies")} label="Кейси" />
+          <!-- TODO DAA-229: to /uk-UA/case-studies once the index exists; until then the ATLAS page's cases -->
+          <Crumb href={`${url("atlas")}#testimonials-and-case-studies`} label="Кейси" />
           <h1 class="case-hero__title">{study.title}</h1>
           <p class="case-hero__lead">{study.lead}</p>
         </div>
@@ -188,15 +192,17 @@ const otherTeasers = others.length ? others : placeholderCases;
         {sections.process && (
           <section id="process" class="case-section">
             <h2>Як проходила діагностика</h2>
-            <ol class="case-phases" style={`--n: ${study.phases!.length}`}>
-              {study.phases!.map((ph) => (
-                <li>
-                  <p class="case-phases__label">{ph.label}</p>
-                  <h3>{ph.title}</h3>
-                  {ph.text && <p>{ph.text}</p>}
-                </li>
-              ))}
-            </ol>
+            {study.phases && study.phases.length > 0 && (
+              <ol class="case-phases" style={`--n: ${study.phases.length}`}>
+                {study.phases.map((ph) => (
+                  <li>
+                    <p class="case-phases__label">{ph.label}</p>
+                    <h3>{ph.title}</h3>
+                    {ph.text && <p>{ph.text}</p>}
+                  </li>
+                ))}
+              </ol>
+            )}
             {study.phasesText && <PortableText value={study.phasesText} />}
           </section>
         )}
@@ -205,28 +211,30 @@ const otherTeasers = others.length ? others : placeholderCases;
           <section id="findings" class="case-section">
             <h2>Що знайшла діагностика</h2>
             {study.findingsIntro && <p>{study.findingsIntro}</p>}
-            <ol class="case-conclusions">
-              {study.conclusions!.map((item, i) => {
-                const label = item.findingLabel || item.finding?.title;
-                return (
-                  <li>
-                    <p class="case-conclusions__label">Висновок {i + 1}</p>
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                    {label && (
-                      <p class="case-conclusions__finding">
-                        Знахідка аудиту:{" "}
-                        {item.finding?.slug ? (
-                          <a href={url(`atlas/findings/${item.finding.slug}`)}>{label}</a>
-                        ) : (
-                          <span>{label}</span>
-                        )}
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
+            {study.conclusions && study.conclusions.length > 0 && (
+              <ol class="case-conclusions">
+                {study.conclusions.map((item, i) => {
+                  const label = item.findingLabel || item.finding?.title;
+                  return (
+                    <li>
+                      <p class="case-conclusions__label">Висновок {i + 1}</p>
+                      <h3>{item.title}</h3>
+                      <p>{item.text}</p>
+                      {label && (
+                        <p class="case-conclusions__finding">
+                          Знахідка аудиту:{" "}
+                          {item.finding?.slug ? (
+                            <a href={url(`atlas/findings/${item.finding.slug}`)}>{label}</a>
+                          ) : (
+                            <span>{label}</span>
+                          )}
+                        </p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
           </section>
         )}
 
@@ -758,6 +766,10 @@ const otherTeasers = others.length ? others : placeholderCases;
   }
   .case-roadmap .audience-tab {
     font-size: var(--text-body);
+  }
+  /* at body size the ATLAS page's blue label falls short of 4.5:1 on night: white, with the blue underline */
+  .case-roadmap .audience-tab[aria-selected="true"] :global(.audience-tab__title) {
+    color: var(--c-white);
   }
   .case-horizons {
     display: grid;

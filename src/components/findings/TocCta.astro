@@ -21,7 +21,7 @@ const founders = await sanityClient.fetch(FOUNDERS_QUERY);
         <img
           src={urlFor(f.photo!).width(80).height(80).fit("crop").url()}
           srcset={srcsetFor(f.photo!, [40, 80], 1)}
-          sizes="40px"
+          sizes="(min-width: 64rem) calc(100vw / 1440 * 40), 40px"
           alt=""
           width="40"
           height="40"

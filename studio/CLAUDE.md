@@ -30,7 +30,7 @@ The exported variable name, the file name, and the `name:` field of the document
 Example: `blogPost.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
 
 ### Field groups convention
-All document types use the same set of field group names so the editor UX stays consistent: `content` (default), `meta`, `seo`, plus the spread `ALL_FIELDS_GROUP` (hidden) for showing every field. When adding fields, assign a `group` so they land in the right tab.
+All document types use the same set of field group names so the editor UX stays consistent: `content` (default), `meta`, `seo`, plus the spread `ALL_FIELDS_GROUP` (hidden) for showing every field. When adding fields, assign a `group` so they land in the right tab. The exception is `caseStudy`: it has one tab per section of the case page (Main, Client, Key figures … SEO), as the editors asked, since its form mirrors the page block by block.
 
 ### Project ID / dataset are duplicated
 `projectId` and `dataset` appear in both `sanity.config.ts` and `sanity.cli.ts`. Changes must be made in both files.
