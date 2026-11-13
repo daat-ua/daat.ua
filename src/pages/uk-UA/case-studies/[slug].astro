@@ -1,0 +1,832 @@
+---
+import { Picture } from "astro:assets";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import Base from "../../../layouts/Base.astro";
+import Footer from "../../../components/Footer.astro";
+import Crumb from "../../../components/findings/Crumb.astro";
+import FindingsToc from "../../../components/findings/FindingsToc.astro";
+import TocCta from "../../../components/findings/TocCta.astro";
+import FoundersCta from "../../../components/findings/FoundersCta.astro";
+import Carousel from "../../../components/ui/Carousel.astro";
+import { caseStudies, type CaseStudy } from "../../../data/case-studies";
+import { cases } from "../../../data/testimonials";
+import { enablerNames, type Enabler } from "../../../data/enablers";
+
+// A case study (DAA-230), after the mockup "Шаблон сторінки кейсу", in the findings pages' language: the
+// breadcrumb and title with the client's profile beside them, the key figures, then the story on the left two
+// thirds with "on this page" (the findings pages' own) and its call to action on the right; the founders'
+// block (booking a call) and the other cases below. The copy is typed data in src/data/case-studies.ts.
+
+export function getStaticPaths() {
+  return caseStudies.map((study) => ({ params: { slug: study.slug }, props: { study } }));
+}
+
+const { study } = Astro.props as { study: CaseStudy };
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+
+const toc = [
+  { id: "context", label: "Контекст: з чим прийшов клієнт" },
+  { id: "process", label: "Як проходила діагностика" },
+  { id: "findings", label: "Що знайшла діагностика" },
+  { id: "maturity", label: "Профіль зрілості за складовими" },
+  { id: "roadmap", label: "Дорожня карта зростання" },
+  { id: "changes", label: "Що змінилося" },
+  { id: "testimonial", label: "Відгук клієнта" },
+];
+
+// the maturity profile, highest first; the scale runs 1–5 and the marker is "Визначений" (3,0)
+const scores = (Object.entries(study.maturity.scores) as [Enabler, number][]).sort((a, b) => b[1] - a[1]);
+const DEFINED = 3;
+const pct = (v: number) => `${((v / 5) * 100).toFixed(1)}%`;
+const fmt = (v: number) => v.toFixed(1).replace(".", ",");
+---
+
+<Base title={`${study.title} | Кейси Daat`} description={study.lead.replace(/<[^>]+>/g, "")} noindex={study.draft}>
+  <main id="main" class="case">
+    <!-- ═══ Hero: the breadcrumb, title and lead; the client's profile beside them ═══ -->
+    <header class="case-hero">
+      <!-- the artwork fades into the paper, as on a finding's page -->
+      <div class="case-hero__art" aria-hidden="true">
+        <Picture
+          src={study.image}
+          alt=""
+          formats={["avif", "webp"]}
+          fallbackFormat="webp"
+          widths={[640, 960, 1440, 1920, 2400].filter((w) => w <= study.image.width)}
+          sizes="100vw"
+          loading="eager"
+          fetchpriority="high"
+          layout="none"
+        />
+      </div>
+      <div class="wrap case-hero__inner">
+        <div class="case-hero__main">
+          <Crumb href={url("case-studies")} label="Кейси" />
+          <h1 class="case-hero__title" set:html={study.title} />
+          <p class="case-hero__lead" set:html={study.lead} />
+        </div>
+        <aside class="case-profile" aria-labelledby="case-profile-title">
+          <h2 class="case-profile__title" id="case-profile-title">
+            Профіль клієнта
+          </h2>
+          <dl>
+            {study.profile.map((p) => (
+              <div>
+                <dt>{p.label}</dt>
+                <dd>{p.href ? <a href={p.href} set:html={p.value} /> : <Fragment set:html={p.value} />}</dd>
+              </div>
+            ))}
+          </dl>
+        </aside>
+      </div>
+    </header>
+
+    <!-- ═══ Key figures, as the About page's "Daat у цифрах" ═══ -->
+    <div class="wrap">
+      <ul class="case-figures">
+        {study.figures.map((f) => (
+          <li>
+            <span set:html={f.label} />
+            <strong set:html={f.value} />
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- ═══ The story, with "on this page" and its call to action beside it ═══ -->
+    <div class="wrap case-layout">
+      <article class="case-body">
+        <section id="context" class="case-section">
+          <h2>Контекст: з чим прийшов клієнт</h2>
+          {study.context.paragraphs.map((p) => (
+            <p set:html={p} />
+          ))}
+          <blockquote class="case-quote">
+            <p set:html={`«${study.context.quote}»`} />
+          </blockquote>
+        </section>
+
+        <section id="process" class="case-section">
+          <h2>Як проходила діагностика</h2>
+          <ol class="case-phases">
+            {study.phases.map((ph) => (
+              <li>
+                <p class="case-phases__label" set:html={ph.label} />
+                <h3 set:html={ph.title} />
+                <p set:html={ph.text} />
+              </li>
+            ))}
+          </ol>
+          {study.phasesText.map((p) => (
+            <p set:html={p} />
+          ))}
+        </section>
+
+        <section id="findings" class="case-section">
+          <h2>Що знайшла діагностика</h2>
+          <p set:html={study.findings.intro} />
+          <ol class="case-conclusions">
+            {study.findings.items.map((item, i) => (
+              <li>
+                <p class="case-conclusions__label">Висновок {i + 1}</p>
+                <h3 set:html={item.title} />
+                <p set:html={item.text} />
+                <p class="case-conclusions__finding">
+                  Знахідка аудиту:{" "}
+                  {item.finding.slug ? (
+                    <a href={url(`atlas/findings/${item.finding.slug}`)} set:html={item.finding.label} />
+                  ) : (
+                    <span set:html={item.finding.label} />
+                  )}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section id="maturity" class="case-section">
+          <h2>Профіль зрілості за складовими</h2>
+          <table class="case-table case-maturity">
+            <thead>
+              <tr>
+                <th scope="col">Складова зрілості</th>
+                <th scope="col">Індекс</th>
+                <th scope="col">1–5 · риска&nbsp;— «Визначений» (3,0)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scores.map(([enabler, value]) => (
+                <tr>
+                  <th scope="row">{enablerNames[enabler]}</th>
+                  <td class="case-maturity__value">{fmt(value)}</td>
+                  <td>
+                    <span class="case-maturity__bar" style={`--v: ${pct(value)}; --mark: ${pct(DEFINED)}`} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row">Загальний індекс зрілості</th>
+                <td class="case-maturity__value">{fmt(study.maturity.total)}</td>
+                <td set:html={study.maturity.totalNote} />
+              </tr>
+            </tfoot>
+          </table>
+        </section>
+
+        <!-- the ATLAS page's roadmap, without its animation: a tab per horizon, the selected column at full strength -->
+        <section id="roadmap" class="case-section case-roadmap">
+          <h2>Дорожня карта зростання</h2>
+          <p set:html={study.roadmap.lead} />
+          <div class="audience-tabs case-roadmap__tabs" role="tablist" aria-label="Горизонти дорожньої карти">
+            {study.roadmap.horizons.map((h, i) => (
+              <button
+                class="audience-tab"
+                type="button"
+                role="tab"
+                id={`case-tab-${i}`}
+                aria-controls={`case-panel-${i}`}
+                aria-selected={i === 0 ? "true" : "false"}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                <span class="audience-tab__title" set:html={h.tab} />
+              </button>
+            ))}
+          </div>
+          <div class="case-horizons">
+            {study.roadmap.horizons.map((h, i) => (
+              <div
+                class:list={["case-horizon", { "is-active": i === 0 }]}
+                role="tabpanel"
+                id={`case-panel-${i}`}
+                aria-labelledby={`case-tab-${i}`}
+                aria-hidden={i === 0 ? undefined : "true"}
+              >
+                <p class="case-horizon__label" set:html={h.label} />
+                <h3 set:html={h.title} />
+                <p set:html={h.text} />
+              </div>
+            ))}
+          </div>
+          <a class="case-roadmap__more" href={`${url("atlas")}#roadmap`}>
+            Як будується дорожня карта ATLAS&nbsp;→
+          </a>
+        </section>
+
+        <section id="changes" class="case-section">
+          <h2>Що змінилося</h2>
+          <table class="case-table case-changes">
+            <thead>
+              <tr>
+                <th scope="col">Показник</th>
+                <th scope="col">До</th>
+                <th scope="col">Після</th>
+                <th scope="col">Період</th>
+              </tr>
+            </thead>
+            <tbody>
+              {study.changes.rows.map((r) => (
+                <tr>
+                  <th scope="row" set:html={r.metric} />
+                  <td set:html={r.before} />
+                  <td class="case-changes__after" set:html={r.after} />
+                  <td set:html={r.period} />
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {study.changes.text.map((p) => (
+            <p set:html={p} />
+          ))}
+        </section>
+
+        <section id="testimonial" class="case-section">
+          <h2>Відгук клієнта</h2>
+          <!-- TODO: the client's video; a placeholder until there is one -->
+          <div class="case-video" role="img" aria-label="Відеовідгук клієнта (буде додано)">
+            <span class="case-video__note">Відеовідгук · 16:9</span>
+            <span class="case-video__play" aria-hidden="true"></span>
+          </div>
+          <blockquote class="case-testimonial">
+            <p set:html={`«${study.testimonial.quote}»`} />
+            <footer>
+              <span set:html={study.testimonial.author} />
+              {study.testimonial.transcriptHref && (
+                <>
+                  {" · "}
+                  <a href={study.testimonial.transcriptHref}>Читати транскрипт</a>
+                </>
+              )}
+            </footer>
+          </blockquote>
+        </section>
+      </article>
+
+      <FindingsToc items={toc}>
+        <TocCta title="Схожа ситуація?" />
+      </FindingsToc>
+    </div>
+
+    <!-- ═══ The founders, with booking a call in place ═══ -->
+    <FoundersCta
+      finding={`case:${study.slug}`}
+      title="Впізнали схожу ситуацію? <strong>Розберімо вашу</strong> з&nbsp;тими, хто вів цю діагностику."
+      lead="Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. За 30&nbsp;хвилин розберемо, чи потрібна вона вам&nbsp;— і&nbsp;з&nbsp;чого почати."
+    />
+
+    <!-- ═══ Other cases: the ATLAS page's cases carousel ═══ -->
+    <section class="case-others" aria-labelledby="case-others-title">
+      <div class="wrap">
+        <h2 class="case-others__title" id="case-others-title">
+          Інші кейси
+        </h2>
+        <Carousel
+          label="Інші кейси"
+          items={cases}
+          more="Читати кейс"
+          prevLabel="Попередні кейси"
+          nextLabel="Наступні кейси"
+        />
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  // Roadmap tabs (arrow keys move between them); clicking a column selects it too. All columns stay visible,
+  // the selected one at full strength.
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>(".case-roadmap [role='tab']")];
+  const panelOf = (tab: HTMLButtonElement) => document.getElementById(tab.getAttribute("aria-controls")!)!;
+  const select = (tab: HTMLButtonElement, focus = false) => {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      panelOf(t).classList.toggle("is-active", on);
+      if (on) panelOf(t).removeAttribute("aria-hidden");
+      else panelOf(t).setAttribute("aria-hidden", "true");
+    }
+    if (focus) tab.focus();
+  };
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (e) => {
+      const i = tabs.indexOf(tab);
+      const next = ({ ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 } as Record<string, number>)[
+        e.key
+      ];
+      if (next === undefined) return;
+      e.preventDefault();
+      select(tabs[(next + tabs.length) % tabs.length], true);
+    });
+    panelOf(tab).addEventListener("click", () => select(tab));
+  }
+</script>
+
+<style>
+  /* the findings pages' lighter paper */
+  :global(body:has(.case)) {
+    --c-paper: color-mix(in srgb, var(--color-paper) 50%, var(--color-white));
+  }
+  /* the findings pages' ground and inks (FindingsLayout's .finding-page), so "on this page" reads the same */
+  .case {
+    --ink-soft: rgb(28 38 50 / 0.72);
+    --rule: rgb(28 38 50 / 0.12);
+    --tint: color-mix(in srgb, var(--c-hero) 4%, var(--c-paper));
+    background: var(--c-paper);
+    color: var(--c-hero);
+  }
+  .case-body,
+  .case-hero {
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .case p {
+    margin: 0;
+  }
+  .case h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-heading);
+    font-weight: 500;
+    line-height: var(--leading-heading);
+  }
+  .case h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  /* links in the story and the profile */
+  .case-body :global(a),
+  .case-profile a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
+  }
+  .case-body :global(a:hover) {
+    color: var(--c-primary);
+  }
+
+  /* ---------- Hero ---------- */
+  /* As a finding's: the breadcrumb starts well below the bar, clear of the hanging logo */
+  .case-hero {
+    position: relative;
+    overflow: hidden;
+  }
+  .case-hero__art,
+  .case-hero__art :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .case-hero__art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-paper) 20%, transparent),
+      color-mix(in srgb, var(--c-paper) 72%, transparent) 55%,
+      var(--c-paper)
+    );
+  }
+  .case-hero__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--span-2) 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    align-items: start;
+    padding-top: calc(200 * var(--px));
+    padding-bottom: var(--space-2xl);
+  }
+  .case-hero__main {
+    display: grid;
+    row-gap: var(--space-xl);
+  }
+  .case-hero__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: var(--leading-display);
+    font-feature-settings: "dlig" 1;
+  }
+  .case-hero__lead {
+    margin-top: calc(-1 * var(--space-sm)) !important; /* closer to the title than the breadcrumb is */
+    font-size: var(--text-lead);
+  }
+  /* the client's profile: on the ATLAS page methodology's navy */
+  .case-profile {
+    padding: var(--space-lg);
+    background: var(--c-hero);
+    color: var(--c-cream);
+  }
+  .case .case-profile__title {
+    color: var(--c-white);
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .case-profile dl {
+    margin: var(--space-sm) 0 0;
+  }
+  .case-profile dl div {
+    display: grid;
+    row-gap: calc(2 * var(--px));
+    padding: var(--space-sm) 0;
+    border-top: 1px solid rgb(237 233 222 / 0.15);
+  }
+  .case-profile dl div:last-child {
+    padding-bottom: 0;
+  }
+  .case-profile dt {
+    color: rgb(237 233 222 / 0.6);
+    font-size: calc(14 * var(--px)); /* as the image labels */
+    line-height: var(--leading-small);
+  }
+  .case-profile dd {
+    margin: 0;
+    color: var(--c-white);
+    font-size: var(--text-small);
+    font-weight: 500;
+    line-height: var(--leading-small);
+  }
+  .case-profile a:hover {
+    color: var(--c-accent);
+  }
+
+  /* ---------- Key figures: the About page's cards ---------- */
+  .case-figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .case-figures li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-lg);
+    background: var(--c-paper);
+  }
+  .case-figures span {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .case-figures strong {
+    margin-top: auto;
+    padding-top: var(--space-md);
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* ---------- Story and "on this page": the findings pages' grid ---------- */
+  .case-layout {
+    display: grid;
+    grid-template-columns: var(--span-2) 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    padding-block: var(--space-3xl);
+  }
+  .case-body {
+    display: grid;
+    row-gap: var(--space-3xl);
+    min-width: 0;
+  }
+  .case-section {
+    display: grid;
+    row-gap: var(--space-md);
+    scroll-margin-top: var(--space-xl);
+  }
+  .case-section > h2 {
+    margin-bottom: var(--space-xs);
+  }
+  .case-quote {
+    margin: var(--space-sm) 0 0;
+    padding-left: var(--space-md);
+    border-left: 3px solid var(--c-primary);
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+
+  .case-phases,
+  .case-conclusions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .case-phases {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+  }
+  .case-phases li {
+    display: grid;
+    align-content: start;
+    row-gap: var(--space-xs);
+    padding-top: var(--space-sm);
+    border-top: 3px solid var(--c-hero);
+  }
+  .case-phases__label,
+  .case-conclusions__label {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .case .case-phases h3 {
+    font-size: var(--text-body);
+  }
+  .case-phases p:last-child {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+
+  /* the conclusions: one block of cards with shared hairlines, as the key figures */
+  .case-conclusions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .case-conclusions li {
+    display: grid;
+    align-content: start;
+    row-gap: var(--space-sm);
+    padding: var(--space-lg);
+    background: var(--c-paper);
+  }
+  .case-conclusions__finding {
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .case-conclusions__finding a {
+    font-weight: 600;
+  }
+
+  /* tables: the maturity profile and what changed */
+  .case-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .case-table :is(th, td) {
+    padding: var(--space-sm) var(--space-sm) var(--space-sm) 0;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    vertical-align: middle;
+  }
+  .case-table thead th {
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+  .case-table tbody th {
+    font-weight: 500;
+  }
+  .case-maturity thead th:last-child {
+    width: 40%;
+  }
+  .case-maturity__value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  /* the bar: the index on the 1–5 scale, the marker at "Визначений" (3,0) */
+  .case-maturity__bar {
+    position: relative;
+    display: block;
+    height: calc(12 * var(--px));
+    background:
+      linear-gradient(var(--c-hero), var(--c-hero)) left / var(--v) 100% no-repeat,
+      var(--tint);
+  }
+  .case-maturity__bar::after {
+    content: "";
+    position: absolute;
+    top: -30%;
+    bottom: -30%;
+    left: var(--mark);
+    width: 2px;
+    background: var(--c-primary);
+  }
+  .case-maturity tfoot :is(th, td) {
+    border-top: 2px solid var(--c-hero);
+    border-bottom: 0;
+    font-weight: 600;
+  }
+  .case-maturity tfoot td:last-child {
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+  .case-changes__after {
+    font-weight: 600;
+  }
+
+  /* the roadmap: the ATLAS page's night section, its tabs on the columns' grid, the selected column at full strength */
+  .case-roadmap {
+    padding: var(--space-xl);
+    background: var(--c-night);
+    color: var(--c-cream);
+  }
+  .case .case-roadmap h2 {
+    color: var(--c-white);
+  }
+  .case-roadmap .case-roadmap__tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--col-gap);
+    width: auto;
+    margin-top: var(--space-md);
+  }
+  .case-roadmap .audience-tab {
+    font-size: var(--text-body);
+  }
+  .case-horizons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: var(--space-md);
+  }
+  .case-horizon {
+    padding: 0 calc(var(--col-gap) / 2);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.35s var(--ease-out);
+  }
+  .case-horizon:first-child {
+    padding-left: 0;
+  }
+  .case-horizon:last-child {
+    padding-right: 0;
+  }
+  .case-horizon + .case-horizon {
+    border-left: 1px solid rgb(237 233 222 / 0.15);
+  }
+  .case-horizon.is-active {
+    opacity: 1;
+    cursor: auto;
+  }
+  .case-horizon:not(.is-active):hover {
+    opacity: 0.75;
+  }
+  .case-horizon__label {
+    color: var(--c-cream);
+    font-size: var(--text-small);
+    letter-spacing: 0.04em;
+  }
+  .case .case-horizon h3 {
+    margin-top: var(--space-sm);
+    color: var(--c-white);
+    font-size: var(--text-lead);
+  }
+  .case .case-horizon h3 + p {
+    margin-top: var(--space-sm);
+    color: rgb(237 233 222 / 0.75);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .case-roadmap__more {
+    justify-self: start;
+    margin-top: var(--space-sm);
+    font-weight: 500;
+  }
+  .case-roadmap .case-roadmap__more:hover {
+    color: var(--c-accent);
+  }
+
+  /* the testimonial: the video (a placeholder for now), the quote under it */
+  .case-video {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    background: var(--tint);
+  }
+  .case-video__note {
+    position: absolute;
+    top: var(--space-md);
+    left: var(--space-md);
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+  }
+  .case-video__play {
+    position: relative;
+    width: calc(72 * var(--px));
+    height: calc(72 * var(--px));
+    border-radius: 50%;
+    background: var(--c-hero);
+  }
+  .case-video__play::after {
+    content: "";
+    position: absolute;
+    inset: 32% 32% 32% 40%;
+    background: var(--c-white);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .case-testimonial {
+    display: grid;
+    row-gap: var(--space-sm);
+    margin: 0;
+  }
+  .case .case-testimonial p {
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .case-testimonial footer {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+  }
+
+  /* ---------- Other cases: the ATLAS page's carousel under its subheading ---------- */
+  /* after the founders' dark band; a rule sets it off from the footer, as on the findings catalogue */
+  .case-others {
+    padding-block: var(--space-3xl);
+    border-bottom: 1px solid var(--rule);
+  }
+  .case .case-others__title {
+    margin-bottom: var(--space-lg);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+
+  @media (width < 64rem) {
+    .case-hero__inner,
+    .case-layout {
+      grid-template-columns: 1fr;
+    }
+    .case-hero__inner {
+      row-gap: 40px;
+      padding-top: 104px;
+      padding-bottom: 40px;
+    }
+    .case-hero__main {
+      row-gap: 24px;
+    }
+    .case-hero__lead {
+      margin-top: 0 !important;
+    }
+    .case-figures {
+      grid-template-columns: 1fr;
+    }
+    .case-figures li {
+      padding: 24px;
+    }
+    .case-layout {
+      padding-block: 64px;
+    }
+    .case-body {
+      row-gap: 56px;
+    }
+    .case-phases,
+    .case-conclusions {
+      grid-template-columns: 1fr;
+    }
+    .case-roadmap {
+      padding: 24px;
+    }
+    .case-roadmap .case-roadmap__tabs {
+      display: flex;
+      gap: 24px;
+    }
+    .case-horizons {
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+    }
+    .case-horizon,
+    .case-horizon:first-child,
+    .case-horizon:last-child {
+      padding: 0;
+    }
+    .case-horizon + .case-horizon {
+      border-left: 0;
+    }
+    .case-maturity thead th:last-child {
+      width: 30%;
+    }
+    .case-others {
+      padding-block: 64px;
+    }
+  }
+</style>
