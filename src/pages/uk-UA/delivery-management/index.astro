@@ -19,11 +19,6 @@ const intro =
 
 <Base title="Все про менеджмент делівері | Daat" description={intro}>
   <main id="main" class="dm">
-    <header class="dm-head">
-      <p class="dm-eyebrow">Наші проєкти</p>
-      <h1 class="dm-title">Все про менеджмент делівері</h1>
-    </header>
-
     <div class="dm-stage">
       <!-- the video stays in view while the episodes scroll up over it -->
       <div class="dm-video">
@@ -39,48 +34,56 @@ const intro =
         <p class="dm-video__intro">{intro}</p>
       </div>
 
-      <div class="dm-panel">
-        <article class="dm-latest" aria-labelledby="dm-latest-title">
-          <a class="dm-latest__media" href={episodeHref(latest.slug)} tabindex="-1" aria-hidden="true">
-            <img
-              src={thumbnail(latest.youtubeId, "maxresdefault")}
-              srcset={thumbnailSrcset(latest.youtubeId)}
-              sizes="(width < 64rem) 100vw, 50vw"
-              alt=""
-            />
-            <span class="dm-play" aria-hidden="true"></span>
-          </a>
-          <h2 class="dm-latest__title" id="dm-latest-title">
-            <a href={episodeHref(latest.slug)}>{latest.title}</a>
-          </h2>
-          <p class="dm-latest__lead">{latest.lead}</p>
-          <a class="dm-button" href={episodeHref(latest.slug)}>
-            Дивитися або читати
-          </a>
-        </article>
+      <!-- the title and the episodes, in a column on the right, over the video -->
+      <div class="dm-column">
+        <header class="dm-head">
+          <p class="dm-eyebrow">Наші проєкти</p>
+          <h1 class="dm-title">Все про менеджмент делівері</h1>
+        </header>
 
-        <h2 class="dm-list__title">Усі випуски</h2>
-        <ol class="dm-list">
-          {rest.map((e) => (
-            <li>
-              <a href={episodeHref(e.slug)}>
-                <span class="dm-list__media">
-                  <img
-                    src={thumbnail(e.youtubeId, "mqdefault")}
-                    srcset={thumbnailSrcset(e.youtubeId)}
-                    sizes="176px"
-                    alt=""
-                    loading="lazy"
-                  />
-                </span>
-                <span class="dm-list__text">
-                  <span class="dm-list__name">{e.title}</span>
-                  <span class="dm-list__teaser">{e.teaser}</span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
+        <div class="dm-panel">
+          <article class="dm-latest" aria-labelledby="dm-latest-title">
+            <a class="dm-latest__media" href={episodeHref(latest.slug)} tabindex="-1" aria-hidden="true">
+              <img
+                src={thumbnail(latest.youtubeId, "maxresdefault")}
+                srcset={thumbnailSrcset(latest.youtubeId)}
+                sizes="(width < 64rem) 100vw, 50vw"
+                alt=""
+              />
+              <span class="dm-play" aria-hidden="true"></span>
+            </a>
+            <h2 class="dm-latest__title" id="dm-latest-title">
+              <a href={episodeHref(latest.slug)}>{latest.title}</a>
+            </h2>
+            <p class="dm-latest__lead">{latest.lead}</p>
+            <a class="dm-button" href={episodeHref(latest.slug)}>
+              Дивитися або читати
+            </a>
+          </article>
+
+          <h2 class="dm-list__title">Усі випуски</h2>
+          <ol class="dm-list">
+            {rest.map((e) => (
+              <li>
+                <a href={episodeHref(e.slug)}>
+                  <span class="dm-list__media">
+                    <img
+                      src={thumbnail(e.youtubeId, "mqdefault")}
+                      srcset={thumbnailSrcset(e.youtubeId)}
+                      sizes="176px"
+                      alt=""
+                      loading="lazy"
+                    />
+                  </span>
+                  <span class="dm-list__text">
+                    <span class="dm-list__name">{e.title}</span>
+                    <span class="dm-list__teaser">{e.teaser}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </div>
 
@@ -116,13 +119,15 @@ const intro =
     margin: 0;
   }
 
-  /* the title, on the page's gutter, clear of the logo hanging below the bar; the eyebrow in the breadcrumb's type */
+  /* the title over the video, in light colours, above the panel; the eyebrow in the breadcrumb's type */
   .dm-head {
     display: grid;
     row-gap: var(--space-xl);
-    padding: calc(200 * var(--px)) var(--gutter-x) var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+    color: var(--c-white);
   }
   .dm-eyebrow {
+    color: rgb(237 233 222 / 0.85);
     font-size: var(--text-body);
     font-weight: 500;
     line-height: var(--leading-body);
@@ -141,13 +146,16 @@ const intro =
     background: url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 8 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='0.75' cy='0.75' r='0.75' fill='%230B0B0B'/%3E%3Ccircle cx='4.75' cy='4.75' r='0.75' fill='%230B0B0B'/%3E%3C/svg%3E")
       repeat;
   }
-  /* 720 tall at 1440, kept in view 128 below the top while the panel scrolls over it */
+  /* the video runs edge to edge (out of the stage's margins), 720 tall at 1440, kept in view at the top while
+     the title and the episodes scroll up over it */
   .dm-video {
     position: sticky;
-    top: calc(128 * var(--px));
+    top: 0;
     z-index: 0;
     height: calc(720 * var(--px));
+    margin: 0 calc(-1 * var(--gutter-x));
     overflow: hidden;
+    background: var(--c-hero); /* under the shifted video's edge, where the dots would show */
   }
   .dm-video video {
     position: absolute;
@@ -167,19 +175,22 @@ const intro =
     position: absolute;
     z-index: 1;
     bottom: var(--space-3xl);
-    left: var(--space-2xl);
+    left: var(--gutter-x);
     width: calc(var(--col) + var(--col-gap));
     color: rgb(255 255 255 / 0.88);
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
 
-  /* the panel: 60% of the width on the right, rising 480 over the video */
-  .dm-panel {
+  /* the column: 60% of the stage on the right, rising over the whole video, the title at its top */
+  .dm-column {
     position: relative;
     z-index: 1;
     width: 60%;
-    margin: calc(-480 * var(--px)) 0 0 auto;
+    margin: calc(-720 * var(--px)) 0 0 auto;
+    padding-top: var(--space-3xl);
+  }
+  .dm-panel {
     padding: var(--space-2xl) var(--space-2xl) var(--space-3xl);
     background: var(--c-hero);
     color: var(--c-cream);
@@ -329,7 +340,7 @@ const intro =
   @media (width < 64rem) {
     .dm-head {
       row-gap: 24px;
-      padding: 104px var(--gutter-x) 32px;
+      padding: 0 var(--gutter-x) 32px;
     }
     .dm-stage {
       margin: 0;
@@ -337,17 +348,17 @@ const intro =
     .dm-video {
       top: 0;
       height: 480px;
+      margin: 0;
     }
     .dm-video__intro {
-      bottom: auto;
-      top: 32px;
-      left: var(--gutter-x);
-      right: var(--gutter-x);
+      display: none; /* the title takes the video's top; the intro would sit under the panel */
+    }
+    .dm-column {
       width: auto;
+      margin-top: -480px;
+      padding-top: 104px; /* clear of the logo hanging below the bar */
     }
     .dm-panel {
-      width: auto;
-      margin-top: -240px;
       padding: 32px var(--gutter-x) 64px;
     }
     .dm-list a {
