@@ -3,16 +3,19 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import Base from "../../../layouts/Base.astro";
 import Footer from "../../../components/Footer.astro";
 import FoundersCta from "../../../components/findings/FoundersCta.astro";
-import { episodes, thumbnail, thumbnailSrcset } from "../../../data/delivery-management";
+import { cover } from "../../../data/delivery-management";
+import { sanityClient } from "../../../sanity/client";
+import { DELIVERY_EPISODES_QUERY } from "../../../sanity/queries";
 
 // "Все про менеджмент делівері" (DAA-231): the index of Olena Kyianovska's video series. The previous site's
 // "Делівері блог" block (DeliveryBlogTeaser) in this site's type: a dotted ground, a looping video that stays in
 // view, and a panel in the ATLAS methodology's navy scrolling up over it, the latest episode large, then the rest.
+// Content: Sanity's "Delivery management episodes" (`deliveryEpisode`), newest first.
 
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 const episodeHref = (slug: string) => url(`delivery-management/${slug}`);
-const [latest, ...rest] = episodes;
+const [latest, ...rest] = await sanityClient.fetch(DELIVERY_EPISODES_QUERY);
 const intro =
   "Олена Кияновська розповідає про буремні (але дуже цікаві) моменти в роботі делівері-менеджера, ділиться безцінним досвідом обходження граблів та каменів. Для широкої аудиторії.";
 ---
@@ -42,47 +45,42 @@ const intro =
         </header>
 
         <div class="dm-panel">
-          <article class="dm-latest" aria-labelledby="dm-latest-title">
-            <a class="dm-latest__media" href={episodeHref(latest.slug)} tabindex="-1" aria-hidden="true">
-              <img
-                src={thumbnail(latest.youtubeId, "maxresdefault")}
-                srcset={thumbnailSrcset(latest.youtubeId)}
-                sizes="(width < 64rem) 100vw, 50vw"
-                alt=""
-              />
-              <span class="dm-play" aria-hidden="true"></span>
-            </a>
-            <h2 class="dm-latest__title" id="dm-latest-title">
-              <a href={episodeHref(latest.slug)}>{latest.title}</a>
-            </h2>
-            <p class="dm-latest__lead">{latest.lead}</p>
-            <a class="dm-button" href={episodeHref(latest.slug)}>
-              Дивитися або читати
-            </a>
-          </article>
-
-          <h2 class="dm-list__title">Усі випуски</h2>
-          <ol class="dm-list">
-            {rest.map((e) => (
-              <li>
-                <a href={episodeHref(e.slug)}>
-                  <span class="dm-list__media">
-                    <img
-                      src={thumbnail(e.youtubeId, "mqdefault")}
-                      srcset={thumbnailSrcset(e.youtubeId)}
-                      sizes="176px"
-                      alt=""
-                      loading="lazy"
-                    />
-                  </span>
-                  <span class="dm-list__text">
-                    <span class="dm-list__name">{e.title}</span>
-                    <span class="dm-list__teaser">{e.teaser}</span>
-                  </span>
+          {latest ? (
+            <>
+              <article class="dm-latest" aria-labelledby="dm-latest-title">
+                <a class="dm-latest__media" href={episodeHref(latest.slug)} tabindex="-1" aria-hidden="true">
+                  <img {...cover(latest)} sizes="(width < 64rem) 100vw, 50vw" alt="" />
+                  <span class="dm-play" aria-hidden="true"></span>
                 </a>
-              </li>
-            ))}
-          </ol>
+                <h2 class="dm-latest__title" id="dm-latest-title">
+                  <a href={episodeHref(latest.slug)}>{latest.title}</a>
+                </h2>
+                <p class="dm-latest__lead">{latest.lead}</p>
+                <a class="dm-button" href={episodeHref(latest.slug)}>
+                  Дивитися або читати
+                </a>
+              </article>
+
+              {rest.length > 0 && <h2 class="dm-list__title">Усі випуски</h2>}
+              <ol class="dm-list">
+                {rest.map((e) => (
+                  <li>
+                    <a href={episodeHref(e.slug)}>
+                      <span class="dm-list__media">
+                        <img {...cover(e)} sizes="176px" alt="" loading="lazy" />
+                      </span>
+                      <span class="dm-list__text">
+                        <span class="dm-list__name">{e.title}</span>
+                        <span class="dm-list__teaser">{e.teaser}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </>
+          ) : (
+            <p class="dm-empty">Перші випуски з’являться тут найближчим часом.</p>
+          )}
         </div>
       </div>
     </div>
@@ -198,6 +196,11 @@ const intro =
   /* the founders' block follows the panel directly */
   .dm :global(.founders-cta) {
     margin-top: 0;
+  }
+  .dm-empty {
+    color: rgb(237 233 222 / 0.8);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
   }
   .dm-latest {
     display: grid;

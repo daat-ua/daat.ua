@@ -15,11 +15,92 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
+export type AuthorsReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "authors";
+};
+
 export type SanityImageAssetReference = {
   _ref: string;
   _type: "reference";
   _weak?: boolean;
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type DeliveryEpisode = {
+  _id: string;
+  _type: "deliveryEpisode";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  youtubeUrl: string;
+  teaser: string;
+  lead: string;
+  body?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h3" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  publishedAt: string;
+  author?: AuthorsReference;
+  duration?: string;
+  thumbnail?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  seo_title?: string;
+  seo_description?: string;
+  seo_image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  no_index?: boolean;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
 };
 
 export type PostReference = {
@@ -210,35 +291,6 @@ export type CaseStudy = {
   canonical?: string;
   seo_keywords?: Array<string>;
   no_index?: boolean;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
-};
-
-export type AuthorsReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "authors";
 };
 
 export type BlogPost = {
@@ -562,14 +614,15 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | AuthorsReference
   | SanityImageAssetReference
-  | PostReference
-  | CaseStudyReference
-  | CaseStudy
+  | DeliveryEpisode
   | SanityImageCrop
   | SanityImageHotspot
   | Slug
-  | AuthorsReference
+  | PostReference
+  | CaseStudyReference
+  | CaseStudy
   | BlogPost
   | Post
   | Authors
@@ -947,6 +1000,68 @@ export type CASE_STUDY_TEASERS_QUERY_RESULT = Array<{
   };
 }>;
 
+// Source: ../src/sanity/queries.ts
+// Variable: DELIVERY_EPISODES_QUERY
+// Query: *[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  youtubeUrl,  teaser,  lead,  thumbnail{ hotspot, crop, asset->{ _id } }}
+export type DELIVERY_EPISODES_QUERY_RESULT = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  youtubeUrl: string;
+  teaser: string;
+  lead: string;
+  thumbnail: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  } | null;
+}>;
+
+// Source: ../src/sanity/queries.ts
+// Variable: DELIVERY_EPISODE_QUERY
+// Query: *[_type == "deliveryEpisode" && slug.current == $slug][0]{  _id,  title,  "slug": slug.current,  youtubeUrl,  teaser,  lead,  body,  publishedAt,  duration,  "author": author->name,  thumbnail{ hotspot, crop, asset->{ _id } },  seo_title,  seo_description,  no_index}
+export type DELIVERY_EPISODE_QUERY_RESULT = {
+  _id: string;
+  title: string;
+  slug: string;
+  youtubeUrl: string;
+  teaser: string;
+  lead: string;
+  body: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h3" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }> | null;
+  publishedAt: string;
+  duration: string | null;
+  author: string | null;
+  thumbnail: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  } | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  no_index: boolean | null;
+} | null;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -957,6 +1072,8 @@ declare global {
     '*[_type == "caseStudy" && defined(slug.current)].slug.current': CASE_STUDY_SLUGS_QUERY_RESULT;
     '*[_type == "caseStudy" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  industry,\n  companySize,\n  market,\n  commissionedBy,\n  duration,\n  year,\n  figures[]{ _key, value, label },\n  context,\n  contextQuote,\n  phases[]{ _key, label, title, text },\n  phasesText,\n  findingsIntro,\n  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },\n  maturity,\n  roadmapLead,\n  horizons[]{ _key, tab, label, title, text },\n  changes[]{ _key, metric, before, after, period },\n  changesText,\n  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },\n  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },\n  seo_title,\n  seo_description,\n  no_index\n}': CASE_STUDY_QUERY_RESULT;
     '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
+    '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  thumbnail{ hotspot, crop, asset->{ _id } }\n}': DELIVERY_EPISODES_QUERY_RESULT;
+    '*[_type == "deliveryEpisode" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

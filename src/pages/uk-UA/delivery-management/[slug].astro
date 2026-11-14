@@ -1,45 +1,73 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { PortableText } from "astro-portabletext";
 import Base from "../../../layouts/Base.astro";
 import Footer from "../../../components/Footer.astro";
 import Crumb from "../../../components/findings/Crumb.astro";
 import TocCta from "../../../components/findings/TocCta.astro";
 import FoundersCta from "../../../components/findings/FoundersCta.astro";
 import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
-import { episodes, thumbnail, thumbnailSrcset, type Episode } from "../../../data/delivery-management";
+import { cover, isoDuration, youtubeId } from "../../../data/delivery-management";
+import { sanityClient } from "../../../sanity/client";
+import { DELIVERY_EPISODE_QUERY, DELIVERY_EPISODES_QUERY } from "../../../sanity/queries";
 
 // An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
 // faded behind the title, the player across the content width (YouTube loads only when the reader presses play),
 // the episode retold as prose in a single column; then the other episodes as the site's carousel and the founders'
-// block.
+// block. Content: Sanity's "Delivery management episodes" (`deliveryEpisode`).
 
-export function getStaticPaths() {
-  return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode } }));
+export async function getStaticPaths() {
+  const episodes = await sanityClient.fetch(DELIVERY_EPISODES_QUERY);
+  return episodes.map((e) => ({ params: { slug: e.slug }, props: { episodes } }));
 }
 
-const { episode } = Astro.props as { episode: Episode };
+const { slug } = Astro.params;
+const { episodes } = Astro.props;
+const episode = await sanityClient.fetch(DELIVERY_EPISODE_QUERY, { slug });
+if (!episode) throw new Error(`No delivery management episode with the slug "${slug}"`);
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
-const watchUrl = `https://www.youtube.com/watch?v=${episode.youtubeId}`;
+const videoId = youtubeId(episode.youtubeUrl);
+const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+const image = cover(episode);
+
+// the video for search engines: schema.org's VideoObject
+const videoData = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: episode.title,
+  description: episode.teaser,
+  thumbnailUrl: image.src,
+  uploadDate: episode.publishedAt,
+  duration: isoDuration(episode.duration),
+  embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
+  contentUrl: watchUrl,
+  ...(episode.author && { author: { "@type": "Person", name: episode.author } }),
+};
 
 // card titles go to the carousel as HTML, so the plain-text titles are escaped
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const others: Teaser[] = episodes
   .filter((e) => e.slug !== episode.slug)
   .map((e) => ({
-    image: { src: thumbnail(e.youtubeId, "mqdefault"), srcset: thumbnailSrcset(e.youtubeId) },
+    image: cover(e),
     title: escape(e.title),
     href: url(`delivery-management/${e.slug}`),
   }));
 ---
 
-<Base title={`${episode.title} | Все про менеджмент делівері`} description={episode.teaser}>
+<Base
+  title={episode.seo_title || `${episode.title} | Все про менеджмент делівері`}
+  description={episode.seo_description || episode.teaser}
+  noindex={episode.no_index ?? false}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(videoData)} />
   <main id="main" class="ep">
     <!-- ═══ First screen: the cover, blurred and faded into the paper ═══ -->
     <header class="ep-hero">
       <div class="ep-hero__art" aria-hidden="true">
-        <img src={thumbnail(episode.youtubeId, "maxresdefault")} alt="" fetchpriority="high" />
+        <img src={image.src} alt="" fetchpriority="high" />
       </div>
       <div class="wrap ep-hero__inner">
         <Crumb href={url("delivery-management")} label="Все про менеджмент делівері" />
@@ -49,14 +77,9 @@ const others: Teaser[] = episodes
 
     <!-- ═══ The player, across the content width: the cover until the reader presses play ═══ -->
     <div class="wrap">
-      <div class="ep-player" data-video={episode.youtubeId} data-title={episode.title}>
+      <div class="ep-player" data-video={videoId} data-title={episode.title}>
         <a class="ep-player__poster" href={watchUrl} aria-label={`Дивитися відео «${episode.title}»`}>
-          <img
-            src={thumbnail(episode.youtubeId, "maxresdefault")}
-            srcset={thumbnailSrcset(episode.youtubeId)}
-            sizes="(width < 64rem) 100vw, 83vw"
-            alt=""
-          />
+          <img {...image} sizes="(width < 64rem) 100vw, 83vw" alt="" />
           <span class="ep-player__play" aria-hidden="true"></span>
         </a>
       </div>
@@ -66,9 +89,7 @@ const others: Teaser[] = episodes
     <div class="wrap ep-layout">
       <article class="ep-body">
         <p class="ep-lead">{episode.lead}</p>
-        {episode.body.map((p) => (
-          <p>{p}</p>
-        ))}
+        {episode.body && <PortableText value={episode.body} />}
       </article>
 
       <!-- the findings pages' small call to action, kept in view beside the text -->
@@ -80,20 +101,22 @@ const others: Teaser[] = episodes
     </div>
 
     <!-- ═══ The other episodes: the site's carousel, three same-sized cards to a screen ═══ -->
-    <section class="ep-others" aria-labelledby="ep-others-title">
-      <div class="wrap">
-        <h2 class="ep-others__title" id="ep-others-title">
-          Інші випуски
-        </h2>
-        <Carousel
-          label="Інші випуски"
-          items={others}
-          more="Дивитися"
-          prevLabel="Попередні випуски"
-          nextLabel="Наступні випуски"
-        />
-      </div>
-    </section>
+    {others.length > 0 && (
+      <section class="ep-others" aria-labelledby="ep-others-title">
+        <div class="wrap">
+          <h2 class="ep-others__title" id="ep-others-title">
+            Інші випуски
+          </h2>
+          <Carousel
+            label="Інші випуски"
+            items={others}
+            more="Дивитися"
+            prevLabel="Попередні випуски"
+            nextLabel="Наступні випуски"
+          />
+        </div>
+      </section>
+    )}
 
     <FoundersCta
       finding={`delivery-management:${episode.slug}`}
@@ -135,7 +158,8 @@ const others: Teaser[] = episodes
     background: var(--c-paper);
     color: var(--c-hero);
   }
-  .ep p {
+  .ep p,
+  .ep-body :global(p) {
     margin: 0;
   }
 
@@ -258,6 +282,23 @@ const others: Teaser[] = episodes
     margin-top: 0;
     padding-top: 0;
     border-top: 0;
+  }
+  .ep-body :global(h3) {
+    margin: var(--space-md) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .ep-body :global(blockquote) {
+    margin: var(--space-xs) 0;
+    padding-left: var(--space-md);
+    border-left: 3px solid var(--c-primary);
+    font-size: var(--text-lead);
+  }
+  .ep-body :global(a) {
+    color: inherit;
+    text-underline-offset: 0.15em;
   }
   .ep-lead {
     margin-bottom: var(--space-xs);

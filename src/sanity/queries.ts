@@ -103,3 +103,33 @@ export const CASE_STUDY_TEASERS_QUERY =
   "figure": figures[0]{ value, label },
   heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }
 }`);
+
+/** "Все про менеджмент делівері": every episode, newest first (the index, the carousel, the slugs) */
+export const DELIVERY_EPISODES_QUERY =
+  defineQuery(`*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){
+  _id,
+  title,
+  "slug": slug.current,
+  youtubeUrl,
+  teaser,
+  lead,
+  thumbnail{ hotspot, crop, asset->{ _id } }
+}`);
+
+/** One episode, everything its page shows */
+export const DELIVERY_EPISODE_QUERY = defineQuery(`*[_type == "deliveryEpisode" && slug.current == $slug][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  youtubeUrl,
+  teaser,
+  lead,
+  body,
+  publishedAt,
+  duration,
+  "author": author->name,
+  thumbnail{ hotspot, crop, asset->{ _id } },
+  seo_title,
+  seo_description,
+  no_index
+}`);
