@@ -89,7 +89,7 @@ const intro =
 
     <FoundersCta
       finding="delivery-management"
-      title="Впізнали свою компанію? <strong>Розберімо її</strong> з&nbsp;тими, хто вів ці діагностики."
+      title="Хочете застосувати це у&nbsp;своїй компанії? <strong>Поговорімо</strong> про ваш delivery."
       lead="Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови."
     />
   </main>
@@ -195,6 +195,10 @@ const intro =
     background: var(--c-hero);
     color: var(--c-cream);
   }
+  /* the founders' block follows the panel directly */
+  .dm :global(.founders-cta) {
+    margin-top: 0;
+  }
   .dm-latest {
     display: grid;
     justify-items: start;
@@ -244,7 +248,7 @@ const intro =
     color: var(--c-white);
     font-family: var(--font-display);
     font-size: var(--text-heading);
-    font-weight: 600;
+    font-weight: 500;
     line-height: var(--leading-heading);
   }
   .dm-latest__title a:hover {
@@ -320,7 +324,7 @@ const intro =
   .dm-list__name {
     color: var(--c-white);
     font-size: var(--text-body);
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.3;
   }
   .dm-list a:hover .dm-list__name {

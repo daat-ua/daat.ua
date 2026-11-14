@@ -1,16 +1,9 @@
 // "Все про менеджмент делівері" (DAA-231): Olena Kyianovska's YouTube series, an index and a page per episode
 // (src/pages/uk-UA/delivery-management/). Placeholder content until the episodes come from Sanity: the titles,
 // dates and descriptions are the playlist's; each episode's text, its retelling as prose (not a verbatim
-// transcript) in sections that link to their moment in the video, is placeholder copy in square brackets.
+// transcript), is placeholder copy in square brackets.
 
 export const playlistUrl = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr6Iu244KhyxFpCAbC9SLZoL";
-
-export interface EpisodeSection {
-  title: string;
-  /** where the section starts in the video, in seconds */
-  start: number;
-  paragraphs: string[];
-}
 
 export interface Episode {
   slug: string;
@@ -22,23 +15,16 @@ export interface Episode {
   teaser: string;
   /** the episode page's opening paragraph */
   lead: string;
-  sections: EpisodeSection[];
+  /** the episode retold as prose, paragraph by paragraph */
+  body: string[];
 }
 
-const placeholderSections: EpisodeSection[] = [
-  ["[Про що цей випуск]", 0],
-  ["[Перша думка випуску]", 130],
-  ["[Друга думка випуску]", 405],
-  ["[Приклад із практики]", 690],
-  ["Висновки", 920],
-].map(([title, start]) => ({
-  title: title as string,
-  start: start as number,
-  paragraphs: [
-    "[Абзац: думка з цього фрагмента відео, переказана як текст статті, а не дослівний транскрипт.]",
-    "[Абзац: приклад або кейс, який Олена наводить у цьому фрагменті.]",
-  ],
-}));
+const placeholderBody = [
+  "[Абзац: перша думка випуску, переказана як текст статті, а не дослівний транскрипт.]",
+  "[Абзац: як ця проблема виглядає в компанії, з прикладом або кейсом, який наводить Олена.]",
+  "[Абзац: що з цим робити: кроки, інструменти чи рішення з випуску.]",
+  "[Абзац: висновок і до чого варто придивитися у своїй компанії.]",
+];
 
 /** newest first */
 export const episodes: Episode[] = [
@@ -49,7 +35,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-06-10",
     teaser: "Delivery-менеджер — панацея від усіх проблем? Ні!",
     lead: "Delivery-менеджер — панацея від усіх проблем? Ні! У 80%+ випадків маленьким і середнім компаніям потрібен не delivery-менеджер, а PM Lead.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "ceo-as-chief-pm",
@@ -58,7 +44,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-06-03",
     teaser: "CEO кидає все і вирішує ескалацію, а команда складає руки і чекає. Знайомо?",
     lead: "CEO кидає все і вирішує ескалацію, а команда складає руки і чекає. Знайомо? Загинайте пальці, якщо бачили такі кейси.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "ferrari-and-the-childrens-hospital",
@@ -68,7 +54,7 @@ export const episodes: Episode[] = [
     teaser:
       "Що спільного між командою Formula 1 Ferrari, дитячою лікарнею Great Ormond Street Hospital у Лондоні та IT?",
     lead: "Що спільного між командою Formula 1 Ferrari, дитячою лікарнею Great Ormond Street Hospital у Лондоні та IT?",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "cheap-project-managers-cost-more",
@@ -78,7 +64,7 @@ export const episodes: Episode[] = [
     teaser:
       "Чому не треба наймати дешевих project-менеджерів? Розповідаю кейс, коли компанія наймала тільки trainee/junior PM без сталого фреймворку управління проєктами.",
     lead: "Чому не треба наймати дешевих project-менеджерів? Розповідаю кейс, коли компанія наймала тільки trainee/junior PM без сталого фреймворку управління проєктами. Результат: проєкт на $40K перетворився на $115K безкоштовної роботи.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "how-teams-kill-client-ltv",
@@ -87,7 +73,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-03-12",
     teaser: "Ви працюєте з клієнтом довго, вклали зусилля в стосунки, нарешті з’явилась довіра.",
     lead: "Ви працюєте з клієнтом довго, вклали зусилля в стосунки, нарешті з’явилась довіра. Можна розслабитись? НІ!",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "net-5-payment-terms",
@@ -96,7 +82,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-02-25",
     teaser: "Маленькі та середні компанії бояться говорити з клієнтом про payment terms.",
     lead: "Маленькі та середні компанії бояться говорити з клієнтом про payment terms. Даремно! Гарне делівері не допоможе, якщо клієнт заплатить через 2 місяці.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "overdependency-on-big-clients",
@@ -105,7 +91,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-02-19",
     teaser: "«Добре зафіксований пацієнт не потребує анестезії» — але в ролі пацієнта ваша компанія.",
     lead: "«Добре зафіксований пацієнт не потребує анестезії» — але в ролі пацієнта ваша компанія. Коли один клієнт займає 80% revenue, він диктує умови поставок, оплат, прайси і викручує руки на повну. Кожна 2-3 IT компанія стикається з цим.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "design-driven-approach",
@@ -115,7 +101,7 @@ export const episodes: Episode[] = [
     teaser:
       "«Нам простіше знімати вимоги, коли у клієнта дизайн перед очима» — так у моє життя ввійшов design-driven approach.",
     lead: "«Нам простіше знімати вимоги, коли у клієнта дизайн перед очима» — так у моє життя ввійшов design-driven approach. Окей для клієнтів без досвіду, але чому маленькі та середні аутсорсингові компанії роблять цю помилку? Розбираємо, чому цей підхід не працює для малого бізнесу.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "dont-skip-discovery",
@@ -125,7 +111,7 @@ export const episodes: Episode[] = [
     teaser:
       "Робити проєкти без discovery — це суцільне гусарство. Уявіть дуель, де ви приблизно знаєте дату, приблизно розумієте зброю, і всі намагаються влучити в ціль, яка рухається.",
     lead: "Робити проєкти без discovery — це суцільне гусарство. Уявіть дуель, де ви приблизно знаєте дату, приблизно розумієте зброю, і всі намагаються влучити в ціль, яка рухається. Це повноцінний бедлам!",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "clients-who-pay-late",
@@ -134,7 +120,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-01-28",
     teaser: "Немає жодної компанії, яка не стикалась з клієнтами, які затримують оплату.",
     lead: "Немає жодної компанії, яка не стикалась з клієнтами, які затримують оплату. Чому ви субсидуєте бізнес клієнта за рахунок своєї компанії? Розбираємо покроковий план, як змусити клієнтів платити вчасно.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "documented-development-process",
@@ -143,7 +129,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-01-21",
     teaser: "У консалтинговій практиці ми часто бачимо невпорядковані процеси розробки.",
     lead: "У консалтинговій практиці ми часто бачимо невпорядковані процеси розробки. Після delivery-аудиту одна з ключових рекомендацій — описати SDLC (Software Development Lifecycle). Але навіщо це потрібно?",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "upsell-process",
@@ -152,7 +138,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-01-14",
     teaser: "На ринку всі шукають нових клієнтів, але забувають про роботу з поточними.",
     lead: "На ринку всі шукають нових клієнтів, але забувають про роботу з поточними. В більшості компаній немає системного процесу апсейлів. Розбираємо покроковий фреймворк для налаштування upsell процесів у вашій компанії.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "delivery-manager-skills",
@@ -161,7 +147,7 @@ export const episodes: Episode[] = [
     publishedAt: "2026-01-07",
     teaser: "Чому гарний проджект-менеджер не завжди стає успішним делівері-менеджером?",
     lead: "Чому гарний проджект-менеджер не завжди стає успішним делівері-менеджером? Розбираємо 6 ключових навичок, які необхідні для успіху на позиції delivery manager.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "weekly-project-metrics",
@@ -171,7 +157,7 @@ export const episodes: Episode[] = [
     teaser:
       "Проблеми з делівері проєктів? Дізнайтеся про 4 ключові групи показників, які потрібно відстежувати щотижня, щоб тримати ваші проєкти під контролем.",
     lead: "Проблеми з делівері проєктів? Дізнайтеся про 4 ключові групи показників, які потрібно відстежувати щотижня, щоб тримати ваші проєкти під контролем. У цьому відео розглядаємо: Показники роботи проєкту (SPI & CPI) — Встигайте в рамках дедлайнів і бюджетів Відстеження проблем - Виявляйте та вирішуйте проблеми до того, як вони стануть очевидні клієнту Фінансове здоров’я клієнта - Контролюйте інвойси, платежі та запобігайте боргам Показники якості - Відстежуйте баги, аудити процесів та рівень задоволеності клієнтів Ці показники допоможуть вам:",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
   {
     slug: "who-is-a-delivery-manager",
@@ -181,7 +167,7 @@ export const episodes: Episode[] = [
     teaser:
       "Delivery Manager — професія, якої офіційно не існує в класифікаторах, але люди та цінність, яку вони приносять, реальні.",
     lead: "Delivery Manager — професія, якої офіційно не існує в класифікаторах, але люди та цінність, яку вони приносять, реальні. Розбираємо чотири типи делівері-менеджерів на ринку.",
-    sections: placeholderSections,
+    body: placeholderBody,
   },
 ];
 
@@ -190,6 +176,3 @@ export const thumbnail = (id: string, size: "mqdefault" | "sddefault" | "maxresd
   `https://i.ytimg.com/vi/${id}/${size}.jpg`;
 export const thumbnailSrcset = (id: string) =>
   `${thumbnail(id, "mqdefault")} 320w, ${thumbnail(id, "maxresdefault")} 1280w`;
-
-/** "m:ss" for a start time in seconds */
-export const timecode = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;

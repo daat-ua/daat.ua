@@ -3,16 +3,15 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import Base from "../../../layouts/Base.astro";
 import Footer from "../../../components/Footer.astro";
 import Crumb from "../../../components/findings/Crumb.astro";
-import FindingsToc from "../../../components/findings/FindingsToc.astro";
 import TocCta from "../../../components/findings/TocCta.astro";
 import FoundersCta from "../../../components/findings/FoundersCta.astro";
 import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
-import { episodes, thumbnail, thumbnailSrcset, timecode, type Episode } from "../../../data/delivery-management";
+import { episodes, thumbnail, thumbnailSrcset, type Episode } from "../../../data/delivery-management";
 
 // An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
 // faded behind the title, the player across the content width (YouTube loads only when the reader presses play),
-// the episode retold as prose with "on this page" beside it, each section starting the video at its moment;
-// then the other episodes as the site's carousel and the founders' block.
+// the episode retold as prose in a single column; then the other episodes as the site's carousel and the founders'
+// block.
 
 export function getStaticPaths() {
   return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode } }));
@@ -22,8 +21,7 @@ const { episode } = Astro.props as { episode: Episode };
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
-const sections = episode.sections.map((s, i) => ({ ...s, id: `part-${i + 1}` }));
-const watchUrl = (start = 0) => `https://www.youtube.com/watch?v=${episode.youtubeId}${start ? `&t=${start}s` : ""}`;
+const watchUrl = `https://www.youtube.com/watch?v=${episode.youtubeId}`;
 
 // card titles go to the carousel as HTML, so the plain-text titles are escaped
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -52,7 +50,7 @@ const others: Teaser[] = episodes
     <!-- ═══ The player, across the content width: the cover until the reader presses play ═══ -->
     <div class="wrap">
       <div class="ep-player" data-video={episode.youtubeId} data-title={episode.title}>
-        <a class="ep-player__poster" href={watchUrl()} aria-label={`Дивитися відео «${episode.title}»`}>
+        <a class="ep-player__poster" href={watchUrl} aria-label={`Дивитися відео «${episode.title}»`}>
           <img
             src={thumbnail(episode.youtubeId, "maxresdefault")}
             srcset={thumbnailSrcset(episode.youtubeId)}
@@ -64,26 +62,21 @@ const others: Teaser[] = episodes
       </div>
     </div>
 
-    <!-- ═══ The episode as prose, "on this page" beside it ═══ -->
+    <!-- ═══ The episode retold as prose, the call to action beside it ═══ -->
     <div class="wrap ep-layout">
       <article class="ep-body">
         <p class="ep-lead">{episode.lead}</p>
-        {sections.map((s) => (
-          <section id={s.id} class="ep-section">
-            <h2>{s.title}</h2>
-            {s.paragraphs.map((p) => (
-              <p>{p}</p>
-            ))}
-            <a class="ep-moment" href={watchUrl(s.start)} data-start={s.start}>
-              У відео з {timecode(s.start)}
-            </a>
-          </section>
+        {episode.body.map((p) => (
+          <p>{p}</p>
         ))}
       </article>
 
-      <FindingsToc items={sections.map(({ id, title }) => ({ id, label: title }))}>
-        <TocCta title="Впізнали свою компанію?" />
-      </FindingsToc>
+      <!-- the findings pages' small call to action, kept in view beside the text -->
+      <aside class="ep-aside" aria-label="Запис на дзвінок">
+        <div class="ep-aside__inner">
+          <TocCta title="Впізнали свою компанію?" />
+        </div>
+      </aside>
     </div>
 
     <!-- ═══ The other episodes: the site's carousel, three same-sized cards to a screen ═══ -->
@@ -104,7 +97,7 @@ const others: Teaser[] = episodes
 
     <FoundersCta
       finding={`delivery-management:${episode.slug}`}
-      title="Впізнали свою компанію? <strong>Розберімо її</strong> з&nbsp;тими, хто вів ці діагностики."
+      title="Хочете застосувати це у&nbsp;своїй компанії? <strong>Поговорімо</strong> про ваш delivery."
       lead="Олена й&nbsp;Сергій особисто ведуть кожну діагностику ATLAS. Оберіть зручний час для 30‑хвилинної розмови."
     />
   </main>
@@ -112,13 +105,13 @@ const others: Teaser[] = episodes
 </Base>
 
 <script>
-  // The player: YouTube (its privacy-enhanced domain) loads only when the reader presses play, or a section's
-  // "У відео з …" link, which starts it at that moment. Without JavaScript the links open YouTube.
+  // The player: YouTube (its privacy-enhanced domain) loads only when the reader presses play. Without
+  // JavaScript the poster opens the video on YouTube.
   const player = document.querySelector<HTMLElement>(".ep-player");
   if (player) {
-    const play = (start = 0) => {
+    const play = () => {
       const iframe = document.createElement("iframe");
-      iframe.src = `https://www.youtube-nocookie.com/embed/${player.dataset.video}?autoplay=1&rel=0&start=${start}`;
+      iframe.src = `https://www.youtube-nocookie.com/embed/${player.dataset.video}?autoplay=1&rel=0`;
       iframe.title = player.dataset.title ?? "";
       iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
       iframe.allowFullscreen = true;
@@ -128,13 +121,6 @@ const others: Teaser[] = episodes
       e.preventDefault();
       play();
     });
-    for (const link of document.querySelectorAll<HTMLAnchorElement>(".ep-moment")) {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        play(Number(link.dataset.start) || 0);
-        player.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-      });
-    }
   }
 </script>
 
@@ -244,7 +230,7 @@ const others: Teaser[] = episodes
     outline-offset: -3px;
   }
 
-  /* ---------- The episode as prose: the findings pages' grid ---------- */
+  /* ---------- The episode as prose at reading width, the findings pages' grid ---------- */
   .ep-layout {
     display: grid;
     grid-template-columns: var(--span-2) 1fr;
@@ -253,48 +239,29 @@ const others: Teaser[] = episodes
   }
   .ep-body {
     display: grid;
-    row-gap: var(--space-xl);
+    align-content: start;
+    row-gap: var(--space-md);
     min-width: 0;
-  }
-  .ep-lead {
-    font-size: var(--text-lead);
-    line-height: var(--leading-body);
-  }
-  .ep-section {
-    display: grid;
-    justify-items: start;
-    row-gap: var(--space-sm);
-    scroll-margin-top: var(--space-xl);
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
-  .ep-section h2 {
-    margin: 0 0 var(--space-xs);
-    font-family: var(--font-display);
-    font-size: var(--text-title);
-    font-weight: 600;
-    line-height: var(--leading-title);
-  }
-  .ep-moment {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5em;
-    color: var(--c-primary);
+  /* as "on this page" sits on a finding: sticky, a little in from the column's edge; the prompt without its rule */
+  .ep-aside__inner {
+    position: sticky;
+    top: var(--space-xl);
+    width: 85%;
+    padding-left: var(--space-lg);
     font-size: var(--text-small);
-    font-weight: 500;
-    text-decoration: none;
+    line-height: var(--leading-small);
   }
-  .ep-moment::before {
-    content: "";
-    width: 0.7em;
-    height: 0.8em;
-    background: currentColor;
-    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  .ep-aside :global(.toc-cta) {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
   }
-  .ep-moment:hover {
-    color: var(--c-primary-hover);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
+  .ep-lead {
+    margin-bottom: var(--space-xs);
+    font-size: var(--text-lead);
   }
 
   /* ---------- Other episodes: the site's carousel, three equal 16:9 cards ---------- */
@@ -332,10 +299,14 @@ const others: Teaser[] = episodes
     }
     .ep-layout {
       grid-template-columns: 1fr;
+      row-gap: 48px;
       padding-block: 56px;
     }
-    .ep-body {
-      row-gap: 40px;
+    .ep-aside__inner {
+      position: static;
+      width: auto;
+      padding: 24px 0 0;
+      border-top: 1px solid var(--rule);
     }
     .ep-player__play {
       width: 72px;
