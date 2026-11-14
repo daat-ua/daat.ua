@@ -2,11 +2,12 @@ import { sanityClient } from "./client";
 import { CASE_STUDY_TEASERS_QUERY, DELIVERY_EPISODES_QUERY, FINDING_TEASERS_QUERY, FOUNDERS_QUERY } from "./queries";
 
 // Queries that many pages run, fetched once per build and shared: the build renders every page in one process,
-// so each of these is one request to Sanity, not one per page.
+// so each of these is one request to Sanity, not one per page. The dev server keeps modules between requests,
+// so there every call fetches again and edits in the Studio show on reload.
 
 const once = <T>(fetch: () => Promise<T>) => {
   let result: Promise<T> | undefined;
-  return () => (result ??= fetch());
+  return () => (import.meta.env.DEV ? fetch() : (result ??= fetch()));
 };
 
 /** the findings' teasers: the carousels (one per enabler on the catalogue page, on the ATLAS page and on every
