@@ -42,8 +42,8 @@ export const menu: MenuItem[] = [
 
 /** "Наші проєкти": Daat's projects beside the consulting */
 export const projects: Link[] = [
-  { label: "Все про менеджмент делівері", href: "/uk-UA/delivery-management" },
-  { label: '<span class="brand">Daat</span> talks', href: "/uk-UA/daat-talks" },
+  { label: "Все про менеджмент делівері", href: page("delivery-management") },
+  { label: '<span class="brand">Daat</span> talks', href: page("daat-talks") },
 ];
 
 export const legalLinks: Link[] = [
