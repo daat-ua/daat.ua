@@ -4,8 +4,7 @@ import Base from "../../../layouts/Base.astro";
 import Footer from "../../../components/Footer.astro";
 import FoundersCta from "../../../components/findings/FoundersCta.astro";
 import { cover } from "../../../data/delivery-management";
-import { sanityClient } from "../../../sanity/client";
-import { DELIVERY_EPISODES_QUERY } from "../../../sanity/queries";
+import { getDeliveryEpisodes } from "../../../sanity/shared";
 
 // "Все про менеджмент делівері" (DAA-231): the index of Olena Kyianovska's video series. The previous site's
 // "Делівері блог" block (DeliveryBlogTeaser) in this site's type: a dotted ground, a looping video that stays in
@@ -15,7 +14,7 @@ import { DELIVERY_EPISODES_QUERY } from "../../../sanity/queries";
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 const episodeHref = (slug: string) => url(`delivery-management/${slug}`);
-const [latest, ...rest] = await sanityClient.fetch(DELIVERY_EPISODES_QUERY);
+const [latest, ...rest] = await getDeliveryEpisodes();
 const intro =
   "Олена Кияновська розповідає про буремні (але дуже цікаві) моменти в роботі делівері-менеджера, ділиться безцінним досвідом обходження граблів та каменів. Для широкої аудиторії.";
 ---

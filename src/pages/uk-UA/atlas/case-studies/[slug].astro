@@ -1,4 +1,5 @@
 ---
+import type { InferGetStaticPropsType } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText } from "astro-portabletext";
 import Base from "../../../../layouts/Base.astro";
@@ -13,7 +14,8 @@ import { cases as placeholderCases } from "../../../../data/testimonials";
 import { enablerNames } from "../../../../data/enablers";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
-import { CASE_STUDY_QUERY, CASE_STUDY_SLUGS_QUERY, CASE_STUDY_TEASERS_QUERY } from "../../../../sanity/queries";
+import { CASE_STUDIES_QUERY } from "../../../../sanity/queries";
+import { getCaseStudyTeasers } from "../../../../sanity/shared";
 
 // A case study (DAA-230), after the mockup "Шаблон сторінки кейсу", in the findings pages' language: the
 // breadcrumb and title over the faded hero image with the client's profile beside them, the key figures, then
@@ -22,13 +24,11 @@ import { CASE_STUDY_QUERY, CASE_STUDY_SLUGS_QUERY, CASE_STUDY_TEASERS_QUERY } fr
 // (`caseStudy`); a section without content is left out, and so is its entry in "on this page".
 
 export async function getStaticPaths() {
-  const slugs = await sanityClient.fetch(CASE_STUDY_SLUGS_QUERY);
-  return slugs.map((slug) => ({ params: { slug } }));
+  const studies = await sanityClient.fetch(CASE_STUDIES_QUERY);
+  return studies.map((study) => ({ params: { slug: study.slug }, props: { study } }));
 }
 
-const { slug } = Astro.params;
-const study = await sanityClient.fetch(CASE_STUDY_QUERY, { slug });
-if (!study) throw new Error(`No case study with the slug "${slug}"`);
+const { study } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
 
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
@@ -101,7 +101,7 @@ type CaseTeaser = {
 const picked = ((study.otherCases ?? []) as (CaseTeaser | null)[]).filter((c): c is CaseTeaser => c !== null);
 const latest = picked.length
   ? []
-  : ((await sanityClient.fetch(CASE_STUDY_TEASERS_QUERY)) as CaseTeaser[]).filter((c) => c.slug !== study.slug);
+  : ((await getCaseStudyTeasers()) as CaseTeaser[]).filter((c) => c.slug !== study.slug);
 // card titles go to the carousel as HTML, so the plain-text titles from Sanity are escaped
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const toTeaser = (c: CaseTeaser): Teaser => ({

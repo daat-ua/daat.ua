@@ -3,9 +3,8 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
 import { commissionedByNames, industryNames } from "../../../../data/case-studies";
-import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
-import { CASE_STUDY_TEASERS_QUERY } from "../../../../sanity/queries";
+import { getCaseStudyTeasers } from "../../../../sanity/shared";
 import heroImage from "../../../../assets/images/case-studies-hero.jpg";
 
 // The case studies index (DAA-229), design B4 of the "Case studies index" canvas: the findings pages' title
@@ -17,7 +16,7 @@ const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 const caseHref = (slug: string) => url(`atlas/case-studies/${slug}`);
 
-const all = (await sanityClient.fetch(CASE_STUDY_TEASERS_QUERY)).filter((c) => c.heroImage?.asset);
+const all = (await getCaseStudyTeasers()).filter((c) => c.heroImage?.asset);
 const featured = all.find((c) => c.featured) ?? all[0];
 const rest = all.filter((c) => c !== featured);
 /** "IT-сервіси / аутсорс · ~50 людей · Засновник-CEO": the card tag (or industry and size), then who commissioned it */
