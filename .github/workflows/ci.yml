@@ -28,7 +28,10 @@ jobs:
       - run: npm ci
       - name: Formatting
         run: npm run format:check
-      - name: Type check and build
+      # type-checked here, on every PR and push to main, so the deploy build (Dockerfile) only builds
+      - name: Type check
+        run: npm run check
+      - name: Build
         run: npm run build
       # Only what a pull request changes on the ATLAS page: its build against its base branch's build. A PR that
       # changes the page on purpose gets the `visual-change` label, which skips this step (diffs stay reviewable

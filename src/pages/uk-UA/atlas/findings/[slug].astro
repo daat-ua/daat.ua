@@ -1,4 +1,5 @@
 ---
+import type { InferGetStaticPropsType } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText, toPlainText } from "astro-portabletext";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
@@ -11,22 +12,22 @@ import Bulb from "../../../../assets/icons/icon-bulb.svg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
 import { headingsOf } from "../../../../sanity/portable-text";
-import { FINDING_QUERY, FINDING_SLUGS_QUERY, FOUNDERS_QUERY } from "../../../../sanity/queries";
+import { FINDINGS_QUERY } from "../../../../sanity/queries";
+import { getFounders } from "../../../../sanity/shared";
 
 // A delivery-audit finding from the Sanity "Delivery audit findings" collection (`post`), one page per
 // finding at build time: hero over the artwork, the article with its efforts radar and TL/DR, a sticky
 // "on this page" list, and the findings carousel.
 
 export async function getStaticPaths() {
-  const slugs = await sanityClient.fetch(FINDING_SLUGS_QUERY);
-  return slugs.map((slug) => ({ params: { slug } }));
+  const findings = await sanityClient.fetch(FINDINGS_QUERY);
+  return findings.map((finding) => ({ params: { slug: finding.slug! }, props: { finding } }));
 }
 
 const { slug } = Astro.params;
-const finding = await sanityClient.fetch(FINDING_QUERY, { slug });
-if (!finding) throw new Error(`No finding with the slug "${slug}"`);
+const { finding } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
 // the founders' faces on the phones' call bar
-const founders = await sanityClient.fetch(FOUNDERS_QUERY);
+const founders = await getFounders();
 
 const { title, image, author, teaser, body, summarisation } = finding;
 

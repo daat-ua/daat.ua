@@ -10,7 +10,8 @@ Requires Node 26 LTS (see `.nvmrc`; Astro 7.4 needs ≥ 22.23.4).
 ```sh
 npm install
 npm run dev       # http://localhost:4321/uk-UA/atlas
-npm run build     # astro check + static build into dist/
+npm run check     # type check (astro check); CI runs it, the deploy build does not
+npm run build     # static build into dist/
 npm run preview   # serve dist/ locally
 npm run test:visual  # compare each section of the build with a reference (needs a build; see below)
 ```
