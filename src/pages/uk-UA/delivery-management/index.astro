@@ -26,6 +26,7 @@ const intro =
       <!-- the video stays in view while the episodes scroll up over it -->
       <div class="dm-video">
         <video
+          id="dm-video"
           src="/videos/delivery-management.mp4"
           autoplay
           muted
@@ -34,7 +35,12 @@ const intro =
           preload="metadata"
           aria-hidden="true"
         ></video>
-        <p class="dm-video__intro">{intro}</p>
+        <div class="dm-video__foot">
+          <p class="dm-video__intro">{intro}</p>
+          <button type="button" class="dm-toggle dm-toggle--desktop" aria-controls="dm-video" hidden>
+            Пауза
+          </button>
+        </div>
       </div>
 
       <!-- the title and the episodes, in a column on the right, over the video -->
@@ -42,6 +48,9 @@ const intro =
         <header class="dm-head">
           <p class="dm-eyebrow">Наші проєкти</p>
           <h1 class="dm-title">Все про менеджмент делівері</h1>
+          <button type="button" class="dm-toggle dm-toggle--phone" aria-controls="dm-video" hidden>
+            Пауза
+          </button>
         </header>
 
         <div class="dm-panel">
@@ -95,11 +104,27 @@ const intro =
 </Base>
 
 <script>
-  // no looping video for readers who ask for less motion
-  const video = document.querySelector<HTMLVideoElement>(".dm-video video");
-  if (video && matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    video.removeAttribute("autoplay");
-    video.pause();
+  // The looping video can be paused (WCAG 2.2.2): one control under the intro on desktop, one under the title on
+  // phones, where the panel covers the rest of the video. Readers who ask for less motion get it paused.
+  const video = document.querySelector<HTMLVideoElement>("#dm-video");
+  const toggles = document.querySelectorAll<HTMLButtonElement>(".dm-toggle");
+  if (video) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      video.removeAttribute("autoplay");
+      video.pause();
+    }
+    const sync = () =>
+      toggles.forEach((toggle) => {
+        toggle.textContent = video.paused ? "Відтворити" : "Пауза";
+        toggle.dataset.state = video.paused ? "paused" : "playing";
+      });
+    toggles.forEach((toggle) => {
+      toggle.hidden = false;
+      toggle.addEventListener("click", () => (video.paused ? video.play() : video.pause()));
+    });
+    video.addEventListener("play", sync);
+    video.addEventListener("pause", sync);
+    sync();
   }
 </script>
 
@@ -125,7 +150,7 @@ const intro =
     color: var(--c-white);
   }
   .dm-eyebrow {
-    color: rgb(237 233 222 / 0.85);
+    color: color-mix(in srgb, var(--c-cream) 85%, transparent);
     font-size: var(--text-body);
     font-weight: 500;
     line-height: var(--leading-body);
@@ -167,17 +192,67 @@ const intro =
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgb(28 38 50 / 0.6), rgb(28 38 50 / 0.5), rgb(28 38 50 / 0.6));
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-hero) 60%, transparent),
+      color-mix(in srgb, var(--c-hero) 50%, transparent),
+      color-mix(in srgb, var(--c-hero) 60%, transparent)
+    );
   }
-  .dm-video__intro {
+  .dm-video__foot {
     position: absolute;
     z-index: 1;
     bottom: var(--space-3xl);
     left: var(--gutter-x);
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-md);
     width: calc(var(--col) + var(--col-gap));
-    color: rgb(255 255 255 / 0.88);
+  }
+  .dm-video__intro {
+    color: color-mix(in srgb, var(--c-white) 88%, transparent);
     font-size: var(--text-body);
     line-height: var(--leading-body);
+  }
+
+  /* pause / play for the looping video: a quiet pill in the light text's colour */
+  .dm-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    min-height: calc(40 * var(--px));
+    padding: 0 var(--space-md);
+    border: 1px solid color-mix(in srgb, var(--c-cream) 45%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--c-hero) 35%, transparent);
+    color: var(--c-white);
+    font: inherit;
+    font-size: var(--text-small);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .dm-toggle[hidden] {
+    display: none;
+  }
+  .dm-toggle::before {
+    content: "";
+    width: 0.7em;
+    height: 0.8em;
+    background: currentColor;
+    clip-path: polygon(0 0, 35% 0, 35% 100%, 0 100%, 0 0, 65% 0, 100% 0, 100% 100%, 65% 100%, 65% 0);
+  }
+  .dm-toggle[data-state="paused"]::before {
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .dm-toggle:hover {
+    border-color: var(--c-cream);
+  }
+  .dm-toggle:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  .dm-toggle--phone {
+    display: none;
   }
 
   /* the column: 60% of the stage on the right, rising over the whole video, the title at its top */
@@ -186,6 +261,7 @@ const intro =
     z-index: 1;
     width: 60%;
     margin: calc(-720 * var(--px)) 0 0 auto;
+    min-height: calc(720 * var(--px)); /* the video in full, however few the episodes */
     padding-top: var(--space-3xl);
   }
   .dm-panel {
@@ -198,7 +274,7 @@ const intro =
     margin-top: 0;
   }
   .dm-empty {
-    color: rgb(237 233 222 / 0.8);
+    color: color-mix(in srgb, var(--c-cream) 80%, transparent);
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
@@ -233,7 +309,7 @@ const intro =
     margin: auto;
     border-radius: 50%;
     background: var(--c-primary);
-    box-shadow: 0 10px 30px rgb(14 21 27 / 0.4);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--c-night) 40%, transparent);
     transition: transform 0.2s var(--ease-out);
   }
   .dm-play::after {
@@ -260,7 +336,7 @@ const intro =
     text-decoration-thickness: 2px;
   }
   .dm-latest__lead {
-    color: rgb(237 233 222 / 0.8);
+    color: color-mix(in srgb, var(--c-cream) 80%, transparent);
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
@@ -295,7 +371,7 @@ const intro =
   .dm-list__title {
     margin: var(--space-2xl) 0 var(--space-xs);
     padding-bottom: var(--space-sm);
-    border-bottom: 1px solid rgb(237 233 222 / 0.15);
+    border-bottom: 1px solid color-mix(in srgb, var(--c-cream) 15%, transparent);
     color: var(--c-white);
     font-family: var(--font-display);
     font-size: var(--text-title);
@@ -308,7 +384,7 @@ const intro =
     list-style: none;
   }
   .dm-list li + li {
-    border-top: 1px solid rgb(237 233 222 / 0.12);
+    border-top: 1px solid color-mix(in srgb, var(--c-cream) 12%, transparent);
   }
   .dm-list a {
     display: grid;
@@ -339,7 +415,7 @@ const intro =
     overflow: hidden;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    color: rgb(237 233 222 / 0.75);
+    color: color-mix(in srgb, var(--c-cream) 75%, transparent);
     font-size: var(--text-small);
     line-height: var(--leading-body);
   }
@@ -357,12 +433,17 @@ const intro =
       height: 480px;
       margin: 0;
     }
-    .dm-video__intro {
+    .dm-video__foot {
       display: none; /* the title takes the video's top; the intro would sit under the panel */
+    }
+    .dm-toggle--phone:not([hidden]) {
+      display: inline-flex;
+      justify-self: start;
     }
     .dm-column {
       width: auto;
       margin-top: -480px;
+      min-height: 480px;
       padding-top: 104px; /* clear of the logo hanging below the bar */
     }
     .dm-panel {
