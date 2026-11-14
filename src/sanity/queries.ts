@@ -1,14 +1,13 @@
 import { defineQuery } from "groq";
 
-// GROQ queries for the "Delivery audit findings" (`post`) and "Case Studies" (`caseStudy`) collections. Types
-// are generated from these by `npm run typegen` (src/sanity/sanity.types.ts), and sanityClient.fetch() returns
-// them.
+// GROQ queries for the "Delivery audit findings" (`post`), "Case Studies" (`caseStudy`) and "Delivery management
+// episodes" (`deliveryEpisode`) collections. Types are generated from these by `npm run typegen`
+// (src/sanity/sanity.types.ts), and sanityClient.fetch() returns them. A page per document gets its whole
+// collection in one query in getStaticPaths, not a query per page; queries several pages share run once
+// (src/sanity/shared.ts).
 
-/** Slugs of all findings, for getStaticPaths */
-export const FINDING_SLUGS_QUERY = defineQuery(`*[_type == "post" && defined(slug.current)].slug.current`);
-
-/** One finding, everything its page shows */
-export const FINDING_QUERY = defineQuery(`*[_type == "post" && slug.current == $slug][0]{
+/** Every finding, everything its page shows, for getStaticPaths */
+export const FINDINGS_QUERY = defineQuery(`*[_type == "post" && defined(slug.current)]{
   title,
   "slug": slug.current,
   image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
@@ -53,11 +52,8 @@ export const FOUNDERS_QUERY = defineQuery(`*[_type == "authors" && defined(photo
   photo{ hotspot, crop, asset->{ _id } }
 }`);
 
-/** Slugs of all case studies, for getStaticPaths */
-export const CASE_STUDY_SLUGS_QUERY = defineQuery(`*[_type == "caseStudy" && defined(slug.current)].slug.current`);
-
-/** One case study, everything its page shows */
-export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.current == $slug][0]{
+/** Every case study, everything its page shows, for getStaticPaths */
+export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy" && defined(slug.current)]{
   _id,
   title,
   "slug": slug.current,
@@ -104,7 +100,7 @@ export const CASE_STUDY_TEASERS_QUERY =
   heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }
 }`);
 
-/** "Все про менеджмент делівері": every episode, newest first (the index, the carousel, the slugs) */
+/** "Все про менеджмент делівері": every episode's teaser, newest first (the index and the site map) */
 export const DELIVERY_EPISODES_QUERY =
   defineQuery(`*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){
   _id,
@@ -116,8 +112,9 @@ export const DELIVERY_EPISODES_QUERY =
   thumbnail{ hotspot, crop, asset->{ _id } }
 }`);
 
-/** One episode, everything its page shows */
-export const DELIVERY_EPISODE_QUERY = defineQuery(`*[_type == "deliveryEpisode" && slug.current == $slug][0]{
+/** Every episode, everything its page shows, newest first (its "other episodes" carousel), for getStaticPaths */
+export const DELIVERY_EPISODE_PAGES_QUERY =
+  defineQuery(`*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){
   _id,
   title,
   "slug": slug.current,

@@ -638,14 +638,9 @@ export type AllSanitySchemaTypes =
   | Geopoint;
 
 // Source: ../src/sanity/queries.ts
-// Variable: FINDING_SLUGS_QUERY
-// Query: *[_type == "post" && defined(slug.current)].slug.current
-export type FINDING_SLUGS_QUERY_RESULT = Array<string>;
-
-// Source: ../src/sanity/queries.ts
-// Variable: FINDING_QUERY
-// Query: *[_type == "post" && slug.current == $slug][0]{  title,  "slug": slug.current,  image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },  art_description,  artist,  "author": author.author->{    name,    bio,    linkedin_link,    photo{ alt, hotspot, crop, asset->{ _id } }  },  teaser,  body,  summarisation,  "efforts": [    efforts_strategic_management,    efforts_delivery_excellence,    efforts_sales,    efforts_marketing,    efforts_company_operations,    efforts_people_management,    efforts_financial_control  ],  seo_title,  seo_description,  no_index}
-export type FINDING_QUERY_RESULT = {
+// Variable: FINDINGS_QUERY
+// Query: *[_type == "post" && defined(slug.current)]{  title,  "slug": slug.current,  image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },  art_description,  artist,  "author": author.author->{    name,    bio,    linkedin_link,    photo{ alt, hotspot, crop, asset->{ _id } }  },  teaser,  body,  summarisation,  "efforts": [    efforts_strategic_management,    efforts_delivery_excellence,    efforts_sales,    efforts_marketing,    efforts_company_operations,    efforts_people_management,    efforts_financial_control  ],  seo_title,  seo_description,  no_index}
+export type FINDINGS_QUERY_RESULT = Array<{
   title: string;
   slug: string;
   image: {
@@ -746,7 +741,7 @@ export type FINDING_QUERY_RESULT = {
   seo_title: string | null;
   seo_description: string | null;
   no_index: boolean | null;
-} | null;
+}>;
 
 // Source: ../src/sanity/queries.ts
 // Variable: FINDING_TEASERS_QUERY
@@ -792,14 +787,9 @@ export type FOUNDERS_QUERY_RESULT = Array<{
 }>;
 
 // Source: ../src/sanity/queries.ts
-// Variable: CASE_STUDY_SLUGS_QUERY
-// Query: *[_type == "caseStudy" && defined(slug.current)].slug.current
-export type CASE_STUDY_SLUGS_QUERY_RESULT = Array<string>;
-
-// Source: ../src/sanity/queries.ts
-// Variable: CASE_STUDY_QUERY
-// Query: *[_type == "caseStudy" && slug.current == $slug][0]{  _id,  title,  "slug": slug.current,  lead,  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },  industry,  companySize,  market,  commissionedBy,  duration,  year,  figures[]{ _key, value, label },  context,  contextQuote,  phases[]{ _key, label, title, text },  phasesText,  findingsIntro,  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },  maturity,  roadmapLead,  horizons[]{ _key, tab, label, title, text },  changes[]{ _key, metric, before, after, period },  changesText,  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },  seo_title,  seo_description,  no_index}
-export type CASE_STUDY_QUERY_RESULT = {
+// Variable: CASE_STUDIES_QUERY
+// Query: *[_type == "caseStudy" && defined(slug.current)]{  _id,  title,  "slug": slug.current,  lead,  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },  industry,  companySize,  market,  commissionedBy,  duration,  year,  figures[]{ _key, value, label },  context,  contextQuote,  phases[]{ _key, label, title, text },  phasesText,  findingsIntro,  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },  maturity,  roadmapLead,  horizons[]{ _key, tab, label, title, text },  changes[]{ _key, metric, before, after, period },  changesText,  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },  seo_title,  seo_description,  no_index}
+export type CASE_STUDIES_QUERY_RESULT = Array<{
   _id: string;
   title: string;
   slug: string;
@@ -969,7 +959,7 @@ export type CASE_STUDY_QUERY_RESULT = {
   seo_title: string | null;
   seo_description: string | null;
   no_index: boolean | null;
-} | null;
+}>;
 
 // Source: ../src/sanity/queries.ts
 // Variable: CASE_STUDY_TEASERS_QUERY
@@ -1020,9 +1010,9 @@ export type DELIVERY_EPISODES_QUERY_RESULT = Array<{
 }>;
 
 // Source: ../src/sanity/queries.ts
-// Variable: DELIVERY_EPISODE_QUERY
-// Query: *[_type == "deliveryEpisode" && slug.current == $slug][0]{  _id,  title,  "slug": slug.current,  youtubeUrl,  teaser,  lead,  body,  publishedAt,  duration,  "author": author->name,  thumbnail{ hotspot, crop, asset->{ _id } },  seo_title,  seo_description,  no_index}
-export type DELIVERY_EPISODE_QUERY_RESULT = {
+// Variable: DELIVERY_EPISODE_PAGES_QUERY
+// Query: *[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  youtubeUrl,  teaser,  lead,  body,  publishedAt,  duration,  "author": author->name,  thumbnail{ hotspot, crop, asset->{ _id } },  seo_title,  seo_description,  no_index}
+export type DELIVERY_EPISODE_PAGES_QUERY_RESULT = Array<{
   _id: string;
   title: string;
   slug: string;
@@ -1060,20 +1050,18 @@ export type DELIVERY_EPISODE_QUERY_RESULT = {
   seo_title: string | null;
   seo_description: string | null;
   no_index: boolean | null;
-} | null;
+}>;
 
 // Query TypeMap
 declare global {
   interface SanityQueries {
-    '*[_type == "post" && defined(slug.current)].slug.current': FINDING_SLUGS_QUERY_RESULT;
-    '*[_type == "post" && slug.current == $slug][0]{\n  title,\n  "slug": slug.current,\n  image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  art_description,\n  artist,\n  "author": author.author->{\n    name,\n    bio,\n    linkedin_link,\n    photo{ alt, hotspot, crop, asset->{ _id } }\n  },\n  teaser,\n  body,\n  summarisation,\n  "efforts": [\n    efforts_strategic_management,\n    efforts_delivery_excellence,\n    efforts_sales,\n    efforts_marketing,\n    efforts_company_operations,\n    efforts_people_management,\n    efforts_financial_control\n  ],\n  seo_title,\n  seo_description,\n  no_index\n}': FINDING_QUERY_RESULT;
+    '*[_type == "post" && defined(slug.current)]{\n  title,\n  "slug": slug.current,\n  image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  art_description,\n  artist,\n  "author": author.author->{\n    name,\n    bio,\n    linkedin_link,\n    photo{ alt, hotspot, crop, asset->{ _id } }\n  },\n  teaser,\n  body,\n  summarisation,\n  "efforts": [\n    efforts_strategic_management,\n    efforts_delivery_excellence,\n    efforts_sales,\n    efforts_marketing,\n    efforts_company_operations,\n    efforts_people_management,\n    efforts_financial_control\n  ],\n  seo_title,\n  seo_description,\n  no_index\n}': FINDINGS_QUERY_RESULT;
     '*[_type == "post" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  enabler,\n  image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': FINDING_TEASERS_QUERY_RESULT;
     '*[_type == "authors" && defined(photo.asset)] | order(name asc){\n  _id,\n  name,\n  photo{ hotspot, crop, asset->{ _id } }\n}': FOUNDERS_QUERY_RESULT;
-    '*[_type == "caseStudy" && defined(slug.current)].slug.current': CASE_STUDY_SLUGS_QUERY_RESULT;
-    '*[_type == "caseStudy" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  industry,\n  companySize,\n  market,\n  commissionedBy,\n  duration,\n  year,\n  figures[]{ _key, value, label },\n  context,\n  contextQuote,\n  phases[]{ _key, label, title, text },\n  phasesText,\n  findingsIntro,\n  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },\n  maturity,\n  roadmapLead,\n  horizons[]{ _key, tab, label, title, text },\n  changes[]{ _key, metric, before, after, period },\n  changesText,\n  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },\n  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },\n  seo_title,\n  seo_description,\n  no_index\n}': CASE_STUDY_QUERY_RESULT;
+    '*[_type == "caseStudy" && defined(slug.current)]{\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  industry,\n  companySize,\n  market,\n  commissionedBy,\n  duration,\n  year,\n  figures[]{ _key, value, label },\n  context,\n  contextQuote,\n  phases[]{ _key, label, title, text },\n  phasesText,\n  findingsIntro,\n  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },\n  maturity,\n  roadmapLead,\n  horizons[]{ _key, tab, label, title, text },\n  changes[]{ _key, metric, before, after, period },\n  changesText,\n  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },\n  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },\n  seo_title,\n  seo_description,\n  no_index\n}': CASE_STUDIES_QUERY_RESULT;
     '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  thumbnail{ hotspot, crop, asset->{ _id } }\n}': DELIVERY_EPISODES_QUERY_RESULT;
-    '*[_type == "deliveryEpisode" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_QUERY_RESULT;
+    '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_PAGES_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

@@ -1,7 +1,6 @@
 ---
-import { sanityClient } from "../../sanity/client";
 import { srcsetFor, urlFor } from "../../sanity/image";
-import { FOUNDERS_QUERY } from "../../sanity/queries";
+import { getFounders } from "../../sanity/shared";
 
 // A quiet call to action at the foot of "on this page" (FindingsToc's slot), on finding and case pages: the
 // founders' faces, a question and a link down to the founders' block (#founders-cta), where the call is booked.
@@ -11,7 +10,7 @@ interface Props {
 }
 
 const { title } = Astro.props;
-const founders = await sanityClient.fetch(FOUNDERS_QUERY);
+const founders = await getFounders();
 ---
 
 <div class="toc-cta">

@@ -3,9 +3,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../layouts/FindingsLayout.astro";
 import { enablerNames, type Enabler } from "../../data/enablers";
 import { legalLinks, menu, projects, toc, type Link } from "../../data/navigation";
-import { getFindingTeasers } from "../../sanity/findings";
-import { sanityClient } from "../../sanity/client";
-import { CASE_STUDY_TEASERS_QUERY, DELIVERY_EPISODES_QUERY } from "../../sanity/queries";
+import { getCaseStudyTeasers, getDeliveryEpisodes, getFindingTeasers } from "../../sanity/shared";
 
 // The site map (DAA-219), modelled on bcg.com/sitemap: a section per part of the site, its sub-groups and their
 // links. It's rebuilt with the site: the findings, case studies and delivery management episodes come from Sanity at build time, and the menu's
@@ -55,13 +53,13 @@ const findingGroups: Group[] = [
 ];
 
 // every published case study, newest first
-const caseLinks = (await sanityClient.fetch(CASE_STUDY_TEASERS_QUERY)).map((c) => ({
+const caseLinks = (await getCaseStudyTeasers()).map((c) => ({
   label: escapeHtml(c.title),
   href: url(`atlas/case-studies/${c.slug}`),
 }));
 
 // every episode of "Все про менеджмент делівері", newest first
-const episodeLinks = (await sanityClient.fetch(DELIVERY_EPISODES_QUERY)).map((e) => ({
+const episodeLinks = (await getDeliveryEpisodes()).map((e) => ({
   label: escapeHtml(e.title),
   href: url(`delivery-management/${e.slug}`),
 }));

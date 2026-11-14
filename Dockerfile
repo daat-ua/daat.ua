@@ -8,6 +8,7 @@ COPY . .
 # public booking settings (astro.config.mjs `env`): Railway passes service variables to declared build args
 ARG PUBLIC_CAL_EVENT_TYPE_ID
 ARG PUBLIC_CAL_BOOKING_URL
+# type checking runs in CI (.github/workflows/ci.yml), not here: the deploy build only builds
 RUN npm run build
 
 FROM caddy:2-alpine

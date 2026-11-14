@@ -1,4 +1,5 @@
 ---
+import type { InferGetStaticPropsType } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText } from "astro-portabletext";
 import Base from "../../../layouts/Base.astro";
@@ -9,7 +10,7 @@ import FoundersCta from "../../../components/findings/FoundersCta.astro";
 import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
 import { cover, isoDuration, youtubeId } from "../../../data/delivery-management";
 import { sanityClient } from "../../../sanity/client";
-import { DELIVERY_EPISODE_QUERY, DELIVERY_EPISODES_QUERY } from "../../../sanity/queries";
+import { DELIVERY_EPISODE_PAGES_QUERY } from "../../../sanity/queries";
 
 // An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
 // faded behind the title, the player across the content width (YouTube loads only when the reader presses play),
@@ -17,14 +18,11 @@ import { DELIVERY_EPISODE_QUERY, DELIVERY_EPISODES_QUERY } from "../../../sanity
 // block. Content: Sanity's "Delivery management episodes" (`deliveryEpisode`).
 
 export async function getStaticPaths() {
-  const episodes = await sanityClient.fetch(DELIVERY_EPISODES_QUERY);
-  return episodes.map((e) => ({ params: { slug: e.slug }, props: { episodes } }));
+  const episodes = await sanityClient.fetch(DELIVERY_EPISODE_PAGES_QUERY);
+  return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode, episodes } }));
 }
 
-const { slug } = Astro.params;
-const { episodes } = Astro.props;
-const episode = await sanityClient.fetch(DELIVERY_EPISODE_QUERY, { slug });
-if (!episode) throw new Error(`No delivery management episode with the slug "${slug}"`);
+const { episode, episodes } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
