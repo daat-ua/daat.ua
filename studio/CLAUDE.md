@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sanity Studio v6 for daat.ua — a content backend for delivery-audit findings, blog posts, and author profiles. It lives in `studio/` of the website repo (imported with its history) as a standalone app with its own `package.json`; the website at the repo root reads the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`) at build time.
+Sanity Studio v6 for daat.ua — a content backend for delivery-audit findings, case studies, delivery management episodes, and author profiles. It lives in `studio/` of the website repo (imported with its history) as a standalone app with its own `package.json`; the website at the repo root reads the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`) at build time.
 
 ## Commands
 
@@ -25,9 +25,9 @@ Everything meaningful in this repo is the content model in `schemaTypes/`. Each 
 The exported variable name, the file name, and the `name:` field of the document do not all match. The file/export name is for humans; references between documents must use the **schema `name`**:
 - `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI; the website renders these at `/uk-UA/atlas/findings/<slug>`, `enabler` — one of the seven ATLAS enablers, stored as a stable key — labels its carousel card in Ukrainian via `src/data/enablers.ts`)
 - `author.ts` → `name: 'authors'` (plural)
-- `blogPost.ts` → `name: 'blogPost'`
+- `caseStudy.ts` → `name: 'caseStudy'`, `deliveryEpisode.ts` → `name: 'deliveryEpisode'`
 
-Example: `blogPost.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
+Example: `deliveryEpisode.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
 
 ### Field groups convention
 All document types use the same set of field group names so the editor UX stays consistent: `content` (default), `meta`, `seo`, plus the spread `ALL_FIELDS_GROUP` (hidden) for showing every field. When adding fields, assign a `group` so they land in the right tab. The exception is `caseStudy`: it has one tab per section of the case page (Main, Client, Key figures … SEO), as the editors asked, since its form mirrors the page block by block.
