@@ -59,9 +59,10 @@ export const headingId = (block: Block) => slugify(textOf(block));
 
 const isBlock = (node: TypedObject): node is Block => node._type === "block";
 
-/** The body's h2 headings, for the "on this page" list */
-export const headingsOf = (body: TypedObject[] | null | undefined) =>
+/** The body's headings of one level (h2 on findings, h3 on delivery management episodes), for the "on this page"
+ * list */
+export const headingsOf = (body: TypedObject[] | null | undefined, level: "h2" | "h3" = "h2") =>
   (body ?? [])
     .filter(isBlock)
-    .filter((b) => b.style === "h2")
+    .filter((b) => b.style === level)
     .map((b) => ({ id: headingId(b), label: toPlainText(b).trim() }));
