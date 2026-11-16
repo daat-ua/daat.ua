@@ -55,14 +55,29 @@ const textOf = (node: unknown): string => {
   return Array.isArray(children) ? children.map(textOf).join("") : "";
 };
 
-export const headingId = (block: Block) => slugify(textOf(block));
+/** A heading's id: the one withHeadingIds() gave it, else its text's */
+export const headingId = (block: Block & { headingId?: string }) => block.headingId ?? slugify(textOf(block));
 
 const isBlock = (node: TypedObject): node is Block => node._type === "block";
+const isHeading = (node: TypedObject): node is Block => isBlock(node) && (node.style === "h2" || node.style === "h3");
 
-/** The body's headings of one level (h2 on findings, h3 on delivery management episodes), for the "on this page"
- * list */
-export const headingsOf = (body: TypedObject[] | null | undefined, level: "h2" | "h3" = "h2") =>
-  (body ?? [])
+/** The body with an id on every h2/h3 for Heading to render: the heading's text, and a repeated one numbered
+ * ("pryklad", "pryklad-2"), so each "on this page" link reaches its own heading */
+export function withHeadingIds<T extends TypedObject>(body: T[] | null | undefined): T[] {
+  const seen = new Map<string, number>();
+  return (body ?? []).map((node) => {
+    if (!isHeading(node)) return node;
+    const base = slugify(textOf(node));
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    return { ...node, headingId: n === 1 ? base : `${base}-${n}` };
+  });
+}
+
+/** The headings of one level (h2 on findings, h3 on delivery management episodes) of a body from
+ * withHeadingIds(), for the "on this page" list */
+export const headingsOf = (body: TypedObject[], level: "h2" | "h3" = "h2") =>
+  body
     .filter(isBlock)
     .filter((b) => b.style === level)
     .map((b) => ({ id: headingId(b), label: toPlainText(b).trim() }));

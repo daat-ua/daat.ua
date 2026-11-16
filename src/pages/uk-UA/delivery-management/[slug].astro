@@ -12,7 +12,7 @@ import Heading from "../../../components/portable-text/Heading.astro";
 import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
 import { cover, isoDuration, youtubeId } from "../../../data/delivery-management";
 import { sanityClient } from "../../../sanity/client";
-import { headingsOf } from "../../../sanity/portable-text";
+import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
 import { DELIVERY_EPISODE_PAGES_QUERY } from "../../../sanity/queries";
 
 // An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
@@ -30,7 +30,8 @@ const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
 // "on this page": the body's subheadings (h3, the episode's only heading level), with ids for the links
-const toc = headingsOf(episode.body, "h3");
+const body = withHeadingIds(episode.body);
+const toc = headingsOf(body, "h3");
 const bodyComponents = { block: { h3: Heading } };
 
 const videoId = youtubeId(episode.youtubeUrl);
@@ -94,22 +95,21 @@ const others: Teaser[] = episodes
     <div class="wrap ep-layout">
       <article class="ep-body">
         <p class="ep-lead">{episode.lead}</p>
-        {episode.body && <PortableText value={episode.body} components={bodyComponents} />}
+        {body.length > 0 && <PortableText value={body} components={bodyComponents} />}
       </article>
 
-      <!-- "on this page" with its call to action, as on a finding; an episode without subheadings gets the call to
-           action alone, kept in view beside the text -->
-      {toc.length > 0 ? (
+      <!-- "on this page" with its call to action, as on a finding (hidden on phones). Without it (an episode without
+           subheadings, or a phone) the call to action stands alone, kept in view beside the text -->
+      {toc.length > 0 && (
         <FindingsToc items={toc}>
           <TocCta title="Впізнали свою компанію?" />
         </FindingsToc>
-      ) : (
-        <aside class="ep-aside" aria-label="Запис на дзвінок">
-          <div class="ep-aside__inner">
-            <TocCta title="Впізнали свою компанію?" />
-          </div>
-        </aside>
       )}
+      <aside class:list={["ep-aside", { "ep-aside--phone": toc.length > 0 }]} aria-label="Запис на дзвінок">
+        <div class="ep-aside__inner">
+          <TocCta title="Впізнали свою компанію?" />
+        </div>
+      </aside>
     </div>
 
     <!-- ═══ The other episodes: the site's carousel, three same-sized cards to a screen ═══ -->
@@ -290,6 +290,9 @@ const others: Teaser[] = episodes
     font-size: var(--text-small);
     line-height: var(--leading-small);
   }
+  .ep-aside--phone {
+    display: none; /* on desktop "on this page" carries the call to action */
+  }
   .ep-aside :global(.toc-cta) {
     margin-top: 0;
     padding-top: 0;
@@ -356,6 +359,9 @@ const others: Teaser[] = episodes
       grid-template-columns: 1fr;
       row-gap: 48px;
       padding-block: 56px;
+    }
+    .ep-aside--phone {
+      display: block;
     }
     .ep-aside__inner {
       position: static;

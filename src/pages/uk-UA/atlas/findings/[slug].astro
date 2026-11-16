@@ -11,7 +11,7 @@ import Heading from "../../../../components/portable-text/Heading.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
-import { headingsOf } from "../../../../sanity/portable-text";
+import { headingsOf, withHeadingIds } from "../../../../sanity/portable-text";
 import { FINDINGS_QUERY } from "../../../../sanity/queries";
 import { getFounders } from "../../../../sanity/shared";
 
@@ -35,7 +35,8 @@ const { title, image, author, teaser, body, summarisation } = finding;
 const findingsHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas/findings", { normalizeLocale: false });
 
 const description = finding.seo_description ?? toPlainText(teaser ?? []).slice(0, 160);
-const toc = headingsOf(body);
+const bodyWithIds = withHeadingIds(body);
+const toc = headingsOf(bodyWithIds);
 const bodyComponents = { block: { h2: Heading, h3: Heading } };
 
 // Efforts radar: how much each department is involved in solving the finding (0–100), drawn as a polar
@@ -190,7 +191,7 @@ const sectors = efforts.map(({ name, value }, i) => {
 
       {body && (
         <div class="finding-body article-body">
-          <PortableText value={body} components={bodyComponents} />
+          <PortableText value={bodyWithIds} components={bodyComponents} />
         </div>
       )}
 
