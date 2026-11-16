@@ -5,17 +5,20 @@ import { PortableText } from "astro-portabletext";
 import Base from "../../../layouts/Base.astro";
 import Footer from "../../../components/Footer.astro";
 import Crumb from "../../../components/findings/Crumb.astro";
+import FindingsToc from "../../../components/findings/FindingsToc.astro";
 import TocCta from "../../../components/findings/TocCta.astro";
 import FoundersCta from "../../../components/findings/FoundersCta.astro";
+import Heading from "../../../components/portable-text/Heading.astro";
 import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
 import { cover, isoDuration, youtubeId } from "../../../data/delivery-management";
 import { sanityClient } from "../../../sanity/client";
+import { headingsOf } from "../../../sanity/portable-text";
 import { DELIVERY_EPISODE_PAGES_QUERY } from "../../../sanity/queries";
 
 // An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
 // faded behind the title, the player across the content width (YouTube loads only when the reader presses play),
-// the episode retold as prose in a single column; then the other episodes as the site's carousel and the founders'
-// block. Content: Sanity's "Delivery management episodes" (`deliveryEpisode`).
+// the episode retold as prose, with "on this page" (its subheadings) and a call to action beside it; then the other
+// episodes as the site's carousel and the founders' block. Content: Sanity's "Delivery management episodes" (`deliveryEpisode`).
 
 export async function getStaticPaths() {
   const episodes = await sanityClient.fetch(DELIVERY_EPISODE_PAGES_QUERY);
@@ -25,6 +28,10 @@ export async function getStaticPaths() {
 const { episode, episodes } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+
+// "on this page": the body's subheadings (h3, the episode's only heading level), with ids for the links
+const toc = headingsOf(episode.body, "h3");
+const bodyComponents = { block: { h3: Heading } };
 
 const videoId = youtubeId(episode.youtubeUrl);
 const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
@@ -87,15 +94,22 @@ const others: Teaser[] = episodes
     <div class="wrap ep-layout">
       <article class="ep-body">
         <p class="ep-lead">{episode.lead}</p>
-        {episode.body && <PortableText value={episode.body} />}
+        {episode.body && <PortableText value={episode.body} components={bodyComponents} />}
       </article>
 
-      <!-- the findings pages' small call to action, kept in view beside the text -->
-      <aside class="ep-aside" aria-label="Запис на дзвінок">
-        <div class="ep-aside__inner">
+      <!-- "on this page" with its call to action, as on a finding; an episode without subheadings gets the call to
+           action alone, kept in view beside the text -->
+      {toc.length > 0 ? (
+        <FindingsToc items={toc}>
           <TocCta title="Впізнали свою компанію?" />
-        </div>
-      </aside>
+        </FindingsToc>
+      ) : (
+        <aside class="ep-aside" aria-label="Запис на дзвінок">
+          <div class="ep-aside__inner">
+            <TocCta title="Впізнали свою компанію?" />
+          </div>
+        </aside>
+      )}
     </div>
 
     <!-- ═══ The other episodes: the site's carousel, three same-sized cards to a screen ═══ -->
@@ -192,7 +206,7 @@ const others: Teaser[] = episodes
     position: relative;
     display: grid;
     row-gap: var(--space-xl);
-    padding-top: calc(200 * var(--px));
+    padding-top: calc(120 * var(--px)); /* clear of the logo hanging below the bar (63 at 1440) */
     padding-bottom: var(--space-2xl);
   }
   .ep-title {
@@ -282,6 +296,7 @@ const others: Teaser[] = episodes
     border-top: 0;
   }
   .ep-body :global(h3) {
+    scroll-margin-top: var(--space-xl);
     margin: var(--space-md) 0 0;
     font-family: var(--font-display);
     font-size: var(--text-title);
