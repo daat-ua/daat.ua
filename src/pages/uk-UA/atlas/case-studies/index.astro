@@ -2,7 +2,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
-import { commissionedByNames, industryNames } from "../../../../data/case-studies";
+import { clientLogo, commissionedByNames, industryNames } from "../../../../data/case-studies";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
 import { getCaseStudyTeasers } from "../../../../sanity/shared";
 import heroImage from "../../../../assets/images/case-studies-hero.jpg";
@@ -27,6 +27,9 @@ const meta = (c: (typeof all)[number]) =>
   ]
     .filter(Boolean)
     .join(" · ");
+
+// a named client's logo at the top of the card's text, 30 tall at 1440 (never for an anonymised case)
+const logoOf = (c: (typeof all)[number]) => clientLogo(c, 30);
 
 const intro =
   "Як діагностика ATLAS працювала в реальних компаніях: з чим прийшов клієнт, що знайшли і що змінилося. Назви компаній приховано за їхньою згодою.";
@@ -65,6 +68,7 @@ const intro =
           />
         </a>
         <div class="cases-featured__text">
+          {logoOf(featured) && <img class="cases-logo" {...logoOf(featured)} />}
           <p class="cases-meta">{meta(featured)}</p>
           <h2 class="cases-featured__title" id="cases-featured-title">
             <a href={caseHref(featured.slug)}>{featured.title}</a>
@@ -113,6 +117,7 @@ const intro =
               />
             </a>
             <div class="cases-row__text">
+              {logoOf(c) && <img class="cases-logo" {...logoOf(c)} loading="lazy" />}
               <p class="cases-meta">{meta(c)}</p>
               <h3 class="cases-row__title">
                 <a href={caseHref(c.slug)}>{c.title}</a>
@@ -229,8 +234,20 @@ const intro =
     color: var(--c-white);
     font-family: var(--font-display);
     font-size: var(--text-heading);
-    font-weight: 600;
+    font-weight: 500;
     line-height: var(--leading-heading);
+  }
+  /* a named client's logo: as uploaded on the navy (a light version, as on the case page); on the paper, a dark
+     silhouette in the ink, so the same light logo reads */
+  .cases-logo {
+    width: auto;
+    max-width: calc(150 * var(--px));
+    height: calc(30 * var(--px));
+    object-fit: contain;
+  }
+  .cases-row .cases-logo {
+    filter: brightness(0);
+    opacity: 0.85;
   }
   .cases-featured__figure {
     display: grid;
@@ -287,7 +304,7 @@ const intro =
     margin: 0;
     font-family: var(--font-display);
     font-size: var(--text-title);
-    font-weight: 600;
+    font-weight: 500;
     line-height: var(--leading-title);
   }
 

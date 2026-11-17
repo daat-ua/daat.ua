@@ -9,7 +9,13 @@ import FindingsToc from "../../../../components/findings/FindingsToc.astro";
 import TocCta from "../../../../components/findings/TocCta.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
 import Carousel, { type Teaser } from "../../../../components/ui/Carousel.astro";
-import { commissionedByNames, industryCompany, industryNames, maturityFields } from "../../../../data/case-studies";
+import {
+  clientLogo,
+  commissionedByNames,
+  industryCompany,
+  industryNames,
+  maturityFields,
+} from "../../../../data/case-studies";
 import { cases as placeholderCases } from "../../../../data/testimonials";
 import { enablerNames } from "../../../../data/enablers";
 import { sanityClient } from "../../../../sanity/client";
@@ -61,18 +67,10 @@ const DEFINED = 3;
 const pct = (v: number) => `${((v / 5) * 100).toFixed(1)}%`;
 const fmt = (v: number) => v.toFixed(1).replace(".", ",");
 
-// the client named (a case not anonymised): their logo and LinkedIn at the top of the profile
-const named = study.anonymised === false;
-const logo = named && study.clientLogo?.asset ? study.clientLogo : null;
-// an SVG as uploaded; anything else scaled to the logo's height (30 at 1440, twice that for sharp screens)
-const logoSrc = logo
-  ? logo.asset!.extension === "svg"
-    ? logo.asset!.url
-    : urlFor(logo).height(60).fit("max").url()
-  : null;
-const logoSize = logo?.asset?.metadata?.dimensions;
-// the logo links to it; without a logo it isn't shown
-const linkedin = named ? study.clientLinkedin : null;
+// the client named (a case not anonymised): their logo (30 tall at 1440) at the top of the profile, linking to their
+// LinkedIn; without a logo LinkedIn isn't shown
+const logo = clientLogo(study, 30);
+const linkedin = logo ? study.clientLinkedin : null;
 const linkedinLabel = `${logo?.alt ? `${logo.alt} у LinkedIn` : "LinkedIn компанії"} (відкриється в новій вкладці)`;
 
 // only when switched on in the Studio ("Show a testimonial") and it has a quote
@@ -164,24 +162,13 @@ const otherTeasers = others.length ? others : placeholderCases;
           >
             <!-- a named client's logo takes the heading's place; with their LinkedIn set, it leads there -->
             {logo &&
-              logoSrc &&
               (linkedin ? (
                 <a class="case-profile__logo" href={linkedin} target="_blank" rel="noopener" aria-label={linkedinLabel}>
-                  <img
-                    src={logoSrc}
-                    alt=""
-                    width={logoSize?.width ?? undefined}
-                    height={logoSize?.height ?? undefined}
-                  />
+                  <img src={logo.src} alt="" width={logo.width} height={logo.height} />
                 </a>
               ) : (
                 <span class="case-profile__logo">
-                  <img
-                    src={logoSrc}
-                    alt={logo.alt ?? ""}
-                    width={logoSize?.width ?? undefined}
-                    height={logoSize?.height ?? undefined}
-                  />
+                  <img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} />
                 </span>
               ))}
             {!logo && (

@@ -1,8 +1,42 @@
 // Case studies (DAA-230): the content lives in Sanity ("Case Studies", `caseStudy`); this maps the keys of its
 // lists to Ukrainian. `satisfies` fails the build if the Studio gains an option that has no name here.
 
+import type { SanityImageSource } from "@sanity/image-url";
+import { urlFor } from "../sanity/image";
 import type { CaseStudy } from "../sanity/sanity.types";
 import type { Enabler } from "./enablers";
+
+interface LogoFields {
+  anonymised: boolean | null;
+  clientLogo: {
+    alt: string | null;
+    asset: {
+      url: string | null;
+      extension: string | null;
+      metadata: { dimensions: { width: number | null; height: number | null } | null } | null;
+    } | null;
+  } | null;
+}
+
+/** A named client's logo (never for an anonymised case): an SVG as uploaded, anything else scaled to `height`
+ * (the CSS height; twice that for sharp screens). Null without a logo. */
+export function clientLogo(c: LogoFields, height: number) {
+  const logo = c.anonymised === false ? c.clientLogo : null;
+  if (!logo?.asset) return null;
+  const { asset } = logo;
+  return {
+    src:
+      asset.extension === "svg" && asset.url
+        ? asset.url
+        : urlFor(logo as SanityImageSource)
+            .height(height * 2)
+            .fit("max")
+            .url(),
+    alt: logo.alt ?? "",
+    width: asset.metadata?.dimensions?.width ?? undefined,
+    height: asset.metadata?.dimensions?.height ?? undefined,
+  };
+}
 
 export const industryNames = {
   "it-services": "IT-сервіси / аутсорс",
