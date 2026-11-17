@@ -170,7 +170,7 @@ export const caseStudy = defineType({
       name: 'clientLogo',
       title: 'Client logo',
       description:
-        'At the top of the client profile. SVG or PNG on a transparent ground; shown on a light plate. Only for a named case (not anonymised)',
+        'At the top of the client profile, on its dark navy card: SVG or PNG on a transparent ground, in a light version. Links to the client’s LinkedIn when that is set. Only for a named case (not anonymised)',
       type: 'image',
       options: {accept: 'image/svg+xml,image/png,image/webp,image/jpeg'},
       fields: [
@@ -189,7 +189,7 @@ export const caseStudy = defineType({
       name: 'clientLinkedin',
       title: 'Client LinkedIn',
       description:
-        'The company’s LinkedIn page, beside the logo. Only for a named case (not anonymised)',
+        'The company’s LinkedIn page: the logo links to it (without a logo it isn’t shown). Only for a named case (not anonymised)',
       type: 'url',
       group: 'client',
       hidden: isAnonymised,
