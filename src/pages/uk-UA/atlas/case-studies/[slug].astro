@@ -656,7 +656,11 @@ const otherTeasers = others.length ? others : placeholderCases;
     display: grid;
     grid-template-columns: var(--span-2) 1fr;
     column-gap: calc(var(--col-gap) * 2);
-    padding-block: var(--space-3xl);
+    padding-block: var(--space-3xl) var(--space-2xl); /* below: 64 at 1440 to the founders' block */
+  }
+  /* the founders' block follows the story directly: the story's padding is the gap */
+  .case :global(.founders-cta) {
+    margin-top: 0;
   }
   .case-body {
     display: grid;
@@ -936,7 +940,7 @@ const otherTeasers = others.length ? others : placeholderCases;
   /* ---------- Other cases: the ATLAS page's carousel under its subheading ---------- */
   /* after the founders' dark band; a rule sets it off from the footer, as on the findings catalogue */
   .case-others {
-    padding-block: var(--space-3xl);
+    padding-block: var(--space-2xl); /* 64 at 1440: close to the founders' block above and the footer below */
     border-bottom: 1px solid var(--rule);
   }
   .case .case-others__title {
@@ -969,7 +973,7 @@ const otherTeasers = others.length ? others : placeholderCases;
       padding: 24px;
     }
     .case-layout {
-      padding-block: 64px;
+      padding-block: 64px 48px;
     }
     .case-body {
       row-gap: 56px;
@@ -1020,7 +1024,7 @@ const otherTeasers = others.length ? others : placeholderCases;
       width: 30%;
     }
     .case-others {
-      padding-block: 64px;
+      padding-block: 48px;
     }
   }
 </style>
