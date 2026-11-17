@@ -45,7 +45,7 @@ const body = withHeadingIds(article.body).map((node) => {
 const toc = headingsOf(body, "h2");
 const bodyComponents = {
   block: { h2: Heading, h3: Heading },
-  type: { pullQuote: PullQuote, callout: Callout, image: BodyImage, table: BodyTable },
+  type: { pullQuote: PullQuote, callout: Callout, image: BodyImage, richTableBlock: BodyTable },
 };
 
 // the byline's faces: the hosts' photos (the founders, from the Studio), the guests' initials

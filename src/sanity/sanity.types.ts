@@ -15,6 +15,20 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
+export type DaatTalksEpisodeReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "daatTalksEpisode";
+};
+
+export type DaatTalksContributorReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "daatTalksContributor";
+};
+
 export type AuthorsReference = {
   _ref: string;
   _type: "reference";
@@ -27,6 +41,199 @@ export type SanityImageAssetReference = {
   _type: "reference";
   _weak?: boolean;
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type DaatTalksArticle = {
+  _id: string;
+  _type: "daatTalksArticle";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  episode: DaatTalksEpisodeReference;
+  excerpt: string;
+  summary: string;
+  body: Array<
+    | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?: "normal" | "h2" | "h3" | "h4" | "blockquote";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      }
+    | {
+        text: string;
+        speaker?: DaatTalksContributorReference | AuthorsReference;
+        time?: string;
+        _type: "pullQuote";
+        _key: string;
+      }
+    | {
+        title?: string;
+        text: string;
+        _type: "callout";
+        _key: string;
+      }
+    | {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt: string;
+        caption?: string;
+        _type: "image";
+        _key: string;
+      }
+    | ({
+        _key: string;
+      } & RichTableBlock)
+  >;
+  publishedAt: string;
+  authors: Array<
+    {
+      _key: string;
+    } & AuthorsReference
+  >;
+  contributors?: Array<
+    {
+      _key: string;
+    } & DaatTalksContributorReference
+  >;
+  heroImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  seo_title?: string;
+  seo_description?: string;
+  seo_image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  no_index?: boolean;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type DaatTalksContributor = {
+  _id: string;
+  _type: "daatTalksContributor";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name: string;
+  role: string;
+  company?: string;
+  photo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  linkedin?: string;
+  bio?: string;
+  slug: Slug;
+  companyUrl?: string;
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
+};
+
+export type DaatTalksEpisode = {
+  _id: string;
+  _type: "daatTalksEpisode";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  number: number;
+  title: string;
+  slug: Slug;
+  youtubeUrl: string;
+  teaser: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal";
+    listItem?: never;
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  guests: Array<
+    {
+      _key: string;
+    } & DaatTalksContributorReference
+  >;
+  hosts?: Array<
+    {
+      _key: string;
+    } & AuthorsReference
+  >;
+  thumbnail?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  seo_title?: string;
+  seo_description?: string;
+  seo_image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  no_index?: boolean;
 };
 
 export type DeliveryEpisode = {
@@ -79,28 +286,6 @@ export type DeliveryEpisode = {
     _type: "image";
   };
   no_index?: boolean;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
 };
 
 export type PostReference = {
@@ -440,6 +625,66 @@ export type Authors = {
   };
 };
 
+export type Content = Array<{
+  children?: Array<{
+    marks?: Array<string>;
+    text?: string;
+    _type: "span";
+    _key: string;
+  }>;
+  style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+  listItem?: "bullet" | "number";
+  markDefs?: Array<{
+    href?: string;
+    _type: "link";
+    _key: string;
+  }>;
+  level?: number;
+  _type: "block";
+  _key: string;
+}>;
+
+export type RichTableBlock = RichTable;
+
+export type ColumnHeader = {
+  _type: "columnHeader";
+  title?: string;
+  cellIndex: number;
+  width?: number;
+};
+
+export type RichTableCell = {
+  _type: "richTableCell";
+  content?: Content;
+};
+
+export type Row = {
+  _type: "row";
+  title?: string;
+  cells?: Array<
+    {
+      _key: string;
+    } & RichTableCell
+  >;
+};
+
+export type RichTable = {
+  _type: "richTable";
+  rows: Array<
+    {
+      _key: string;
+    } & Row
+  >;
+  columnHeaders?: Array<
+    {
+      _key: string;
+    } & ColumnHeader
+  >;
+  hasColumnTitles?: boolean;
+  hasRowTitles?: boolean;
+  rowTitleWidth?: number;
+};
+
 export type Table = {
   _type: "table";
   rows?: Array<
@@ -552,17 +797,28 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | DaatTalksEpisodeReference
+  | DaatTalksContributorReference
   | AuthorsReference
   | SanityImageAssetReference
-  | DeliveryEpisode
+  | DaatTalksArticle
   | SanityImageCrop
   | SanityImageHotspot
+  | DaatTalksContributor
   | Slug
+  | DaatTalksEpisode
+  | DeliveryEpisode
   | PostReference
   | CaseStudyReference
   | CaseStudy
   | Post
   | Authors
+  | Content
+  | RichTableBlock
+  | ColumnHeader
+  | RichTableCell
+  | Row
+  | RichTable
   | Table
   | TableRow
   | SanityImagePaletteSwatch

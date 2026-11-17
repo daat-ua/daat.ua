@@ -68,7 +68,25 @@ const quote = (text: string, speaker: string, time?: string) => ({
 });
 const callout = (title: string, text: string) => ({ _type: "callout", _key: key(), title, text });
 const image = (src: string, alt: string, caption?: string) => ({ _type: "image", _key: key(), src, alt, caption });
-const table = (...rows: string[][]) => ({ _type: "table", _key: key(), rows });
+/** a table as the Rich Table plugin stores it (`richTableBlock`): the first row gives the column titles; an empty
+ * first cell there makes the first column the row titles */
+const table = ([head, ...rows]: string[][]) => {
+  const hasRowTitles = head[0] === "";
+  const cells = (row: string[]) => (hasRowTitles ? row.slice(1) : row);
+  return {
+    _type: "richTableBlock",
+    _key: key(),
+    hasColumnTitles: true,
+    hasRowTitles,
+    columnHeaders: cells(head).map((title, cellIndex) => ({ _key: key(), title, cellIndex })),
+    rows: rows.map((row) => ({
+      _type: "row",
+      _key: key(),
+      title: hasRowTitles ? row[0] : undefined,
+      cells: cells(row).map((text) => ({ _key: key(), content: [p(text)] })),
+    })),
+  };
+};
 
 // ---------- Hosts and guests ----------
 
@@ -400,12 +418,12 @@ export const articles: TalksArticle[] = [
         "Який найменший експеримент це перевірить?",
         "За яким результатом ми чесно визнаємо, що помилилися?",
       ),
-      table(
+      table([
         ["", "Бізнес-план", "Гіпотеза"],
         ["Горизонт", "Рік і більше", "Тиждень–місяць"],
         ["Що вимірюємо", "Відхилення від плану", "Чи підтвердилось припущення"],
         ["Що робимо з помилкою", "Пояснюємо", "Закриваємо напрям"],
-      ),
+      ]),
       callout(
         "Ключова думка",
         "Відмовитися від ідеї, що не працює, — не поразка, а зекономлені місяці. Критерій закриття варто назвати до старту, поки рішення не стало особистим.",
@@ -542,16 +560,16 @@ export const initials = (name: string) =>
     .join("")
     .toUpperCase();
 
+/** every `text` in a body, however deep (paragraphs, quotes, callouts, table cells) */
+const textsOf = (node: unknown): string[] => {
+  if (Array.isArray(node)) return node.flatMap(textsOf);
+  if (!node || typeof node !== "object") return [];
+  return Object.entries(node).flatMap(([k, v]) => (k === "text" && typeof v === "string" ? [v] : textsOf(v)));
+};
+
 /** minutes to read the body, at 180 words a minute */
 export function readingMinutes(body: TypedObject[]) {
-  const words = body
-    .flatMap((node) => {
-      const n = node as { children?: { text?: string }[]; text?: string; title?: string; rows?: string[][] };
-      return [n.text, n.title, ...(n.children ?? []).map((c) => c.text), ...(n.rows ?? []).flat()];
-    })
-    .join(" ")
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const words = textsOf(body).join(" ").split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 180));
 }
 

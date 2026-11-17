@@ -1,32 +1,47 @@
 ---
 import type { TypedObjectProps } from "astro-portabletext/types";
+import { PortableText } from "astro-portabletext";
 
-// A table in an article's body (Portable Text `table`, the Rich Table plugin in the Studio): the first row is the
-// header. It scrolls sideways on its own when it's wider than the text.
-// TODO Sanity: the plugin's cells are rich text; the dummy data's are strings.
+// A table in an article's body (`richTableBlock`, the Rich Table plugin in the Studio): optional column titles and
+// row titles, each cell a short Portable Text. It scrolls sideways on its own when it's wider than the text.
 type Props = TypedObjectProps;
 
-const { node } = Astro.props;
-const [head = [], ...rows] = (node as unknown as { rows: string[][] }).rows;
+interface RichTable {
+  rows: { _key: string; title?: string; cells?: { _key: string; content: TypedObjectProps["node"][] }[] }[];
+  columnHeaders?: { _key: string; title?: string }[];
+  hasColumnTitles?: boolean;
+  hasRowTitles?: boolean;
+}
+
+const { rows, columnHeaders = [], hasColumnTitles, hasRowTitles } = Astro.props.node as unknown as RichTable;
 ---
 
 <div class="body-table" tabindex="0" role="region" aria-label="Таблиця">
   <table>
-    <thead>
-      <tr>
-        {head.map((cell) => (
-          <th scope="col">{cell}</th>
-        ))}
-      </tr>
-    </thead>
+    {hasColumnTitles && (
+      <thead>
+        <tr>
+          {hasRowTitles && <td />}
+          {columnHeaders.map((header) => (
+            <th scope="col">{header.title}</th>
+          ))}
+        </tr>
+      </thead>
+    )}
     <tbody>
       {rows.map((row) => (
-        <tr>{row.map((cell, i) => (i === 0 && !head[0] ? <th scope="row">{cell}</th> : <td>{cell}</td>))}</tr>
+        <tr>
+          {hasRowTitles && <th scope="row">{row.title}</th>}
+          {row.cells?.map((cell) => (
+            <td>
+              <PortableText value={cell.content} />
+            </td>
+          ))}
+        </tr>
       ))}
     </tbody>
   </table>
 </div>
-
 <style>
   .body-table {
     margin: var(--space-lg) 0;
@@ -53,7 +68,17 @@ const [head = [], ...rows] = (node as unknown as { rows: string[][] }).rows;
     border-bottom: 2px solid var(--c-hero);
     font-weight: 600;
   }
+  thead td {
+    border-bottom: 2px solid var(--c-hero);
+  }
   tbody th {
     font-weight: 500;
+  }
+  /* a cell's text is a paragraph or two: no gap above the first or below the last */
+  td :global(p) {
+    margin: 0;
+  }
+  td :global(p + p) {
+    margin-top: var(--space-xs);
   }
 </style>

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sanity Studio v6 for daat.ua — a content backend for delivery-audit findings, case studies, delivery management episodes, and author profiles. It lives in `studio/` of the website repo (imported with its history) as a standalone app with its own `package.json`; the website at the repo root reads the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`) at build time.
+Sanity Studio v6 for daat.ua — a content backend for delivery-audit findings, case studies, delivery management episodes, Daat Talks (podcast episodes, the articles written from them, their guests), and author profiles. It lives in `studio/` of the website repo (imported with its history) as a standalone app with its own `package.json`; the website at the repo root reads the Sanity dataset (`projectId: 7mfhokh5`, dataset `production`) at build time.
 
 ## Commands
 
@@ -26,6 +26,7 @@ The exported variable name, the file name, and the `name:` field of the document
 - `post.ts` → `name: 'post'` (titled "Delivery audit findings" in the studio UI; the website renders these at `/uk-UA/atlas/findings/<slug>`, `enabler` — one of the seven ATLAS enablers, stored as a stable key — labels its carousel card in Ukrainian via `src/data/enablers.ts`)
 - `author.ts` → `name: 'authors'` (plural)
 - `caseStudy.ts` → `name: 'caseStudy'`, `deliveryEpisode.ts` → `name: 'deliveryEpisode'`
+- `daatTalksEpisode.ts`, `daatTalksArticle.ts`, `daatTalksContributor.ts` → the same names. An article references its episode (`episode`); an episode doesn't list its articles. Guests are `daatTalksContributor`, hosts and article authors are `authors`
 
 Example: `deliveryEpisode.ts` references authors via `to: [{type: 'authors'}]` — using `'author'` would silently break the reference.
 
@@ -36,7 +37,7 @@ All document types use the same set of field group names so the editor UX stays 
 `projectId` and `dataset` appear in both `sanity.config.ts` and `sanity.cli.ts`. Changes must be made in both files.
 
 ### Plugins
-Registered in `sanity.config.ts`: `structureTool`, `visionTool` (GROQ playground at `/vision` in dev), and `@sanity/table`. Add new plugins to the `plugins: []` array in the same file.
+Registered in `sanity.config.ts`: `structureTool`, `visionTool` (GROQ playground at `/vision` in dev), `@sanity/table`, and `sanity-plugin-rich-table` (`richTableBlock` in Daat Talks article bodies; rows → cells → Portable Text). Add new plugins to the `plugins: []` array in the same file.
 
 ## Conventions
 
