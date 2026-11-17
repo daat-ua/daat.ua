@@ -2,6 +2,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
+import Divider from "../../../../components/ui/Divider.astro";
 import { clientLogo, commissionedByNames, industryNames } from "../../../../data/case-studies";
 import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../../sanity/image";
 import { getCaseStudyTeasers } from "../../../../sanity/shared";
@@ -110,45 +111,49 @@ const intro =
         <h2 class="cases-all__title" id="cases-all-title">
           Усі кейси
         </h2>
-        {rest.map((c) => (
-          <article class="cases-row">
-            <a
-              class="cases-row__media"
-              href={caseHref(c.slug)}
-              tabindex="-1"
-              aria-hidden="true"
-              style={
-                c.heroImage.asset?.metadata?.lqip
-                  ? `background-image: url(${c.heroImage.asset.metadata.lqip})`
-                  : undefined
-              }
-            >
-              <img
-                src={urlFor(c.heroImage, PHOTO_QUALITY).width(800).height(500).fit("crop").url()}
-                srcset={srcsetFor(c.heroImage, [480, 800, 1200], 16 / 10, PHOTO_QUALITY)}
-                sizes="(width < 64rem) 100vw, 50vw"
-                alt=""
-                loading="lazy"
-              />
-            </a>
-            <div class="cases-row__text">
-              {logoOf(c) && (
+        {rest.map((c, i) => (
+          <>
+            {/* the main page's rule (#why-now) between one case and the next, fading into the paper */}
+            {i > 0 && <Divider class="cases-divider" fade />}
+            <article class="cases-row">
+              <a
+                class="cases-row__media"
+                href={caseHref(c.slug)}
+                tabindex="-1"
+                aria-hidden="true"
+                style={
+                  c.heroImage.asset?.metadata?.lqip
+                    ? `background-image: url(${c.heroImage.asset.metadata.lqip})`
+                    : undefined
+                }
+              >
                 <img
-                  class:list={["cases-logo", { "cases-logo--svg": logoOf(c)!.svg }]}
-                  {...logoOf(c)!.attrs}
+                  src={urlFor(c.heroImage, PHOTO_QUALITY).width(800).height(500).fit("crop").url()}
+                  srcset={srcsetFor(c.heroImage, [480, 800, 1200], 16 / 10, PHOTO_QUALITY)}
+                  sizes="(width < 64rem) 100vw, 50vw"
+                  alt=""
                   loading="lazy"
                 />
-              )}
-              <p class="cases-meta">{meta(c)}</p>
-              <h3 class="cases-row__title">
-                <a href={caseHref(c.slug)}>{c.title}</a>
-              </h3>
-              <p>{c.lead}</p>
-              <a class="cases-button cases-button--outline" href={caseHref(c.slug)}>
-                Читати кейс
               </a>
-            </div>
-          </article>
+              <div class="cases-row__text">
+                {logoOf(c) && (
+                  <img
+                    class:list={["cases-logo", { "cases-logo--svg": logoOf(c)!.svg }]}
+                    {...logoOf(c)!.attrs}
+                    loading="lazy"
+                  />
+                )}
+                <p class="cases-meta">{meta(c)}</p>
+                <h3 class="cases-row__title">
+                  <a href={caseHref(c.slug)}>{c.title}</a>
+                </h3>
+                <p>{c.lead}</p>
+                <a class="cases-button cases-button--outline" href={caseHref(c.slug)}>
+                  Читати кейс
+                </a>
+              </div>
+            </article>
+          </>
         ))}
       </section>
     )}
@@ -163,6 +168,13 @@ const intro =
 </FindingsLayout>
 
 <style>
+  /* the breadcrumb starts closer to the bar than on a finding (120 at 1440, was the layout's 200), still clear of
+     the logo hanging 63 below it; phones keep the layout's 104px */
+  @media (width >= 64rem) {
+    :global(body:has(.cases) .finding-hero) {
+      --hero-pad-top: calc(120 * var(--px));
+    }
+  }
   .cases-empty {
     color: var(--ink-soft);
     font-size: var(--text-body);
@@ -301,6 +313,11 @@ const intro =
   .cases-all {
     display: grid;
     row-gap: var(--space-2xl);
+  }
+  /* the rule between cases: the list's gap spaces it, so none of its own margins */
+  .cases-all :global(.cases-divider) {
+    width: 100%;
+    height: calc(2 * var(--px));
   }
   .cases-all__title {
     margin: 0;

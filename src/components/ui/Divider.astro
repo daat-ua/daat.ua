@@ -1,12 +1,15 @@
 ---
 import { Image } from "astro:assets";
-import divider from "../../assets/dividers/divider-full.svg";
+import full from "../../assets/dividers/divider-full.svg";
+import fade from "../../assets/dividers/divider-fade.svg";
 
 interface Props {
   class?: string;
+  /** orange fading into whatever ground it's on (light pages), instead of orange-to-blue (a blue section) */
+  fade?: boolean;
 }
-const { class: className = "why__divider" } = Astro.props;
+const { class: className = "why__divider", fade: fading = false } = Astro.props;
 ---
 
-<!-- the orange-to-blue rule between blocks of a blue section -->
-<Image class={className} src={divider} alt="" layout="none" />
+<!-- the orange rule between blocks: to blue in a blue section, fading out on other grounds -->
+<Image class={className} src={fading ? fade : full} alt="" layout="none" />
