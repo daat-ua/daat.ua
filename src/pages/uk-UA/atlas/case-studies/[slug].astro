@@ -179,7 +179,9 @@ const otherTeasers = others.length ? others : placeholderCases;
         {sections.context && (
           <section id="context" class="case-section">
             <h2>Контекст: з чим прийшов клієнт</h2>
-            <PortableText value={study.context!} />
+            <div class="article-body">
+              <PortableText value={study.context!} />
+            </div>
             {study.contextQuote && (
               <blockquote class="case-quote">
                 <p>«{study.contextQuote}»</p>
@@ -202,7 +204,11 @@ const otherTeasers = others.length ? others : placeholderCases;
                 ))}
               </ol>
             )}
-            {study.phasesText && <PortableText value={study.phasesText} />}
+            {study.phasesText && (
+              <div class="article-body">
+                <PortableText value={study.phasesText} />
+              </div>
+            )}
           </section>
         )}
 
@@ -337,7 +343,11 @@ const otherTeasers = others.length ? others : placeholderCases;
                 </tbody>
               </table>
             )}
-            {study.changesText && <PortableText value={study.changesText} />}
+            {study.changesText && (
+              <div class="article-body">
+                <PortableText value={study.changesText} />
+              </div>
+            )}
           </section>
         )}
 
@@ -356,7 +366,9 @@ const otherTeasers = others.length ? others : placeholderCases;
             {testimonial.transcript && testimonial.transcript.length > 0 && (
               <details class="case-transcript">
                 <summary>Читати транскрипт</summary>
-                <PortableText value={testimonial.transcript} />
+                <div class="article-body">
+                  <PortableText value={testimonial.transcript} />
+                </div>
               </details>
             )}
           </section>
@@ -443,9 +455,13 @@ const otherTeasers = others.length ? others : placeholderCases;
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
-  .case p,
-  .case-body :global(p) {
-    margin: 0; /* the sections' grids space the paragraphs, Portable Text's included */
+  .case p {
+    margin: 0; /* the sections' grids space the page's own blocks */
+  }
+  /* the text from Sanity reads as on a finding (.article-body, patterns.css); its last block leaves the spacing to
+     the section's grid */
+  .case-section :global(.article-body > :last-child) {
+    margin-bottom: 0;
   }
   .case h2 {
     margin: 0;
@@ -461,8 +477,8 @@ const otherTeasers = others.length ? others : placeholderCases;
     font-weight: 600;
     line-height: var(--leading-title);
   }
-  /* links in the story and the profile */
-  .case-body :global(a),
+  /* links in the page's own blocks (a conclusion's finding) and the profile; the text's are .article-body's */
+  .case-body a,
   .case-profile a {
     color: inherit;
     text-decoration-line: underline;
@@ -470,7 +486,7 @@ const otherTeasers = others.length ? others : placeholderCases;
     text-decoration-thickness: 1px;
     transition: color 0.2s ease;
   }
-  .case-body :global(a:hover) {
+  .case-body a:hover {
     color: var(--c-primary);
   }
 
@@ -875,8 +891,9 @@ const otherTeasers = others.length ? others : placeholderCases;
   .case-transcript[open] summary {
     margin-bottom: var(--space-sm);
   }
-  .case-transcript :global(p + p) {
-    margin-top: var(--space-sm);
+  .case-transcript .article-body {
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
   }
 
   /* ---------- Other cases: the ATLAS page's carousel under its subheading ---------- */

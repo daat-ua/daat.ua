@@ -95,7 +95,11 @@ const others: Teaser[] = episodes
     <div class="wrap ep-layout">
       <article class="ep-body">
         <p class="ep-lead">{episode.lead}</p>
-        {body.length > 0 && <PortableText value={body} components={bodyComponents} />}
+        {body.length > 0 && (
+          <div class="article-body">
+            <PortableText value={body} components={bodyComponents} />
+          </div>
+        )}
       </article>
 
       <!-- "on this page" with its call to action, as on a finding (hidden on phones). Without it (an episode without
@@ -170,8 +174,7 @@ const others: Teaser[] = episodes
     background: var(--c-paper);
     color: var(--c-hero);
   }
-  .ep p,
-  .ep-body :global(p) {
+  .ep p {
     margin: 0;
   }
 
@@ -298,24 +301,10 @@ const others: Teaser[] = episodes
     padding-top: 0;
     border-top: 0;
   }
-  .ep-body :global(h3) {
-    scroll-margin-top: var(--space-xl);
-    margin: var(--space-md) 0 0;
-    font-family: var(--font-display);
-    font-size: var(--text-title);
-    font-weight: 600;
-    line-height: var(--leading-title);
-  }
-  .ep-body :global(blockquote) {
-    margin: var(--space-xs) 0;
-    padding-left: var(--space-md);
-    border-left: 3px solid var(--c-primary);
-    font-size: var(--text-lead);
-  }
-  .ep-body :global(a) {
-    color: inherit;
-    text-decoration-line: underline;
-    text-underline-offset: 0.15em;
+  /* the episode's text reads as a finding's (.article-body, patterns.css); its last block leaves the spacing to the
+     body's grid */
+  .ep-body :global(.article-body > :last-child) {
+    margin-bottom: 0;
   }
   .ep-lead {
     margin-bottom: var(--space-xs);
