@@ -24,9 +24,12 @@ export function clientLogo(c: LogoFields, height: number) {
   const logo = c.anonymised === false ? c.clientLogo : null;
   if (!logo?.asset) return null;
   const { asset } = logo;
+  const svg = asset.extension === "svg" && Boolean(asset.url);
   return {
+    /** an SVG: a vector on a transparent ground, which can be recoloured */
+    svg,
     src:
-      asset.extension === "svg" && asset.url
+      svg && asset.url
         ? asset.url
         : urlFor(logo as SanityImageSource)
             .height(height * 2)
