@@ -19,7 +19,7 @@ import {
 import { cases as placeholderCases } from "../../../../data/testimonials";
 import { enablerNames } from "../../../../data/enablers";
 import { sanityClient } from "../../../../sanity/client";
-import { srcsetFor, urlFor } from "../../../../sanity/image";
+import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../../sanity/image";
 import { CASE_STUDIES_QUERY } from "../../../../sanity/queries";
 import { getCaseStudyTeasers } from "../../../../sanity/shared";
 
@@ -119,8 +119,8 @@ const latest = picked.length
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const toTeaser = (c: CaseTeaser): Teaser => ({
   image: {
-    src: urlFor(c.heroImage).width(640).height(640).fit("crop").url(),
-    srcset: srcsetFor(c.heroImage, [320, 480, 640, 800], 1),
+    src: urlFor(c.heroImage, PHOTO_QUALITY).width(640).height(640).fit("crop").url(),
+    srcset: srcsetFor(c.heroImage, [320, 480, 640, 800], 1, PHOTO_QUALITY),
   },
   tag: c.cardTag || `${industryNames[c.industry]} · ${c.companySize}`,
   title: escape(c.title),
@@ -141,8 +141,8 @@ const otherTeasers = others.length ? others : placeholderCases;
       <!-- the artwork fades into the paper, as on a finding's page; its blurred preview shows until it loads -->
       <div class="case-hero__art" aria-hidden="true" style={lqip ? `background-image: url(${lqip})` : undefined}>
         <img
-          src={urlFor(hero).width(1440).url()}
-          srcset={srcsetFor(hero, [640, 960, 1440, 1920, 2400])}
+          src={urlFor(hero, PHOTO_QUALITY).width(1440).url()}
+          srcset={srcsetFor(hero, [640, 960, 1440, 1920, 2400], undefined, PHOTO_QUALITY)}
           sizes="100vw"
           alt=""
           fetchpriority="high"

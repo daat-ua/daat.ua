@@ -3,7 +3,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../../../layouts/FindingsLayout.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
 import { clientLogo, commissionedByNames, industryNames } from "../../../../data/case-studies";
-import { srcsetFor, urlFor } from "../../../../sanity/image";
+import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../../sanity/image";
 import { getCaseStudyTeasers } from "../../../../sanity/shared";
 import heroImage from "../../../../assets/images/case-studies-hero.jpg";
 
@@ -61,8 +61,8 @@ const intro =
           }
         >
           <img
-            src={urlFor(featured.heroImage).width(960).url()}
-            srcset={srcsetFor(featured.heroImage, [640, 960, 1280, 1920])}
+            src={urlFor(featured.heroImage, PHOTO_QUALITY).width(960).url()}
+            srcset={srcsetFor(featured.heroImage, [640, 960, 1280, 1920], undefined, PHOTO_QUALITY)}
             sizes="(width < 64rem) 100vw, 50vw"
             alt=""
           />
@@ -109,8 +109,8 @@ const intro =
               }
             >
               <img
-                src={urlFor(c.heroImage).width(800).height(500).fit("crop").url()}
-                srcset={srcsetFor(c.heroImage, [480, 800, 1200], 16 / 10)}
+                src={urlFor(c.heroImage, PHOTO_QUALITY).width(800).height(500).fit("crop").url()}
+                srcset={srcsetFor(c.heroImage, [480, 800, 1200], 16 / 10, PHOTO_QUALITY)}
                 sizes="(width < 64rem) 100vw, 50vw"
                 alt=""
                 loading="lazy"
