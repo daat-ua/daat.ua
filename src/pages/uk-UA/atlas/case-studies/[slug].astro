@@ -386,22 +386,14 @@ const otherTeasers = others.length ? others : placeholderCases;
         {testimonial && (
           <section id="testimonial" class="case-section">
             <h2>Відгук клієнта</h2>
-            <!-- TODO: the client's video (where videos live is still to be decided); a placeholder until then -->
-            <div class="case-video" role="img" aria-label="Відеовідгук клієнта (буде додано)">
-              <span class="case-video__note">Відеовідгук · 16:9</span>
-              <span class="case-video__play" aria-hidden="true" />
-            </div>
             <blockquote class="case-testimonial">
               <p>«{testimonial.quote}»</p>
               <footer>{testimonialAuthor}</footer>
             </blockquote>
             {testimonial.transcript && testimonial.transcript.length > 0 && (
-              <details class="case-transcript">
-                <summary>Читати транскрипт</summary>
-                <div class="article-body">
-                  <PortableText value={testimonial.transcript} />
-                </div>
-              </details>
+              <div class="article-body">
+                <PortableText value={testimonial.transcript} />
+              </div>
             )}
           </section>
         )}
@@ -941,35 +933,7 @@ const otherTeasers = others.length ? others : placeholderCases;
     color: var(--c-accent);
   }
 
-  /* the testimonial: the video (a placeholder for now), the quote under it */
-  .case-video {
-    position: relative;
-    display: grid;
-    place-items: center;
-    aspect-ratio: 16 / 9;
-    background: var(--tint);
-  }
-  .case-video__note {
-    position: absolute;
-    top: var(--space-md);
-    left: var(--space-md);
-    color: var(--ink-soft);
-    font-size: var(--text-small);
-  }
-  .case-video__play {
-    position: relative;
-    width: calc(72 * var(--px));
-    height: calc(72 * var(--px));
-    border-radius: 50%;
-    background: var(--c-hero);
-  }
-  .case-video__play::after {
-    content: "";
-    position: absolute;
-    inset: 32% 32% 32% 40%;
-    background: var(--c-white);
-    clip-path: polygon(0 0, 100% 50%, 0 100%);
-  }
+  /* the testimonial: the quote, then the transcript as plain text */
   .case-testimonial {
     display: grid;
     row-gap: var(--space-sm);
@@ -984,19 +948,6 @@ const otherTeasers = others.length ? others : placeholderCases;
   .case-testimonial footer {
     color: var(--ink-soft);
     font-size: var(--text-small);
-  }
-  .case-transcript summary {
-    color: var(--c-primary);
-    font-size: var(--text-small);
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .case-transcript[open] summary {
-    margin-bottom: var(--space-sm);
-  }
-  .case-transcript .article-body {
-    font-size: var(--text-small);
-    line-height: var(--leading-small);
   }
 
   /* ---------- Other cases: the ATLAS page's carousel under its subheading ---------- */
