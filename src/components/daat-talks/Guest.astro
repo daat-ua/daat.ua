@@ -1,0 +1,92 @@
+---
+import { initials, type TalksContributor } from "../../data/daat-talks";
+
+// A Daat Talks guest: the avatar (initials until the guests have photos), the name and the role. On the episode page
+// the name links to the guest's LinkedIn.
+
+interface Props {
+  guest: TalksContributor;
+  /** the name links to LinkedIn */
+  linked?: boolean;
+  size?: "md" | "lg";
+}
+
+const { guest, linked = false, size = "md" } = Astro.props;
+const role = [guest.role, guest.company].filter(Boolean).join(", ");
+const href = linked ? guest.linkedin : undefined;
+---
+
+<div class:list={["guest", `guest--${size}`]}>
+  <span class="guest__avatar" aria-hidden="true">
+    {initials(guest.name)}
+  </span>
+  <div>
+    {href ? (
+      <a class="guest__name" href={href} target="_blank" rel="noopener">
+        {guest.name}&nbsp;↗<span class="sr-only"> (LinkedIn, відкриється в новій вкладці)</span>
+      </a>
+    ) : (
+      <p class="guest__name">{guest.name}</p>
+    )}
+    <p class="guest__role">{role}</p>
+  </div>
+</div>
+
+<style>
+  .guest {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .guest p {
+    margin: 0;
+  }
+  .guest__avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: calc(56 * var(--px));
+    height: calc(56 * var(--px));
+    border-radius: 50%;
+    background: var(--c-cream);
+    font-size: var(--text-small);
+    font-weight: 600;
+  }
+  .guest--lg .guest__avatar {
+    width: calc(64 * var(--px));
+    height: calc(64 * var(--px));
+  }
+  /* the name at the small size beside an episode's title (the index), at the body's on the episode's own page */
+  .guest__name {
+    display: block;
+    color: var(--c-hero);
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .guest--lg .guest__name {
+    font-size: var(--text-body);
+  }
+  a.guest__name {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: color 0.2s ease;
+  }
+  a.guest__name:hover {
+    color: var(--c-primary);
+  }
+  .guest__role {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+
+  @media (width < 64rem) {
+    .guest__avatar,
+    .guest--lg .guest__avatar {
+      width: 48px;
+      height: 48px;
+    }
+  }
+</style>

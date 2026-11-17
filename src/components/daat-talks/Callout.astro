@@ -1,0 +1,35 @@
+---
+import type { TypedObjectProps } from "astro-portabletext/types";
+
+// "Ключова думка": a section's takeaway set apart from an article's text (Portable Text `callout`), on the navy.
+type Props = TypedObjectProps;
+
+const { node } = Astro.props;
+const { title, text } = node as unknown as { title?: string; text: string };
+---
+
+<aside class="callout">
+  {title && <p class="callout__title">{title}</p>}
+  <p>{text}</p>
+</aside>
+
+<style>
+  .callout {
+    margin: var(--space-lg) 0;
+    padding: var(--space-md);
+    border-radius: 6px;
+    background: var(--c-hero);
+    color: var(--c-cream);
+    font-size: var(--text-small);
+    line-height: var(--leading-body);
+  }
+  .callout p {
+    margin: 0;
+  }
+  .callout .callout__title {
+    margin-bottom: var(--space-xs);
+    color: var(--c-white);
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+</style>

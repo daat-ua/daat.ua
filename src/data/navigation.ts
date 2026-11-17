@@ -1,5 +1,5 @@
 // Navigation copy: table of contents, global menu and footer.
-// TODO content: the Daat talks page doesn't exist yet; cookie settings and social profiles are placeholders.
+// TODO content: cookie settings and social profiles are placeholders.
 
 import { getRelativeLocaleUrl } from "astro:i18n";
 

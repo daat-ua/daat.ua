@@ -1,0 +1,312 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import FindingsLayout from "../../../layouts/FindingsLayout.astro";
+import Guest from "../../../components/daat-talks/Guest.astro";
+import Divider from "../../../components/ui/Divider.astro";
+import { cover } from "../../../data/delivery-management";
+import { articlesOf, episodes, EPISODES_PER_PAGE } from "../../../data/daat-talks";
+
+// Daat Talks (DAA-239), page A of the "Daat Talks section" canvas: the podcast's episodes, newest first, five to a
+// page (/uk-UA/daat-talks, then /2, /3…). Each episode: its cover, number, title, teaser and guest on the left;
+// «Головне з розмови», the articles written from it, on the right; a fading orange rule between episodes.
+// Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
+
+export const getStaticPaths = (({ paginate }) =>
+  paginate(episodes, { pageSize: EPISODES_PER_PAGE })) satisfies GetStaticPaths;
+
+const { page } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+const pageHref = (n: number) => url(n === 1 ? "daat-talks" : `daat-talks/${n}`);
+const pages = Array.from({ length: page.lastPage }, (_, i) => i + 1);
+
+const intro =
+  "Подкаст Daat про те, як будують і ведуть IT-компанії: відверті розмови з фаундерами, CEO та експертами. З кожного епізоду ми робимо кілька статей — щоб до ідей можна було повернутися.";
+const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE6iuiSfPaKo";
+---
+
+<FindingsLayout
+  title={page.currentPage === 1 ? "Daat Talks | Daat" : `Daat Talks, сторінка ${page.currentPage} | Daat`}
+  description={intro}
+  heading="Daat Talks"
+>
+  <div class="talks-hero" slot="hero">
+    <p class="talks-intro">{intro}</p>
+    <p class="talks-meta">
+      {episodes.length} епізодів ·{" "}
+      <a href={playlist} target="_blank" rel="noopener">
+        Дивитися на YouTube&nbsp;↗<span class="sr-only"> (відкриється в новій вкладці)</span>
+      </a>
+    </p>
+  </div>
+
+  <div class="wrap talks">
+    <h2 class="sr-only">Епізоди</h2>
+    {page.data.map((episode, i) => {
+      const href = url(`daat-talks/${episode.slug}`);
+      const articles = articlesOf(episode);
+      return (
+        <>
+          {i > 0 && <Divider class="talks-divider" fade />}
+          <article class="talks-episode" aria-labelledby={`episode-${episode.number}`}>
+            <div class="talks-episode__main">
+              <a class="talks-episode__cover" href={href} tabindex="-1" aria-hidden="true">
+                <img
+                  {...cover({ youtubeUrl: episode.youtubeUrl, thumbnail: null })}
+                  sizes="(width < 64rem) 100vw, 33vw"
+                  alt=""
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+              </a>
+              <div class="talks-episode__head">
+                <p class="talks-episode__number">Епізод {episode.number}</p>
+                <h3 class="talks-episode__title" id={`episode-${episode.number}`}>
+                  <a href={href}>{episode.title}</a>
+                </h3>
+              </div>
+              <p class="talks-episode__teaser">{episode.teaser}</p>
+              {episode.guests.map((guest) => (
+                <Guest guest={guest} />
+              ))}
+            </div>
+
+            {articles.length > 0 && (
+              <div class="talks-episode__articles">
+                <h4 class="talks-label">Головне з розмови</h4>
+                <ul>
+                  {articles.map((a) => (
+                    <li>
+                      <a class="talks-article__title" href={url(`article/${a.slug}`)}>
+                        {a.title}
+                      </a>
+                      <p>{a.excerpt}</p>
+                      <p>{a.summary}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </article>
+        </>
+      );
+    })}
+
+    {page.lastPage > 1 && (
+      <>
+        <Divider class="talks-divider" fade />
+        <nav class="talks-pages" aria-label="Сторінки епізодів">
+          {page.url.prev ? (
+            <a class="talks-pages__arrow" href={page.url.prev} aria-label="Попередня сторінка">
+              ‹
+            </a>
+          ) : (
+            <span class="talks-pages__arrow" aria-hidden="true">
+              ‹
+            </span>
+          )}
+          {pages.map((n) =>
+            n === page.currentPage ? (
+              <span class="talks-pages__current" aria-current="page">
+                {n}
+              </span>
+            ) : (
+              <a href={pageHref(n)}>{n}</a>
+            ),
+          )}
+          {page.url.next ? (
+            <a class="talks-pages__arrow" href={page.url.next} aria-label="Наступна сторінка">
+              ›
+            </a>
+          ) : (
+            <span class="talks-pages__arrow" aria-hidden="true">
+              ›
+            </span>
+          )}
+        </nav>
+      </>
+    )}
+  </div>
+</FindingsLayout>
+
+<style>
+  /* the title starts 120 below the bar, as on the cases index and the delivery management episodes */
+  @media (width >= 64rem) {
+    :global(body:has(.talks) .finding-hero) {
+      --hero-pad-top: calc(120 * var(--px));
+    }
+  }
+
+  /* the intro as the cases index's; the count and the playlist close under it */
+  .talks-hero {
+    display: grid;
+    row-gap: var(--space-md);
+  }
+  .talks-hero p {
+    margin: 0;
+  }
+  .talks-intro {
+    max-width: var(--span-2);
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .talks-meta {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .talks-meta a,
+  .talks-article__title,
+  .talks-episode__title a {
+    color: inherit;
+    text-decoration-line: none;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+  }
+  .talks-meta a {
+    color: var(--c-primary);
+  }
+  :is(.talks-meta a, .talks-article__title, .talks-episode__title a):hover {
+    text-decoration-line: underline;
+  }
+
+  .talks {
+    padding-bottom: var(--space-3xl);
+  }
+  .talks :global(.talks-divider) {
+    display: block;
+    width: 100%;
+    height: calc(2 * var(--px));
+    margin: var(--space-2xl) 0;
+  }
+
+  /* an episode: the cover and its text in the first column and a bit, the articles across the rest */
+  .talks-episode {
+    display: grid;
+    grid-template-columns: calc(480 * var(--px)) minmax(0, 1fr);
+    column-gap: var(--space-3xl);
+    align-items: start;
+  }
+  .talks-episode p {
+    margin: 0;
+  }
+  .talks-episode__main {
+    display: grid;
+    row-gap: var(--space-sm);
+  }
+  .talks-episode__cover {
+    display: block;
+    overflow: hidden;
+    margin-bottom: var(--space-xs);
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    background: var(--c-night);
+  }
+  .talks-episode__cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: scale 0.4s var(--ease-out);
+  }
+  .talks-episode__cover:hover img {
+    scale: 1.03;
+  }
+  /* the number sits close over the title it belongs to */
+  .talks-episode__head {
+    display: grid;
+    row-gap: var(--space-xs);
+  }
+  .talks-episode__number {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .talks-episode__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .talks-episode__teaser {
+    margin-bottom: var(--space-xs) !important;
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+
+  /* «Головне з розмови»: a label as "На цій сторінці" is, then each article's title (the body face, under the
+     episode's display title) and two paragraphs between hairlines */
+  .talks-label {
+    margin: 0 0 var(--space-xs);
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .talks-episode__articles ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .talks-episode__articles li {
+    display: grid;
+    row-gap: var(--space-xs);
+    padding: var(--space-md) 0;
+    border-top: 1px solid var(--rule);
+  }
+  .talks-episode__articles li p {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .talks-article__title {
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+
+  /* pages: round numbers, the current one filled; the arrows without a border */
+  .talks-pages {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+  .talks-pages > * {
+    display: grid;
+    place-items: center;
+    width: calc(52 * var(--px));
+    height: calc(52 * var(--px));
+    border-radius: 50%;
+    color: var(--c-hero);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  .talks-pages a:hover {
+    background: var(--c-cream);
+  }
+  .talks-pages__current {
+    background: var(--c-hero);
+    color: var(--c-white) !important;
+  }
+  .talks-pages__arrow {
+    font-size: var(--text-lead);
+  }
+  span.talks-pages__arrow {
+    color: color-mix(in srgb, var(--c-hero) 35%, transparent);
+  }
+
+  @media (width < 64rem) {
+    .talks-episode {
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+    }
+    .talks-pages > * {
+      width: 44px;
+      height: 44px;
+    }
+  }
+</style>
