@@ -2,7 +2,8 @@
 // lists to Ukrainian. `satisfies` fails the build if the Studio gains an option that has no name here.
 
 import type { SanityImageSource } from "@sanity/image-url";
-import { urlFor } from "../sanity/image";
+import type { Teaser } from "../components/ui/Carousel.astro";
+import { PHOTO_QUALITY, srcsetFor, urlFor } from "../sanity/image";
 import type { CaseStudy } from "../sanity/sanity.types";
 import type { Enabler } from "./enablers";
 
@@ -24,9 +25,12 @@ export function clientLogo(c: LogoFields, height: number) {
   const logo = c.anonymised === false ? c.clientLogo : null;
   if (!logo?.asset) return null;
   const { asset } = logo;
+  const svg = asset.extension === "svg" && Boolean(asset.url);
   return {
+    /** an SVG: a vector on a transparent ground, which can be recoloured */
+    svg,
     src:
-      asset.extension === "svg" && asset.url
+      svg && asset.url
         ? asset.url
         : urlFor(logo as SanityImageSource)
             .height(height * 2)
@@ -71,3 +75,32 @@ export const maturityFields = {
   people_capacity: "people-capacity",
   capabilities_competency: "capabilities-competency",
 } as const satisfies Record<string, Enabler>;
+
+/** What a case's card needs: the case studies teasers' fields (the logo's only for a named case) */
+export interface CaseCard extends Partial<LogoFields> {
+  title: string;
+  slug: string;
+  cardTag: string | null;
+  industry: keyof typeof industryNames;
+  companySize: string;
+  heroImage: { asset: { _id: string } | null } & Record<string, unknown>;
+}
+
+/** A case as a card in the site's carousel (the ATLAS page's cases, a case page's "other cases"): its photo
+ * cropped square, the card tag (or industry and size) on it, a named client's logo under it, the title linking to
+ * `href`. Card titles go to the
+ * carousel as HTML, so the plain-text title is escaped. */
+export const caseTeaser = (c: CaseCard, href: string): Teaser => ({
+  image: {
+    src: urlFor(c.heroImage as SanityImageSource, PHOTO_QUALITY)
+      .width(640)
+      .height(640)
+      .fit("crop")
+      .url(),
+    srcset: srcsetFor(c.heroImage as SanityImageSource, [320, 480, 640, 800], 1, PHOTO_QUALITY),
+  },
+  tag: c.cardTag || `${industryNames[c.industry]} · ${c.companySize}`,
+  logo: clientLogo({ anonymised: c.anonymised ?? null, clientLogo: c.clientLogo ?? null }, 26),
+  title: c.title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+  href,
+});

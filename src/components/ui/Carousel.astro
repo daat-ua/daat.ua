@@ -11,10 +11,20 @@ export interface RemoteImage {
   srcset: string;
 }
 
+/** a company's logo under the image (a named case study's client); an SVG is recoloured to one dark shade */
+export interface TeaserLogo {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  svg: boolean;
+}
+
 export interface Teaser {
   image: ImageMetadata | RemoteImage;
   /** the label on the image; none when empty */
   tag?: string | null;
+  logo?: TeaserLogo | null;
   /** may hold HTML (&nbsp;, nowrap spans) */
   title: string;
   href: string;
@@ -64,6 +74,16 @@ const Title = `h${headingLevel}` as "h3" | "h4";
           </a>
           {item.tag && <span class="finding__tag">{item.tag}</span>}
         </div>
+        {item.logo && (
+          <img
+            class:list={["finding__logo", { "finding__logo--svg": item.logo.svg }]}
+            src={item.logo.src}
+            alt={item.logo.alt}
+            width={item.logo.width}
+            height={item.logo.height}
+            loading="lazy"
+          />
+        )}
         <Title class="finding__title" set:html={item.title} />
         <a class="finding__more" href={item.href}>
           {more} <span aria-hidden="true">›</span>
