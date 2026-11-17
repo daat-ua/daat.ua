@@ -237,8 +237,8 @@ const intro =
     font-weight: 500;
     line-height: var(--leading-heading);
   }
-  /* a named client's logo: as uploaded on the navy (a light version, as on the case page); on the paper, a dark
-     silhouette in the ink, so the same light logo reads */
+  /* a named client's logo, always as uploaded on the navy (a light version, as on the case page's profile): the
+     featured case's panel, or a navy chip on the paper rows */
   .cases-logo {
     width: auto;
     max-width: calc(150 * var(--px));
@@ -246,8 +246,10 @@ const intro =
     object-fit: contain;
   }
   .cases-row .cases-logo {
-    filter: brightness(0);
-    opacity: 0.85;
+    box-sizing: content-box;
+    padding: calc(8 * var(--px)) calc(12 * var(--px));
+    border-radius: 4px;
+    background: var(--c-hero);
   }
   .cases-featured__figure {
     display: grid;
