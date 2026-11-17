@@ -172,7 +172,7 @@ export const caseStudy = defineType({
       description:
         'At the top of the client profile, on its dark navy card: SVG or PNG on a transparent ground, in a light version. Links to the client’s LinkedIn when that is set. Only for a named case (not anonymised)',
       type: 'image',
-      options: {accept: 'image/svg+xml,image/png,image/webp,image/jpeg'},
+      options: {accept: 'image/svg+xml,image/png,image/webp'}, // formats that keep a transparent ground
       fields: [
         defineField({
           name: 'alt',
@@ -470,6 +470,14 @@ export const caseStudy = defineType({
       type: 'object',
       group: 'testimonial',
       hidden: ({document}) => document?.showTestimonial !== true,
+      // on the object as well as on the quote: the quote's own rule doesn't run while the object is empty
+      validation: (rule) =>
+        rule.custom((value: {quote?: string} | undefined, context) =>
+          (context.document as {showTestimonial?: boolean})?.showTestimonial !== true ||
+          value?.quote
+            ? true
+            : 'A shown testimonial needs a quote',
+        ),
       fields: [
         {
           name: 'quote',
