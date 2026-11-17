@@ -3,6 +3,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../layouts/FindingsLayout.astro";
 import { enablerNames, type Enabler } from "../../data/enablers";
 import { legalLinks, menu, projects, toc, type Link } from "../../data/navigation";
+import { episodes as talksEpisodes } from "../../data/daat-talks";
 import { getCaseStudyTeasers, getDeliveryEpisodes, getFindingTeasers } from "../../sanity/shared";
 
 // The site map (DAA-219), modelled on bcg.com/sitemap: a section per part of the site, its sub-groups and their
@@ -15,6 +16,7 @@ const atlasHref = url("atlas");
 const catalogueHref = url("atlas/findings");
 const casesHref = url("atlas/case-studies");
 const deliveryHref = url("delivery-management");
+const talksHref = url("daat-talks");
 
 // the pages built from files: "/src/pages/uk-UA/terms-of-use.astro" → "/uk-UA/terms-of-use"
 const routes = new Set(
@@ -64,9 +66,12 @@ const episodeLinks = (await getDeliveryEpisodes()).map((e) => ({
   href: url(`delivery-management/${e.slug}`),
 }));
 
+// every Daat Talks episode, newest first
+const talksLinks = talksEpisodes.map((e) => ({ label: escapeHtml(e.title), href: url(`daat-talks/${e.slug}`) }));
+
 // the menu's pages, but the indexes that head their own sections
 const companyLinks = built([...menu.flatMap((item) => ("href" in item ? [item] : [])), ...projects]).filter(
-  (link) => link.href !== casesHref && link.href !== deliveryHref,
+  (link) => ![casesHref, deliveryHref, talksHref].includes(link.href),
 );
 
 const sections: Section[] = [
@@ -78,6 +83,7 @@ const sections: Section[] = [
   { title: "Знахідки аудитів", href: catalogueHref, groups: findingGroups },
   { title: "Кейси", href: casesHref, groups: [{ links: caseLinks }] },
   { title: "Все про менеджмент делівері", href: deliveryHref, groups: [{ links: episodeLinks }] },
+  { title: '<span class="brand">Daat</span> Talks', href: talksHref, groups: [{ links: talksLinks }] },
   { title: 'Про <span class="brand">Daat</span>', groups: [{ links: companyLinks }] },
   { title: "Правова інформація", groups: [{ links: built(legalLinks).filter((l) => l.href !== url("sitemap")) }] },
 ]

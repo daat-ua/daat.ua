@@ -1,0 +1,59 @@
+---
+import type { TypedObjectProps } from "astro-portabletext/types";
+
+// A table in an article's body (Portable Text `table`, the Rich Table plugin in the Studio): the first row is the
+// header. It scrolls sideways on its own when it's wider than the text.
+// TODO Sanity: the plugin's cells are rich text; the dummy data's are strings.
+type Props = TypedObjectProps;
+
+const { node } = Astro.props;
+const [head = [], ...rows] = (node as unknown as { rows: string[][] }).rows;
+---
+
+<div class="body-table" tabindex="0" role="region" aria-label="Таблиця">
+  <table>
+    <thead>
+      <tr>
+        {head.map((cell) => (
+          <th scope="col">{cell}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr>{row.map((cell, i) => (i === 0 && !head[0] ? <th scope="row">{cell}</th> : <td>{cell}</td>))}</tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .body-table {
+    margin: var(--space-lg) 0;
+    overflow-x: auto;
+  }
+  .body-table:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  th,
+  td {
+    padding: var(--space-xs) var(--space-sm) var(--space-xs) 0;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    vertical-align: top;
+  }
+  thead th {
+    border-bottom: 2px solid var(--c-hero);
+    font-weight: 600;
+  }
+  tbody th {
+    font-weight: 500;
+  }
+</style>

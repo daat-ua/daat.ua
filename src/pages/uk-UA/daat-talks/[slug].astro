@@ -1,0 +1,280 @@
+---
+import type { InferGetStaticPropsType } from "astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import FindingsLayout from "../../../layouts/FindingsLayout.astro";
+import Guest from "../../../components/daat-talks/Guest.astro";
+import Divider from "../../../components/ui/Divider.astro";
+import { cover, youtubeId } from "../../../data/delivery-management";
+import { articlesOf, episodes, readingMinutes } from "../../../data/daat-talks";
+
+// A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the number over the title, the guest (the name
+// links to LinkedIn); the player across the content width (YouTube loads only when the reader presses play, as on
+// the delivery management episodes); the description at reading width; «Головне з розмови», the articles written
+// from the episode, two to a row. Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
+
+export function getStaticPaths() {
+  return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode } }));
+}
+
+const { episode } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+
+const videoId = youtubeId(episode.youtubeUrl);
+const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+const image = cover({ youtubeUrl: episode.youtubeUrl, thumbnail: null });
+const articles = articlesOf(episode);
+const [lead, ...description] = episode.description;
+
+// the episode for search engines: schema.org's VideoObject
+const videoData = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: episode.title,
+  description: episode.teaser,
+  thumbnailUrl: image.src,
+  embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
+  contentUrl: watchUrl,
+};
+---
+
+<FindingsLayout
+  title={`${episode.title} | Daat Talks #${episode.number}`}
+  description={episode.teaser}
+  crumb={{ href: url("daat-talks"), label: "Daat Talks" }}
+  heading={episode.title}
+  eyebrow={`Епізод ${episode.number}`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(videoData).replace(/</g, "\\u003c")} />
+  <div class="talk-guests" slot="hero">
+    <p class="talk-guests__label">У гостях</p>
+    {episode.guests.map((guest) => (
+      <Guest guest={guest} linked size="lg" />
+    ))}
+  </div>
+
+  <!-- ═══ The player, across the content width: the cover until the reader presses play ═══ -->
+  <div class="wrap">
+    <div class="talk-player" data-video={videoId} data-title={episode.title}>
+      <a class="talk-player__poster" href={watchUrl} aria-label={`Дивитися епізод «${episode.title}»`}>
+        <img {...image} sizes="(width < 64rem) 100vw, 83vw" alt="" fetchpriority="high" />
+        <span class="talk-player__play" aria-hidden="true"></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap talk-about">
+    <p class="talk-about__lead">{lead}</p>
+    {description.map((paragraph) => (
+      <p>{paragraph}</p>
+    ))}
+  </div>
+
+  {articles.length > 0 && (
+    <div class="wrap">
+      <Divider class="talk-divider" fade />
+    </div>
+  )}
+  {articles.length > 0 && (
+    <section class="wrap talk-articles" aria-labelledby="talk-articles-title">
+      <h2 class="talk-articles__title" id="talk-articles-title">
+        Головне з розмови
+      </h2>
+      <div class="talk-articles__grid">
+        {articles.map((a) => (
+          <article class="talk-card">
+            <p class="talk-card__meta">Стаття · {readingMinutes(a.body)} хв читання</p>
+            <h3 class="talk-card__title">
+              <a href={url(`article/${a.slug}`)}>{a.title}</a>
+            </h3>
+            <p>{a.excerpt}</p>
+            <p class="talk-card__summary">{a.summary}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+</FindingsLayout>
+
+<script>
+  // The player: YouTube (its privacy-enhanced domain) loads only when the reader presses play. Without
+  // JavaScript the poster opens the video on YouTube.
+  const player = document.querySelector<HTMLElement>(".talk-player");
+  if (player) {
+    player.querySelector("a")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube-nocookie.com/embed/${player.dataset.video}?autoplay=1&rel=0`;
+      iframe.title = player.dataset.title ?? "";
+      iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      iframe.allowFullscreen = true;
+      player.replaceChildren(iframe);
+    });
+  }
+</script>
+
+<style>
+  /* the title starts 120 below the bar, as on the cases index and the delivery management episodes */
+  @media (width >= 64rem) {
+    :global(body:has(.talk-player) .finding-hero) {
+      --hero-pad-top: calc(120 * var(--px));
+    }
+  }
+
+  .talk-guests {
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-xs);
+  }
+  .talk-guests__label {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: calc(14 * var(--px)); /* as the site's labels (the cards' tags, a case's profile) */
+    line-height: var(--leading-small);
+  }
+
+  /* ---------- The player ---------- */
+  .talk-player {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    background: var(--c-night);
+  }
+  .talk-player__poster,
+  .talk-player :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .talk-player__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .talk-player__play {
+    position: absolute;
+    inset: 0;
+    width: calc(104 * var(--px));
+    height: calc(104 * var(--px));
+    margin: auto;
+    border-radius: 50%;
+    background: var(--c-primary);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--c-night) 35%, transparent);
+    transition: transform 0.2s var(--ease-out);
+  }
+  .talk-player__play::after {
+    content: "";
+    position: absolute;
+    inset: 32% 30% 32% 38%;
+    background: var(--c-white);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .talk-player__poster:hover .talk-player__play {
+    transform: scale(1.06);
+  }
+  .talk-player__poster:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: -3px;
+  }
+
+  /* ---------- The description at reading width ---------- */
+  .talk-about {
+    display: grid;
+    row-gap: var(--space-md);
+    padding-block: var(--space-2xl) var(--space-xl);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .talk-about p {
+    max-width: var(--span-2);
+    margin: 0;
+  }
+  .talk-about .talk-about__lead {
+    font-size: var(--text-lead);
+  }
+
+  /* a new section: the fading rule halfway through 96 */
+  .wrap :global(.talk-divider) {
+    display: block;
+    width: 100%;
+    height: calc(2 * var(--px));
+    margin-bottom: var(--space-xl);
+  }
+
+  /* ---------- «Головне з розмови»: the articles, two to a row, each under a hairline ---------- */
+  .talk-articles {
+    display: grid;
+    row-gap: var(--space-lg);
+    padding-bottom: var(--space-3xl);
+  }
+  .talk-articles__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .talk-articles__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xl) var(--space-xl);
+  }
+  .talk-card {
+    display: grid;
+    align-content: start;
+    row-gap: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--rule);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .talk-card p {
+    margin: 0;
+  }
+  .talk-card__meta,
+  .talk-card__summary {
+    color: var(--ink-soft);
+  }
+  .talk-card__meta {
+    font-size: calc(14 * var(--px));
+  }
+  .talk-card__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .talk-card__title a {
+    color: inherit;
+    text-decoration-line: none;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+  }
+  .talk-card__title a:hover {
+    text-decoration-line: underline;
+  }
+
+  @media (width < 64rem) {
+    .talk-player__play {
+      width: 72px;
+      height: 72px;
+    }
+    .talk-about {
+      padding-block: 40px 32px;
+    }
+    .wrap :global(.talk-divider) {
+      margin-bottom: 32px;
+    }
+    .talk-articles {
+      padding-bottom: 64px;
+    }
+    .talk-articles__grid {
+      grid-template-columns: 1fr;
+      row-gap: 32px;
+    }
+  }
+</style>

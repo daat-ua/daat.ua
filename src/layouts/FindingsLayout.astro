@@ -8,8 +8,8 @@ import { srcsetFor, urlFor } from "../sanity/image";
 import type { SanityImageCrop, SanityImageHotspot } from "../sanity/sanity.types";
 
 // The delivery-audit findings' pages (a finding, the catalogue): Base on a lighter paper, a hero with the
-// artwork fading into the page, a breadcrumb back (optional) and the title. The hero slot adds to the title block
-// (a finding's author, the catalogue's intro); the default slot is the page below it.
+// artwork fading into the page, a breadcrumb back (optional), an eyebrow over the title (optional) and the title. The
+// hero slot adds to the title block (a finding's author, the catalogue's intro); the default slot is the page below it.
 
 interface HeroImage {
   asset: { _id: string; metadata?: { lqip: string | null } | null } | null;
@@ -28,9 +28,11 @@ interface Props {
   crumb?: { href: string; label: string };
   /** the page's h1 */
   heading: string;
+  /** a line just above the title ("Епізод 17") */
+  eyebrow?: string;
 }
 
-const { title, description, noindex = false, image, crumb, heading } = Astro.props;
+const { title, description, noindex = false, image, crumb, heading, eyebrow } = Astro.props;
 const isLocal = (img: typeof image): img is ImageMetadata => !!img && "src" in img;
 const sanityImage = image && !isLocal(image) ? image : null;
 const lqip = sanityImage?.asset?.metadata?.lqip;
@@ -69,7 +71,14 @@ const lqip = sanityImage?.asset?.metadata?.lqip;
       )}
       <div class="wrap finding-hero__inner">
         {crumb && <Crumb href={crumb.href} label={crumb.label} />}
-        <h1 class="finding-title">{heading}</h1>
+        {eyebrow ? (
+          <div class="finding-heading">
+            <p class="finding-eyebrow">{eyebrow}</p>
+            <h1 class="finding-title">{heading}</h1>
+          </div>
+        ) : (
+          <h1 class="finding-title">{heading}</h1>
+        )}
         <slot name="hero" />
       </div>
     </header>
@@ -133,6 +142,17 @@ const lqip = sanityImage?.asset?.metadata?.lqip;
     width: 100%;
     padding-top: var(--hero-pad-top);
     padding-bottom: var(--space-2xl);
+  }
+  /* the eyebrow sits close over the title it belongs to */
+  .finding-heading {
+    display: grid;
+    row-gap: var(--space-sm);
+  }
+  .finding-eyebrow {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
   }
   .finding-title {
     max-width: calc(1017 * var(--px));

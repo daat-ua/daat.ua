@@ -1,0 +1,33 @@
+---
+import type { TypedObjectProps } from "astro-portabletext/types";
+
+// An illustration or screenshot in an article's body (Portable Text `image`), with its caption.
+// TODO Sanity: the dummy data gives a URL; the Studio's image goes through urlFor/srcsetFor.
+type Props = TypedObjectProps;
+
+const { node } = Astro.props;
+const { src, alt, caption } = node as unknown as { src: string; alt: string; caption?: string };
+---
+
+<figure class="body-image">
+  <img src={src} alt={alt} loading="lazy" />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .body-image {
+    margin: var(--space-lg) 0;
+  }
+  .body-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+  .body-image figcaption {
+    margin-top: var(--space-xs);
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+</style>

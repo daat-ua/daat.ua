@@ -1,0 +1,48 @@
+---
+import type { TypedObjectProps } from "astro-portabletext/types";
+
+// A guest's words in an article's body (Portable Text `pullQuote`): the quote in the blockquote's type
+// (.article-body), who said it, and the moment in the episode's video when the page gave it one (`href`).
+type Props = TypedObjectProps;
+
+const { node } = Astro.props;
+const { text, speaker, time, href } = node as unknown as {
+  text: string;
+  speaker?: string;
+  time?: string;
+  href?: string;
+};
+---
+
+<figure class="pull-quote">
+  <blockquote>«{text}»</blockquote>
+  {(speaker || time) && (
+    <figcaption>
+      {speaker}
+      {time && href && (
+        <>
+          {speaker && " · "}
+          <a href={href} target="_blank" rel="noopener">
+            ▶ {time} у відео
+          </a>
+        </>
+      )}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .pull-quote {
+    margin: var(--space-lg) 0;
+  }
+  .pull-quote blockquote {
+    margin: 0;
+  }
+  .pull-quote figcaption {
+    margin-top: var(--space-xs);
+    padding-left: calc(var(--space-md) + 3px); /* under the quote's text, past its rule */
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+</style>

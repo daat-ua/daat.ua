@@ -222,6 +222,13 @@
   margin-top: var(--space-xl);
   font-size: var(--text-lead);
 }
+/* under an h2 the h3 changes face, not just size (25.5 against 24 barely reads): the body font in Semibold. A text
+   whose top level is h3 (the delivery management episodes) keeps it in the display face */
+.article-body:has(h2) h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  line-height: var(--leading-small);
+}
 .article-body :is(h2, h3):first-child {
   margin-top: 0;
 }

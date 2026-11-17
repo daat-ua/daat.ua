@@ -1,0 +1,380 @@
+---
+import type { InferGetStaticPropsType } from "astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { PortableText } from "astro-portabletext";
+import FindingsLayout from "../../../layouts/FindingsLayout.astro";
+import FindingsToc from "../../../components/findings/FindingsToc.astro";
+import Heading from "../../../components/portable-text/Heading.astro";
+import Divider from "../../../components/ui/Divider.astro";
+import BodyImage from "../../../components/daat-talks/BodyImage.astro";
+import BodyTable from "../../../components/daat-talks/BodyTable.astro";
+import Callout from "../../../components/daat-talks/Callout.astro";
+import PullQuote from "../../../components/daat-talks/PullQuote.astro";
+import { cover, youtubeId } from "../../../data/delivery-management";
+import { articles, articlesOf, episodeOf, formatDate, initials, readingMinutes } from "../../../data/daat-talks";
+import { srcsetFor, urlFor } from "../../../sanity/image";
+import { getFounders } from "../../../sanity/shared";
+import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
+
+// An article written from a Daat Talks episode (DAA-239), page C of the "Daat Talks section" canvas: the episode in
+// the breadcrumb, the title, the byline (the hosts' and guests' faces, the reading time and date) and the lead; the
+// text at reading width with "on this page" (its h2s) and the episode's video beside it; then the episode's other
+// articles. Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
+
+export function getStaticPaths() {
+  return articles.map((article) => ({ params: { slug: article.slug }, props: { article } }));
+}
+
+const { article } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
+const locale = Astro.currentLocale ?? "uk-UA";
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+
+const episode = episodeOf(article);
+const episodeHref = url(`daat-talks/${episode.slug}`);
+const watchUrl = `https://www.youtube.com/watch?v=${youtubeId(episode.youtubeUrl)}`;
+const image = cover({ youtubeUrl: episode.youtubeUrl, thumbnail: null });
+const others = articlesOf(episode).filter((a) => a.slug !== article.slug);
+
+// the body with ids on its headings, and a guest's quote linked to its moment in the video
+const body = withHeadingIds(article.body).map((node) => {
+  const { _type, time } = node as { _type: string; time?: string };
+  if (_type !== "pullQuote" || !time) return node;
+  const [s = 0, m = 0, h = 0] = time.split(":").map(Number).reverse();
+  return { ...node, href: `${watchUrl}&t=${h * 3600 + m * 60 + s}s` };
+});
+const toc = headingsOf(body, "h2");
+const bodyComponents = {
+  block: { h2: Heading, h3: Heading },
+  type: { pullQuote: PullQuote, callout: Callout, image: BodyImage, table: BodyTable },
+};
+
+// the byline's faces: the hosts' photos (the founders, from the Studio), the guests' initials
+const founders = await getFounders();
+const people = [
+  ...article.authors.map((name) => ({ name, photo: founders.find((f) => f.name === name)?.photo ?? null })),
+  ...article.contributors.map((c) => ({ name: c.name, photo: null })),
+];
+const minutes = readingMinutes(article.body);
+
+// the article for search engines: schema.org's Article
+const articleData = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: article.title,
+  description: article.excerpt,
+  datePublished: article.publishedAt,
+  author: article.authors.map((name) => ({ "@type": "Person", name })),
+  image: image.src,
+};
+---
+
+<FindingsLayout
+  title={`${article.title} | Daat Talks`}
+  description={article.excerpt}
+  crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
+  heading={article.title}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(articleData).replace(/</g, "\\u003c")} />
+  <Fragment slot="hero">
+    <div class="byline">
+      <div class="byline__faces" aria-hidden="true">
+        {people.map((person) =>
+          person.photo ? (
+            <img
+              src={urlFor(person.photo).width(96).height(96).fit("crop").url()}
+              srcset={srcsetFor(person.photo, [48, 96], 1)}
+              sizes="48px"
+              alt=""
+              width="48"
+              height="48"
+            />
+          ) : (
+            <span class="byline__initials">{initials(person.name)}</span>
+          ),
+        )}
+      </div>
+      <div>
+        <p class="byline__names">{people.map((p) => p.name).join(", ")}</p>
+        <p class="byline__meta">
+          {minutes} хв читання · <time datetime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+        </p>
+      </div>
+    </div>
+    <p class="article-lead">{article.summary}</p>
+  </Fragment>
+
+  <div class="wrap article-layout">
+    <article class="article-text">
+      <div class="article-body">
+        <PortableText value={body} components={bodyComponents} />
+      </div>
+    </article>
+
+    <!-- "on this page" with the episode's video under it (desktop); on phones the video follows the text -->
+    <FindingsToc items={toc}>
+      <div class="article-video">
+        <p class="article-video__title">Оригінальне відео</p>
+        <a class="article-video__cover" href={episodeHref} aria-label={`Епізод ${episode.number}: ${episode.title}`}>
+          <img {...image} sizes="(width < 64rem) 100vw, 20vw" alt="" loading="lazy" />
+          <span class="article-video__play" aria-hidden="true"></span>
+        </a>
+        <p>
+          Епізод {episode.number}
+          <br />
+          <a href={episodeHref}>Дивитися епізод ›</a>
+        </p>
+      </div>
+    </FindingsToc>
+    <div class="article-video article-video--phone">
+      <p class="article-video__title">Оригінальне відео</p>
+      <a class="article-video__cover" href={episodeHref} aria-label={`Епізод ${episode.number}: ${episode.title}`}>
+        <img {...image} sizes="100vw" alt="" loading="lazy" />
+        <span class="article-video__play" aria-hidden="true"></span>
+      </a>
+      <p>
+        Епізод {episode.number} · <a href={episodeHref}>Дивитися епізод ›</a>
+      </p>
+    </div>
+  </div>
+
+  {others.length > 0 && (
+    <div class="wrap">
+      <Divider class="article-divider" fade />
+    </div>
+  )}
+  {others.length > 0 && (
+    <section class="wrap article-others" aria-labelledby="article-others-title">
+      <h2 class="article-others__title" id="article-others-title">
+        Інші статті з цього епізоду
+      </h2>
+      <ul>
+        {others.map((a) => (
+          <li>
+            <a href={url(`article/${a.slug}`)}>
+              <span class="article-others__name">{a.title}</span>
+              <span class="article-others__excerpt">{a.excerpt}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</FindingsLayout>
+
+<style>
+  /* ---------- Byline and lead, under the title ---------- */
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .byline p {
+    margin: 0;
+  }
+  .byline__faces {
+    display: flex;
+    flex: none;
+  }
+  .byline__faces > * {
+    width: calc(48 * var(--px));
+    height: calc(48 * var(--px));
+    border: 2px solid var(--c-paper);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .byline__faces > * + * {
+    margin-left: calc(-14 * var(--px));
+  }
+  .byline__initials {
+    display: grid;
+    place-items: center;
+    background: var(--c-accent);
+    font-size: calc(15 * var(--px));
+    font-weight: 600;
+  }
+  .byline__names {
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .byline__meta {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .article-lead {
+    max-width: calc(860 * var(--px));
+    margin: 0;
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+
+  /* the title starts 120 below the bar, as on the cases index and the delivery management episodes */
+  @media (width >= 64rem) {
+    :global(body:has(.article-layout) .finding-hero) {
+      --hero-pad-top: calc(120 * var(--px));
+    }
+  }
+
+  /* ---------- The text at reading width, "on this page" beside it: the findings pages' grid ---------- */
+  .article-layout {
+    display: grid;
+    grid-template-columns: var(--span-2) 1fr;
+    column-gap: calc(var(--col-gap) * 2);
+    padding-block: var(--space-xl);
+  }
+  .article-text {
+    min-width: 0;
+  }
+  .article-text :global(.article-body > :last-child) {
+    margin-bottom: 0;
+  }
+
+  /* the episode's video, at the foot of "on this page" */
+  .article-video {
+    display: grid;
+    row-gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--rule);
+  }
+  .article-video p {
+    margin: 0;
+  }
+  .article-video .article-video__title {
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+  .article-video a:not(.article-video__cover) {
+    color: var(--c-primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .article-video a:not(.article-video__cover):hover {
+    text-decoration: underline;
+  }
+  .article-video__cover {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    background: var(--c-night);
+  }
+  .article-video__cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .article-video__play {
+    position: absolute;
+    inset: 0;
+    width: calc(52 * var(--px));
+    height: calc(52 * var(--px));
+    margin: auto;
+    border-radius: 50%;
+    background: var(--c-primary);
+    transition: transform 0.2s var(--ease-out);
+  }
+  .article-video__play::after {
+    content: "";
+    position: absolute;
+    inset: 32% 30% 32% 38%;
+    background: var(--c-white);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .article-video__cover:hover .article-video__play {
+    transform: scale(1.06);
+  }
+  .article-video--phone {
+    display: none;
+  }
+
+  /* ---------- The episode's other articles: after the fading rule, halfway through 96 ---------- */
+  .wrap :global(.article-divider) {
+    display: block;
+    width: 100%;
+    height: calc(2 * var(--px));
+    margin-bottom: var(--space-xl);
+  }
+  .article-others {
+    display: grid;
+    row-gap: var(--space-lg);
+    padding-bottom: var(--space-3xl);
+  }
+  .article-others__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+  }
+  .article-others ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--space-xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .article-others a {
+    display: grid;
+    row-gap: var(--space-xs);
+    padding: var(--space-md) 0;
+    border-top: 1px solid var(--rule);
+    color: var(--c-hero);
+    text-decoration: none;
+  }
+  .article-others__name {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .article-others a:hover .article-others__name {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+  .article-others__excerpt {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+
+  @media (width < 64rem) {
+    .byline__faces > * {
+      width: 40px;
+      height: 40px;
+    }
+    .byline__faces > * + * {
+      margin-left: -12px;
+    }
+    .byline__initials {
+      font-size: 13px;
+    }
+    .article-layout {
+      grid-template-columns: 1fr;
+      row-gap: 48px;
+      padding-block: 32px;
+    }
+    .wrap :global(.article-divider) {
+      margin-bottom: 32px;
+    }
+    .article-video--phone {
+      display: grid;
+      margin-top: 0;
+    }
+    .article-video__play {
+      width: 56px;
+      height: 56px;
+    }
+    .article-others {
+      padding-bottom: 64px;
+    }
+    .article-others ul {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
