@@ -36,8 +36,8 @@ export const menu: MenuItem[] = [
     items: toc.map(({ label, href }) => ({ label, href: `/uk-UA/atlas${href}` })),
     open: true,
   },
-  { label: "Про нас", href: "/uk-UA/about" },
   { label: "Кейси", href: "/uk-UA/atlas/case-studies" },
+  { label: "Про нас", href: "/uk-UA/about" },
 ];
 
 /** "Наші проєкти": Daat's projects beside the consulting */
