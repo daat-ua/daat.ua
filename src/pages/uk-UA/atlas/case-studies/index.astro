@@ -259,8 +259,9 @@ const intro =
     line-height: var(--leading-heading);
   }
   /* a named client's logo: as uploaded on the featured case's navy (a light version, as on the case page's profile).
-     On the paper rows an SVG sits on the paper itself, every colour turned to one dark shade; any other image
-     keeps a navy chip, since a PNG may carry an opaque ground that would turn into a dark block */
+     On the paper rows an SVG sits on the paper itself, in grey and inverted: a light logo on a transparent ground
+     turns dark, and one on an opaque light ground turns into a dark plate with light lettering, still readable
+     (an SVG's transparency can't be told from its file type). Any other image keeps a navy chip. */
   .cases-logo {
     width: auto;
     max-width: calc(150 * var(--px));
@@ -268,8 +269,8 @@ const intro =
     object-fit: contain;
   }
   .cases-row .cases-logo--svg {
-    filter: brightness(0);
-    opacity: 0.85; /* black, softened towards the ink on the paper */
+    filter: grayscale(1) invert(1);
+    opacity: 0.85; /* softened towards the ink on the paper */
   }
   .cases-row .cases-logo:not(.cases-logo--svg) {
     box-sizing: content-box;

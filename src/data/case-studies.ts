@@ -26,7 +26,7 @@ export function clientLogo(c: LogoFields, height: number) {
   const { asset } = logo;
   const svg = asset.extension === "svg" && Boolean(asset.url);
   return {
-    /** an SVG: a vector on a transparent ground, which can be recoloured */
+    /** an SVG, recoloured on light grounds; its transparency isn't known (the Studio asks for a transparent ground) */
     svg,
     src:
       svg && asset.url
