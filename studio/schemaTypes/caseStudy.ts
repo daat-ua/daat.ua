@@ -1,4 +1,10 @@
-import {ALL_FIELDS_GROUP, defineArrayMember, defineField, defineType} from 'sanity'
+import {
+  ALL_FIELDS_GROUP,
+  type ConditionalPropertyCallback,
+  defineArrayMember,
+  defineField,
+  defineType,
+} from 'sanity'
 
 // A case study (DAA-230): one field per block of the case page (src/pages/uk-UA/atlas/case-studies/[slug].astro),
 // one tab per section of the page. Keys of the lists below are mapped to Ukrainian by the website
@@ -15,6 +21,9 @@ const enablers = [
 ]
 
 const maturityScore = (rule: any) => rule.required().min(1).max(5).precision(1)
+
+// the client's own name, logo and links only for a case the client agreed to be named in
+const isAnonymised: ConditionalPropertyCallback = ({document}) => document?.anonymised !== false
 
 export const caseStudy = defineType({
   name: 'caseStudy',
@@ -156,6 +165,42 @@ export const caseStudy = defineType({
       type: 'boolean',
       group: 'client',
       initialValue: true,
+    }),
+    defineField({
+      name: 'clientLogo',
+      title: 'Client logo',
+      description:
+        'At the top of the client profile. SVG or PNG on a transparent ground; shown on a light plate. Only for a named case (not anonymised)',
+      type: 'image',
+      options: {accept: 'image/svg+xml,image/png,image/webp,image/jpeg'},
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Company name',
+          description: 'Read out instead of the logo',
+          type: 'string',
+          validation: (rule) => rule.required(),
+        }),
+      ],
+      group: 'client',
+      hidden: isAnonymised,
+    }),
+    defineField({
+      name: 'clientLinkedin',
+      title: 'Client LinkedIn',
+      description:
+        'The company’s LinkedIn page, beside the logo. Only for a named case (not anonymised)',
+      type: 'url',
+      group: 'client',
+      hidden: isAnonymised,
+      validation: (rule) =>
+        rule
+          .uri({scheme: ['https']})
+          .custom((value) =>
+            !value || /^https:\/\/([\w-]+\.)?linkedin\.com\//.test(value)
+              ? true
+              : 'Not a LinkedIn link',
+          ),
     }),
     defineField({
       name: 'clientApproved',
@@ -413,17 +458,30 @@ export const caseStudy = defineType({
 
     // ---------- Testimonial (optional) ----------
     defineField({
+      name: 'showTestimonial',
+      title: 'Show a testimonial',
+      description: 'Off: the page leaves the testimonial section out, and its fields are hidden',
+      type: 'boolean',
+      initialValue: false,
+      group: 'testimonial',
+    }),
+    defineField({
       name: 'testimonial',
-      description: 'Optional: without a quote the section is left out',
       type: 'object',
       group: 'testimonial',
+      hidden: ({document}) => document?.showTestimonial !== true,
       fields: [
         {
           name: 'quote',
           type: 'text',
           rows: 2,
           description: 'Up to 25 words',
-          validation: (rule) => rule.required(),
+          validation: (rule) =>
+            rule.custom((value, context) =>
+              (context.document as {showTestimonial?: boolean})?.showTestimonial !== true || value
+                ? true
+                : 'A shown testimonial needs a quote',
+            ),
         },
         {
           name: 'name',
