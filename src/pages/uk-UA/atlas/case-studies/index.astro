@@ -28,8 +28,14 @@ const meta = (c: (typeof all)[number]) =>
     .filter(Boolean)
     .join(" · ");
 
-// a named client's logo at the top of the card's text, 30 tall at 1440 (never for an anonymised case)
-const logoOf = (c: (typeof all)[number]) => clientLogo(c, 30);
+// a named client's logo at the top of the card's text, 30 tall at 1440 (never for an anonymised case): the <img>
+// attributes, and whether it's an SVG
+const logoOf = (c: (typeof all)[number]) => {
+  const logo = clientLogo(c, 30);
+  if (!logo) return null;
+  const { svg, ...attrs } = logo;
+  return { svg, attrs };
+};
 
 const intro =
   "Як діагностика ATLAS працювала в реальних компаніях: з чим прийшов клієнт, що знайшли і що змінилося. Назви компаній приховано за їхньою згодою.";
@@ -60,15 +66,24 @@ const intro =
               : undefined
           }
         >
-          <img
-            src={urlFor(featured.heroImage, PHOTO_QUALITY).width(960).url()}
-            srcset={srcsetFor(featured.heroImage, [640, 960, 1280, 1920], undefined, PHOTO_QUALITY)}
-            sizes="(width < 64rem) 100vw, 50vw"
-            alt=""
-          />
+          <!-- cropped to the box's shape (portrait beside the text, 4:3 on phones), so the photo is never enlarged
+               to cover it; the crops follow the Studio's hotspot -->
+          <picture>
+            <source
+              media="(width >= 64rem)"
+              srcset={srcsetFor(featured.heroImage, [480, 640, 960, 1280, 1600], 2 / 3, PHOTO_QUALITY)}
+              sizes="50vw"
+            />
+            <img
+              src={urlFor(featured.heroImage, PHOTO_QUALITY).width(960).height(720).fit("crop").url()}
+              srcset={srcsetFor(featured.heroImage, [480, 800, 1200, 1600], 4 / 3, PHOTO_QUALITY)}
+              sizes="100vw"
+              alt=""
+            />
+          </picture>
         </a>
         <div class="cases-featured__text">
-          {logoOf(featured) && <img class="cases-logo" {...logoOf(featured)} />}
+          {logoOf(featured) && <img class="cases-logo" {...logoOf(featured)!.attrs} />}
           <p class="cases-meta">{meta(featured)}</p>
           <h2 class="cases-featured__title" id="cases-featured-title">
             <a href={caseHref(featured.slug)}>{featured.title}</a>
@@ -117,7 +132,13 @@ const intro =
               />
             </a>
             <div class="cases-row__text">
-              {logoOf(c) && <img class="cases-logo" {...logoOf(c)} loading="lazy" />}
+              {logoOf(c) && (
+                <img
+                  class:list={["cases-logo", { "cases-logo--svg": logoOf(c)!.svg }]}
+                  {...logoOf(c)!.attrs}
+                  loading="lazy"
+                />
+              )}
               <p class="cases-meta">{meta(c)}</p>
               <h3 class="cases-row__title">
                 <a href={caseHref(c.slug)}>{c.title}</a>
@@ -237,15 +258,21 @@ const intro =
     font-weight: 500;
     line-height: var(--leading-heading);
   }
-  /* a named client's logo, always as uploaded on the navy (a light version, as on the case page's profile): the
-     featured case's panel, or a navy chip on the paper rows */
+  /* a named client's logo: as uploaded on the featured case's navy (a light version, as on the case page's profile).
+     On the paper rows an SVG sits on the paper itself, in grey and inverted: a light logo on a transparent ground
+     turns dark, and one on an opaque light ground turns into a dark plate with light lettering, still readable
+     (an SVG's transparency can't be told from its file type). Any other image keeps a navy chip. */
   .cases-logo {
     width: auto;
     max-width: calc(150 * var(--px));
     height: calc(30 * var(--px));
     object-fit: contain;
   }
-  .cases-row .cases-logo {
+  .cases-row .cases-logo--svg {
+    filter: grayscale(1) invert(1);
+    opacity: 0.85; /* softened towards the ink on the paper */
+  }
+  .cases-row .cases-logo:not(.cases-logo--svg) {
     box-sizing: content-box;
     padding: calc(8 * var(--px)) calc(12 * var(--px));
     border-radius: 4px;
