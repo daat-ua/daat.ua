@@ -250,7 +250,8 @@
   -webkit-mask: url("../assets/icons/icon-square.svg") center / contain no-repeat;
   mask: url("../assets/icons/icon-square.svg") center / contain no-repeat;
 }
-/* numbered lists: the item's number in the bullets' place and colour */
+/* numbered lists: the item's number in the bullets' place, in the links' blue (the bullets' orange is too light for
+   text: about 1.7:1 on the paper) */
 .article-body ol {
   display: grid;
   row-gap: var(--space-xs);
@@ -270,7 +271,7 @@
   background: none;
   -webkit-mask: none;
   mask: none;
-  color: var(--c-accent);
+  color: var(--c-primary);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
