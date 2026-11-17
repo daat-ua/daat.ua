@@ -1,7 +1,21 @@
 ---
 import { Image } from "astro:assets";
-import { cases, testimonials } from "../../../data/testimonials";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { type CaseCard, caseTeaser } from "../../../data/case-studies";
+import { testimonials } from "../../../data/testimonials";
+import { getCaseStudyTeasers } from "../../../sanity/shared";
 import Carousel from "../../ui/Carousel.astro";
+
+// the cases: the published case studies marked "Featured" in the Studio, newest first; with none marked, the
+// latest four
+const locale = Astro.currentLocale ?? "uk-UA";
+const all = ((await getCaseStudyTeasers()) as (CaseCard & { featured: boolean | null })[]).filter(
+  (c) => c.heroImage?.asset,
+);
+const featured = all.filter((c) => c.featured);
+const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
+  caseTeaser(c, getRelativeLocaleUrl(locale, `atlas/case-studies/${c.slug}`, { normalizeLocale: false })),
+);
 ---
 
 <section class="report cases" id="testimonials-and-case-studies" data-toc-theme="light">
@@ -54,15 +68,17 @@ import Carousel from "../../ui/Carousel.astro";
       ))}
     </ul>
 
-    <h3 class="cases__title">Кейси: як це виглядає зсередини</h3>
-    <Carousel
-      label="Кейси клієнтів"
-      items={cases}
-      more="Читати кейс"
-      prevLabel="Попередні кейси"
-      nextLabel="Наступні кейси"
-      headingLevel={4}
-    />
+    {cases.length > 0 && <h3 class="cases__title">Кейси: від діагностики до змін</h3>}
+    {cases.length > 0 && (
+      <Carousel
+        label="Кейси клієнтів"
+        items={cases}
+        more="Читати кейс"
+        prevLabel="Попередні кейси"
+        nextLabel="Наступні кейси"
+        headingLevel={4}
+      />
+    )}
   </div>
 </section>
 

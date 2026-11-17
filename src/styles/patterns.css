@@ -377,6 +377,28 @@
     text-box: trim-both cap alphabetic;
   }
 }
+/* a named case study's client logo between the image and the title: an SVG on the paper itself, in grey and
+   inverted (a light logo on a transparent ground turns dark; one on an opaque light ground turns into a dark plate
+   with light lettering, still readable); any other image on a navy chip */
+.finding__logo {
+  display: block;
+  width: auto;
+  max-width: calc(110 * var(--px));
+  height: calc(26 * var(--px));
+  margin-top: var(--space-md);
+  object-fit: contain;
+  object-position: left center;
+}
+.finding__logo--svg {
+  filter: grayscale(1) invert(1);
+  opacity: 0.85; /* softened towards the ink on the paper */
+}
+.finding__logo:not(.finding__logo--svg) {
+  box-sizing: content-box;
+  padding: calc(6 * var(--px)) calc(10 * var(--px));
+  border-radius: 4px;
+  background: var(--c-hero);
+}
 .finding__title {
   margin: var(--space-md) 0 0;
   color: var(--c-hero);

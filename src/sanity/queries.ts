@@ -82,7 +82,7 @@ export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy" && defined
   changesText,
   showTestimonial,
   testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },
-  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },
+  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, anonymised, clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } }, heroImage{ hotspot, crop, asset->{ _id } } },
   seo_title,
   seo_description,
   no_index
