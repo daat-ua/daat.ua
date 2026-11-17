@@ -225,11 +225,13 @@ const otherTeasers = others.length ? others : placeholderCases;
             <h2>Як проходила діагностика</h2>
             {study.phases && study.phases.length > 0 && (
               <ol class="case-phases" style={`--n: ${study.phases.length}`}>
-                {study.phases.map((ph) => (
-                  <li>
-                    <p class="case-phases__label">{ph.label}</p>
-                    <h3>{ph.title}</h3>
-                    {ph.text && <p>{ph.text}</p>}
+                {study.phases.map((ph, i) => (
+                  <li style={`--i: ${i}`}>
+                    <div class="case-phases__bar">
+                      <p class="case-phases__label">{ph.label.trim()}</p>
+                      <h3>{ph.title}</h3>
+                    </div>
+                    {ph.text && <p class="case-phases__text">{ph.text}</p>}
                   </li>
                 ))}
               </ol>
@@ -710,28 +712,74 @@ const otherTeasers = others.length ? others : placeholderCases;
     padding: 0;
     list-style: none;
   }
+  /* the phases as a timeline, "vertical stairs": each bar further right than the one above, the steps spreading the
+     bars over the column (36% wide: 4% side by side overlap with 3 phases, 15% with 4); a guide at each bar's
+     start. The bars stack by their own heights, each 16 (at 1440) into the one above; each note hangs under its
+     bar, out of the flow, ending before the next bar starts. The last note stays in the flow for the list's height.
+     The first bar navy, the middle ones blue, the last light grey. */
   .case-phases {
+    --w-ratio: 0.36; /* a bar's width, of the column */
+    --w: calc(var(--w-ratio) * 100%);
     display: grid;
-    grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
-    gap: var(--space-md);
+    padding-block: var(--space-xs) var(--space-sm);
+    background: repeating-linear-gradient(
+        to right,
+        var(--rule) 0 1px,
+        transparent 1px calc((100% - 1px) / max(var(--n, 4) - 1, 1))
+      )
+      left top / calc(100% - var(--w) + 1px) 100% no-repeat;
   }
   .case-phases li {
+    position: relative;
     display: grid;
-    align-content: start;
     row-gap: var(--space-xs);
-    padding-top: var(--space-sm);
-    border-top: 3px solid var(--c-hero);
+    width: var(--w);
+    margin-left: calc(var(--i) * (100% - var(--w)) / max(var(--n, 4) - 1, 1));
   }
-  .case-phases__label,
-  .case-conclusions__label {
+  .case-phases__bar {
+    display: grid;
+    row-gap: calc(2 * var(--px));
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 8px;
+    background: var(--c-primary);
+    color: var(--c-white);
+  }
+  .case-phases li + li {
+    margin-top: calc(-1 * var(--space-sm)); /* 16 at 1440 into the bar above */
+  }
+  .case-phases li:not(:last-child) .case-phases__text {
+    position: absolute;
+    top: calc(100% + var(--space-xs));
+    left: 0;
+  }
+  .case-phases li:first-child .case-phases__bar {
+    background: var(--c-hero);
+  }
+  .case-phases li:last-child:not(:first-child) .case-phases__bar {
+    background: color-mix(in srgb, var(--c-hero) 10%, var(--c-paper));
+    color: var(--c-hero);
+  }
+  .case .case-phases__label {
+    color: color-mix(in srgb, currentColor 75%, transparent);
+    font-size: calc(14 * var(--px)); /* as the profile's labels */
+    line-height: var(--leading-small);
+  }
+  .case .case-phases h3 {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: var(--leading-small);
+  }
+  .case-phases__text {
+    /* 75% of its bar, but ending before the next bar starts: one step (the column less a bar, over the steps; in
+       the bar's own width here) less a gap */
+    width: min(75%, 100% * (1 / var(--w-ratio) - 1) / max(var(--n, 4) - 1, 1) - var(--space-sm));
+    padding-inline: var(--space-md);
     color: var(--ink-soft);
     font-size: var(--text-small);
     line-height: var(--leading-small);
   }
-  .case .case-phases h3 {
-    font-size: var(--text-body);
-  }
-  .case-phases p:last-child {
+  .case-conclusions__label {
     color: var(--ink-soft);
     font-size: var(--text-small);
     line-height: var(--leading-small);
@@ -992,9 +1040,28 @@ const otherTeasers = others.length ? others : placeholderCases;
     .case-body {
       row-gap: 56px;
     }
-    .case-phases,
     .case-conclusions {
       grid-template-columns: 1fr;
+    }
+    /* a fixed small step: the bars fill the rest of the width */
+    .case-phases {
+      --step: 24px;
+      background: repeating-linear-gradient(to right, var(--rule) 0 1px, transparent 1px var(--step)) left top /
+        calc(var(--n, 4) * var(--step) + 1px) 100% no-repeat;
+    }
+    .case-phases {
+      row-gap: 20px;
+    }
+    .case-phases li {
+      width: calc(100% - var(--i) * var(--step));
+      margin-left: calc(var(--i) * var(--step));
+    }
+    .case .case-phases li .case-phases__text {
+      position: static; /* each note under its bar, in the flow */
+      width: auto;
+    }
+    .case-phases li + li {
+      margin-top: 0;
     }
     .case-roadmap {
       padding: 24px;
