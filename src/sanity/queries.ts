@@ -101,6 +101,8 @@ export const CASE_STUDY_TEASERS_QUERY =
   companySize,
   commissionedBy,
   "figure": figures[0]{ value, label },
+  anonymised,
+  clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },
   heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }
 }`);
 

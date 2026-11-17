@@ -917,7 +917,7 @@ export type CASE_STUDIES_QUERY_RESULT = Array<{
 
 // Source: ../src/sanity/queries.ts
 // Variable: CASE_STUDY_TEASERS_QUERY
-// Query: *[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  lead,  featured,  cardTag,  industry,  companySize,  commissionedBy,  "figure": figures[0]{ value, label },  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }}
+// Query: *[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){  _id,  title,  "slug": slug.current,  lead,  featured,  cardTag,  industry,  companySize,  commissionedBy,  "figure": figures[0]{ value, label },  anonymised,  clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }}
 export type CASE_STUDY_TEASERS_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -931,6 +931,21 @@ export type CASE_STUDY_TEASERS_QUERY_RESULT = Array<{
   figure: {
     value: string;
     label: string;
+  } | null;
+  anonymised: boolean | null;
+  clientLogo: {
+    alt: string;
+    asset: {
+      _id: string;
+      url: string;
+      extension: string;
+      metadata: {
+        dimensions: {
+          width: number;
+          height: number;
+        } | null;
+      } | null;
+    } | null;
   } | null;
   heroImage: {
     hotspot: SanityImageHotspot | null;
@@ -1013,7 +1028,7 @@ declare global {
     '*[_type == "post" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  enabler,\n  image{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': FINDING_TEASERS_QUERY_RESULT;
     '*[_type == "authors" && defined(photo.asset)] | order(name asc){\n  _id,\n  name,\n  photo{ hotspot, crop, asset->{ _id } }\n}': FOUNDERS_QUERY_RESULT;
     '*[_type == "caseStudy" && defined(slug.current)]{\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  industry,\n  companySize,\n  market,\n  commissionedBy,\n  duration,\n  year,\n  anonymised,\n  clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },\n  clientLinkedin,\n  figures[]{ _key, value, label },\n  context,\n  contextQuote,\n  phases[]{ _key, label, title, text },\n  phasesText,\n  findingsIntro,\n  conclusions[]{ _key, title, text, findingLabel, "finding": finding->{ title, "slug": slug.current } },\n  maturity,\n  roadmapLead,\n  horizons[]{ _key, tab, label, title, text },\n  changes[]{ _key, metric, before, after, period },\n  changesText,\n  showTestimonial,\n  testimonial{ quote, "name": select(showName == true => name), role, showName, transcript },\n  "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, heroImage{ hotspot, crop, asset->{ _id } } },\n  seo_title,\n  seo_description,\n  no_index\n}': CASE_STUDIES_QUERY_RESULT;
-    '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
+    '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  anonymised,\n  clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  thumbnail{ hotspot, crop, asset->{ _id } }\n}': DELIVERY_EPISODES_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_PAGES_QUERY_RESULT;
   }
