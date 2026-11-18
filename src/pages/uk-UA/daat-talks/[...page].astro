@@ -5,8 +5,7 @@ import FindingsLayout from "../../../layouts/FindingsLayout.astro";
 import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import YouTube from "../../../assets/icons/icon-youtube.svg";
-import { cover } from "../../../data/delivery-management";
-import { EPISODES_PER_PAGE, episodesCount, TALKS_INTRO } from "../../../data/daat-talks";
+import { EPISODES_PER_PAGE, episodesCount, TALKS_INTRO, talksCover } from "../../../data/daat-talks";
 import { getTalksEpisodes } from "../../../sanity/shared";
 
 // Daat Talks (DAA-239), page A of the "Daat Talks section" canvas: the podcast's episodes, newest first, five to a
@@ -57,7 +56,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
             <div class="talks-episode__main">
               <a class="talks-episode__cover" href={href} tabindex="-1" aria-hidden="true">
                 <img
-                  {...cover(episode)}
+                  {...talksCover(episode)}
                   sizes="(width < 64rem) 100vw, 33vw"
                   alt=""
                   loading={i === 0 ? "eager" : "lazy"}

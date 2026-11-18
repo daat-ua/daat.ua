@@ -11,8 +11,8 @@ import BodyTable from "../../../components/daat-talks/BodyTable.astro";
 import Callout from "../../../components/daat-talks/Callout.astro";
 import PullQuote from "../../../components/daat-talks/PullQuote.astro";
 import ShortVersion from "../../../components/ShortVersion.astro";
-import { cover, youtubeId } from "../../../data/delivery-management";
-import { formatDate, initials, readingMinutes } from "../../../data/daat-talks";
+import { youtubeId } from "../../../data/delivery-management";
+import { formatDate, initials, readingMinutes, talksBackdrop, talksCover } from "../../../data/daat-talks";
 import { sanityClient } from "../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../sanity/image";
 import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
@@ -36,7 +36,7 @@ const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLoca
 const episode = article.episode!;
 const episodeHref = url(`daat-talks/${episode.slug}`);
 const watchUrl = `https://www.youtube.com/watch?v=${youtubeId(episode.youtubeUrl)}`;
-const image = cover(episode);
+const image = talksCover(episode);
 const others = episode.articles.filter((a) => a.slug !== article.slug);
 
 // the body with ids on its headings, and a guest's quote linked to its moment in the video
@@ -89,6 +89,7 @@ const articleData = {
   shareImage={shareImage}
   crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
   heading={article.title}
+  backdrop={talksBackdrop(episode)}
 >
   <script type="application/ld+json" set:html={JSON.stringify(articleData).replace(/</g, "\\u003c")} />
   <Fragment slot="hero">

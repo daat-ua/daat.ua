@@ -96,6 +96,15 @@ export const daatTalksEpisode = defineType({
           .custom((value) => (!value || youtubeId(value) ? true : 'Not a YouTube video link')),
     }),
     defineField({
+      name: 'youtubeCover',
+      title: 'YouTube cover',
+      description:
+        'The cover uploaded to YouTube, as a file (16:9, 1920 × 1080 or larger): the site shows it sharp at every size. Empty: the lower-quality image YouTube serves',
+      type: 'image',
+      options: {hotspot: true, accept: 'image/jpeg,image/png,image/webp'},
+      group: 'content',
+    }),
+    defineField({
       name: 'teaser',
       description: 'One or two sentences under the title on the index',
       type: 'text',
@@ -137,13 +146,6 @@ export const daatTalksEpisode = defineType({
       initialValue: [{_type: 'reference', _ref: OLENA, _key: 'olena'}],
       validation: (rule) => rule.unique(),
     }),
-    defineField({
-      name: 'thumbnail',
-      description: 'Instead of YouTube’s cover, where the site shows it. Empty: YouTube’s',
-      type: 'image',
-      options: {hotspot: true},
-      group: 'meta',
-    }),
 
     // ---------- SEO ----------
     defineField({
@@ -168,7 +170,7 @@ export const daatTalksEpisode = defineType({
     defineField({
       name: 'seo_image',
       title: 'Social sharing image',
-      description: '1200 × 630. Empty: the thumbnail, else YouTube’s cover',
+      description: '1200 × 630. Empty: the YouTube cover',
       type: 'image',
       options: {hotspot: true},
       fields: [{name: 'alt', type: 'string', title: 'Alternative text'}],
@@ -188,7 +190,7 @@ export const daatTalksEpisode = defineType({
   ],
 
   preview: {
-    select: {title: 'title', number: 'number', guest: 'guests.0.name', media: 'thumbnail'},
+    select: {title: 'title', number: 'number', guest: 'guests.0.name', media: 'youtubeCover'},
     prepare: ({title, number, guest, media}) => ({
       title: number ? `#${number} ${title ?? ''}` : title,
       subtitle: guest,
