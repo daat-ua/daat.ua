@@ -183,7 +183,7 @@ export type DaatTalksContributor = {
   };
   linkedin?: string;
   bio?: string;
-  slug: Slug;
+  slug?: Slug;
   companyUrl?: string;
 };
 
@@ -1310,7 +1310,7 @@ export type DELIVERY_EPISODE_PAGES_QUERY_RESULT = Array<{
 
 // Source: ../src/sanity/queries.ts
 // Variable: TALKS_EPISODES_QUERY
-// Query: *[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){  _id,  number,  title,  "slug": slug.current,  youtubeUrl,  teaser,  description,  "guests": guests[]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },  thumbnail{ hotspot, crop, asset->{ _id } },  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){    _id,    title,    "slug": slug.current,    excerpt,    summary,    "words": length(string::split(pt::text(body), " "))  },  seo_title,  seo_description,  seo_image{ hotspot, crop, asset->{ _id } },  no_index}
+// Query: *[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){  _id,  number,  title,  "slug": slug.current,  youtubeUrl,  teaser,  description,  "guests": guests[defined(@->_id)]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },  thumbnail{ hotspot, crop, asset->{ _id } },  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){    _id,    title,    "slug": slug.current,    excerpt,    summary,    "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " ")  },  seo_title,  seo_description,  seo_image{ hotspot, crop, asset->{ _id } },  no_index}
 export type TALKS_EPISODES_QUERY_RESULT = Array<{
   _id: string;
   number: number;
@@ -1363,7 +1363,7 @@ export type TALKS_EPISODES_QUERY_RESULT = Array<{
     slug: string;
     excerpt: string;
     summary: string;
-    words: number;
+    text: string;
   }>;
   seo_title: string | null;
   seo_description: string | null;
@@ -1379,7 +1379,7 @@ export type TALKS_EPISODES_QUERY_RESULT = Array<{
 
 // Source: ../src/sanity/queries.ts
 // Variable: TALKS_ARTICLES_QUERY
-// Query: *[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{  _id,  title,  "slug": slug.current,  excerpt,  summary,  shortVersion,  body[]{    ...,    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },    _type == "pullQuote" => { ..., "speaker": speaker->name }  },  "words": length(string::split(pt::text(body), " ")),  publishedAt,  "authors": authors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },  "contributors": select(    count(contributors) > 0 => contributors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },    episode->guests[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }  ),  heroImage{ hotspot, crop, asset->{ _id } },  "episode": episode->{    _id,    number,    title,    "slug": slug.current,    youtubeUrl,    thumbnail{ hotspot, crop, asset->{ _id } },    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){      _id,      title,      "slug": slug.current,      excerpt    }  },  seo_title,  seo_description,  seo_image{ hotspot, crop, asset->{ _id } },  primary_keyword,  secondary_keywords,  no_index}
+// Query: *[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{  _id,  title,  "slug": slug.current,  excerpt,  summary,  shortVersion,  body[]{    ...,    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },    _type == "pullQuote" => { ..., "speaker": speaker->name }  },  "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " "),  publishedAt,  "authors": authors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },  "contributors": select(    count(contributors[defined(@->_id)]) > 0 => contributors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },    episode->guests[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }  ),  heroImage{ hotspot, crop, asset->{ _id } },  "episode": episode->{    _id,    number,    title,    "slug": slug.current,    youtubeUrl,    thumbnail{ hotspot, crop, asset->{ _id } },    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){      _id,      title,      "slug": slug.current,      excerpt    }  },  seo_title,  seo_description,  seo_image{ hotspot, crop, asset->{ _id } },  primary_keyword,  secondary_keywords,  no_index}
 export type TALKS_ARTICLES_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -1469,7 +1469,7 @@ export type TALKS_ARTICLES_QUERY_RESULT = Array<{
         rowTitleWidth?: number;
       }
   >;
-  words: number;
+  text: string;
   publishedAt: string;
   authors: Array<{
     _id: string;
@@ -1544,8 +1544,8 @@ declare global {
     '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  anonymised,\n  clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  thumbnail{ hotspot, crop, asset->{ _id } }\n}': DELIVERY_EPISODES_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_PAGES_QUERY_RESULT;
-    '*[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){\n  _id,\n  number,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  description,\n  "guests": guests[]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n    _id,\n    title,\n    "slug": slug.current,\n    excerpt,\n    summary,\n    "words": length(string::split(pt::text(body), " "))\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  no_index\n}': TALKS_EPISODES_QUERY_RESULT;
-    '*[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{\n  _id,\n  title,\n  "slug": slug.current,\n  excerpt,\n  summary,\n  shortVersion,\n  body[]{\n    ...,\n    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n    _type == "pullQuote" => { ..., "speaker": speaker->name }\n  },\n  "words": length(string::split(pt::text(body), " ")),\n  publishedAt,\n  "authors": authors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n  "contributors": select(\n    count(contributors) > 0 => contributors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n    episode->guests[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }\n  ),\n  heroImage{ hotspot, crop, asset->{ _id } },\n  "episode": episode->{\n    _id,\n    number,\n    title,\n    "slug": slug.current,\n    youtubeUrl,\n    thumbnail{ hotspot, crop, asset->{ _id } },\n    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n      _id,\n      title,\n      "slug": slug.current,\n      excerpt\n    }\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  primary_keyword,\n  secondary_keywords,\n  no_index\n}': TALKS_ARTICLES_QUERY_RESULT;
+    '*[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){\n  _id,\n  number,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  description,\n  "guests": guests[defined(@->_id)]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n    _id,\n    title,\n    "slug": slug.current,\n    excerpt,\n    summary,\n    "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " ")\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  no_index\n}': TALKS_EPISODES_QUERY_RESULT;
+    '*[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{\n  _id,\n  title,\n  "slug": slug.current,\n  excerpt,\n  summary,\n  shortVersion,\n  body[]{\n    ...,\n    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n    _type == "pullQuote" => { ..., "speaker": speaker->name }\n  },\n  "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " "),\n  publishedAt,\n  "authors": authors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n  "contributors": select(\n    count(contributors[defined(@->_id)]) > 0 => contributors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n    episode->guests[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }\n  ),\n  heroImage{ hotspot, crop, asset->{ _id } },\n  "episode": episode->{\n    _id,\n    number,\n    title,\n    "slug": slug.current,\n    youtubeUrl,\n    thumbnail{ hotspot, crop, asset->{ _id } },\n    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n      _id,\n      title,\n      "slug": slug.current,\n      excerpt\n    }\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  primary_keyword,\n  secondary_keywords,\n  no_index\n}': TALKS_ARTICLES_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

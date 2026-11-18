@@ -65,11 +65,12 @@ const episodeLinks = (await getDeliveryEpisodes()).map((e) => ({
   href: url(`delivery-management/${e.slug}`),
 }));
 
-// every Daat Talks episode, newest first
-const talksLinks = (await getTalksEpisodes()).map((e) => ({
-  label: escapeHtml(e.title),
-  href: url(`daat-talks/${e.slug}`),
-}));
+// every Daat Talks episode, newest first, and the articles written from them
+const talksEpisodes = await getTalksEpisodes();
+const talksLinks = talksEpisodes.map((e) => ({ label: escapeHtml(e.title), href: url(`daat-talks/${e.slug}`) }));
+const talksArticleLinks = talksEpisodes.flatMap((e) =>
+  e.articles.map((a) => ({ label: escapeHtml(a.title), href: url(`article/${a.slug}`) })),
+);
 
 // the menu's pages, but the indexes that head their own sections
 const companyLinks = built([...menu.flatMap((item) => ("href" in item ? [item] : [])), ...projects]).filter(
@@ -85,7 +86,14 @@ const sections: Section[] = [
   { title: "Знахідки аудитів", href: catalogueHref, groups: findingGroups },
   { title: "Кейси", href: casesHref, groups: [{ links: caseLinks }] },
   { title: "Все про менеджмент делівері", href: deliveryHref, groups: [{ links: episodeLinks }] },
-  { title: '<span class="brand">Daat</span> Talks', href: talksHref, groups: [{ links: talksLinks }] },
+  {
+    title: '<span class="brand">Daat</span> Talks',
+    href: talksHref,
+    groups: [
+      { title: "Епізоди", links: talksLinks },
+      { title: "Статті", links: talksArticleLinks },
+    ],
+  },
   { title: 'Про <span class="brand">Daat</span>', groups: [{ links: companyLinks }] },
   { title: "Правова інформація", groups: [{ links: built(legalLinks).filter((l) => l.href !== url("sitemap")) }] },
 ]

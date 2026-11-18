@@ -7,6 +7,7 @@ import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import { cover, youtubeId } from "../../../data/delivery-management";
 import { readingMinutes } from "../../../data/daat-talks";
+import { urlFor } from "../../../sanity/image";
 import { getTalksEpisodes } from "../../../sanity/shared";
 
 // A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the title and the guest (the name
@@ -27,6 +28,8 @@ const videoId = youtubeId(episode.youtubeUrl);
 const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 const image = cover(episode);
 const { articles } = episode;
+// a shared link's image: the Studio's social image, else the cover (the thumbnail, else YouTube's)
+const shareImage = episode.seo_image?.asset ? urlFor(episode.seo_image).width(1200).height(630).url() : image.src;
 
 // the episode for search engines: schema.org's VideoObject
 const videoData = {
@@ -36,7 +39,6 @@ const videoData = {
   description: episode.teaser,
   thumbnailUrl: image.src,
   embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
-  contentUrl: watchUrl,
 };
 ---
 
@@ -44,6 +46,7 @@ const videoData = {
   title={episode.seo_title || `${episode.title} | Daat Talks #${episode.number}`}
   description={episode.seo_description || episode.teaser}
   noindex={episode.no_index ?? false}
+  shareImage={shareImage}
   crumb={{ href: url("daat-talks"), label: "Daat Talks" }}
   heading={episode.title}
 >
@@ -81,7 +84,7 @@ const videoData = {
       <div class="talk-articles__grid">
         {articles.map((a) => (
           <article class="talk-card">
-            <p class="talk-card__meta">Стаття · {readingMinutes(a.words)} хв читання</p>
+            <p class="talk-card__meta">Стаття · {readingMinutes(a.text)} хв читання</p>
             <h3 class="talk-card__title">
               <a href={url(`article/${a.slug}`)}>{a.title}</a>
             </h3>

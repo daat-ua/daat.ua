@@ -55,7 +55,7 @@ const hasRowTitles = rowTitlesOn && rows.some((row) => row.title?.trim());
     overflow-x: auto;
   }
   .body-table:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--c-primary); /* the orange is too light on the paper (1.7:1) */
     outline-offset: 3px;
   }
   table {

@@ -1,0 +1,55 @@
+---
+import type { TypedObjectProps } from "astro-portabletext/types";
+import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../sanity/image";
+
+// An illustration or screenshot in an article's body (Portable Text `image`), with its caption, at the text's width.
+// Served by Sanity's image CDN at the widths the layout needs, no larger than the original.
+type Props = TypedObjectProps;
+
+interface BodyImage {
+  alt?: string;
+  caption?: string;
+  asset: { _id: string; metadata?: { dimensions?: { width: number; height: number } | null } | null } | null;
+}
+
+const image = Astro.props.node as unknown as BodyImage;
+const { alt = "", caption } = image;
+const size = image.asset?.metadata?.dimensions;
+const fits = [480, 720, 960, 1440].filter((w) => !size || w <= size.width);
+const widths = fits.length ? fits : [size?.width ?? 960];
+---
+
+{image.asset && (
+  <figure class="body-image">
+    <img
+      src={urlFor(image, PHOTO_QUALITY)
+        .width(Math.min(960, size?.width ?? 960))
+        .url()}
+      srcset={srcsetFor(image, widths, undefined, PHOTO_QUALITY)}
+      sizes="(width < 64rem) 100vw, 46vw"
+      alt={alt}
+      width={size?.width}
+      height={size?.height}
+      loading="lazy"
+    />
+    {caption && <figcaption>{caption}</figcaption>}
+  </figure>
+)}
+
+<style>
+  .body-image {
+    margin: var(--space-lg) 0;
+  }
+  .body-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+  .body-image figcaption {
+    margin-top: var(--space-xs);
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+</style>
