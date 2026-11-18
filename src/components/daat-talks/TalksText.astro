@@ -1,0 +1,11 @@
+---
+import type { TextNodeProps } from "astro-portabletext/types";
+import StatusText from "./StatusText.astro";
+
+// A Portable Text span's text in a Daat Talks article, its status emoji as squares (StatusText)
+type Props = TextNodeProps;
+
+const { node } = Astro.props;
+---
+
+<StatusText text={node.text} />

@@ -1,0 +1,28 @@
+---
+import Square from "../../assets/icons/icon-square-filled.svg";
+
+// Text with the status emoji (🟢 🟡 🔴: on track, watch, act) drawn as the site's rounded square, filled
+// (icon-square-filled.svg, the list bullets' shape; colours in .status-square, patterns.css), each named for screen
+// readers. Used for article text, table cells and headers.
+
+interface Props {
+  text: string;
+}
+
+const STATUS: Record<string, { tone: string; label: string }> = {
+  "🟢": { tone: "green", label: "зелений" },
+  "🟡": { tone: "yellow", label: "жовтий" },
+  "🔴": { tone: "red", label: "червоний" },
+};
+
+const parts = Astro.props.text.split(/(🟢|🟡|🔴)/u).filter(Boolean);
+---
+
+{parts.map((part) => {
+  const status = STATUS[part];
+  return status ? (
+    <Square class={`status-square status-square--${status.tone}`} role="img" aria-label={status.label} />
+  ) : (
+    part
+  );
+})}

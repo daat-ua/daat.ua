@@ -1,5 +1,6 @@
 ---
 import type { TypedObjectProps } from "astro-portabletext/types";
+import StatusText from "./StatusText.astro";
 
 // "Ключова думка": a section's takeaway set apart from an article's text (Portable Text `callout`), on the navy.
 type Props = TypedObjectProps;
@@ -10,7 +11,9 @@ const { title, text } = node as unknown as { title?: string; text: string };
 
 <aside class="callout">
   {title && <p class="callout__title">{title}</p>}
-  <p>{text}</p>
+  <p>
+    <StatusText text={text} />
+  </p>
 </aside>
 
 <style>

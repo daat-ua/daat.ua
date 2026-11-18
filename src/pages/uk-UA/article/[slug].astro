@@ -11,6 +11,7 @@ import BodyTable from "../../../components/daat-talks/BodyTable.astro";
 import Callout from "../../../components/daat-talks/Callout.astro";
 import PullQuote from "../../../components/daat-talks/PullQuote.astro";
 import ShortVersion from "../../../components/ShortVersion.astro";
+import TalksText from "../../../components/daat-talks/TalksText.astro";
 import { youtubeId } from "../../../data/delivery-management";
 import { formatDate, initials, readingMinutes, talksBackdrop, talksCover } from "../../../data/daat-talks";
 import { sanityClient } from "../../../sanity/client";
@@ -50,6 +51,7 @@ const toc = headingsOf(body, "h2");
 const bodyComponents = {
   block: { h2: Heading, h3: Heading },
   type: { pullQuote: PullQuote, callout: Callout, image: BodyImage, richTableBlock: BodyTable },
+  text: TalksText,
 };
 
 // the byline: the hosts, then the guests (the episode's, unless the article names its own); faces or initials

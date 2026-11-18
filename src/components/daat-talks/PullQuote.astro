@@ -1,5 +1,6 @@
 ---
 import type { TypedObjectProps } from "astro-portabletext/types";
+import StatusText from "./StatusText.astro";
 
 // A guest's words in an article's body (Portable Text `pullQuote`): the quote in the blockquote's type
 // (.article-body), who said it, and the moment in the episode's video when the page gave it one (`href`).
@@ -15,7 +16,9 @@ const { text, speaker, time, href } = node as unknown as {
 ---
 
 <figure class="pull-quote">
-  <blockquote>«{text}»</blockquote>
+  <blockquote>
+    «<StatusText text={text} />»
+  </blockquote>
   {(speaker || time) && (
     <figcaption>
       {speaker}
