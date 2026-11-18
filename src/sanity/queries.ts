@@ -153,7 +153,7 @@ export const TALKS_EPISODES_QUERY =
   teaser,
   description,
   "guests": guests[defined(@->_id)]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },
-  thumbnail{ hotspot, crop, asset->{ _id } },
+  youtubeCover{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
   "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){
     _id,
     title,
@@ -198,7 +198,7 @@ export const TALKS_ARTICLES_QUERY =
     title,
     "slug": slug.current,
     youtubeUrl,
-    thumbnail{ hotspot, crop, asset->{ _id } },
+    youtubeCover{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
     "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){
       _id,
       title,

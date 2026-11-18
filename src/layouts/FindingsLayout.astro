@@ -28,13 +28,15 @@ interface Props {
   shareImage?: string;
   /** the hero's artwork: a Sanity image, or a local one */
   image?: HeroImage | ImageMetadata | null;
+  /** instead of artwork, an image's URL blurred behind the title (a Daat Talks article: its episode's cover) */
+  backdrop?: string;
   /** the breadcrumb: where it leads and what it says; none without it (the legal pages) */
   crumb?: { href: string; label: string };
   /** the page's h1 */
   heading: string;
 }
 
-const { title, description, noindex = false, keywords, shareImage, image, crumb, heading } = Astro.props;
+const { title, description, noindex = false, keywords, shareImage, image, backdrop, crumb, heading } = Astro.props;
 const isLocal = (img: typeof image): img is ImageMetadata => !!img && "src" in img;
 const sanityImage = image && !isLocal(image) ? image : null;
 const lqip = sanityImage?.asset?.metadata?.lqip;
@@ -44,7 +46,11 @@ const lqip = sanityImage?.asset?.metadata?.lqip;
   <main id="main" class="finding-page">
     <!-- ═══ Hero: the artwork fades into the page ═══ -->
     <header class="finding-hero">
-      {isLocal(image) ? (
+      {backdrop ? (
+        <div class="finding-hero__art finding-hero__art--blur" aria-hidden="true">
+          <img src={backdrop} alt="" fetchpriority="high" />
+        </div>
+      ) : isLocal(image) ? (
         <div class="finding-hero__art" aria-hidden="true">
           <Picture
             src={image}
@@ -118,6 +124,12 @@ const lqip = sanityImage?.asset?.metadata?.lqip;
   /* the blurred preview (Sanity's LQIP) shows until the artwork loads */
   .finding-hero__art {
     background: center / cover no-repeat;
+  }
+  /* a backdrop is blurred and a little larger, so the blur's soft edge falls outside (as on the delivery
+     management episodes) */
+  .finding-hero__art--blur :global(img) {
+    filter: blur(28px) saturate(1.1);
+    transform: scale(1.15);
   }
   /* the artwork fades into the paper so the title reads over it */
   .finding-hero__art::after {
