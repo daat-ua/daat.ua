@@ -9,13 +9,17 @@ import Bulb from "../assets/icons/icon-bulb.svg";
 interface Props {
   value: TypedObject[];
   class?: string;
+  /** the #tldr anchor a page links to (a finding's "on this page"); without it the ids can't clash with the
+   * text's own headings */
+  anchor?: boolean;
 }
 
-const { value, class: className } = Astro.props;
+const { value, class: className, anchor = true } = Astro.props;
+const titleId = anchor ? "tldr-title" : "short-version-title";
 ---
 
-<section class:list={["tldr", className]} id="tldr" aria-labelledby="tldr-title">
-  <h2 class="tldr__title" id="tldr-title">
+<section class:list={["tldr", className]} id={anchor ? "tldr" : undefined} aria-labelledby={titleId}>
+  <h2 class="tldr__title" id={titleId}>
     <Bulb class="tldr__icon" aria-hidden="true" />
     Коротка версія
   </h2>

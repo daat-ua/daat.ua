@@ -8,7 +8,7 @@ type Props = TypedObjectProps;
 
 interface RichTable {
   rows: { _key: string; title?: string; cells?: { _key: string; content: TypedObjectProps["node"][] }[] }[];
-  columnHeaders?: { _key: string; title?: string }[];
+  columnHeaders?: { _key: string; title?: string; cellIndex: number }[];
   hasColumnTitles?: boolean;
   hasRowTitles?: boolean;
 }
@@ -21,6 +21,9 @@ const {
 } = Astro.props.node as unknown as RichTable;
 // the Studio's switch can be on with no titles filled in: an empty column would only indent the table
 const hasRowTitles = rowTitlesOn && rows.some((row) => row.title?.trim());
+// one header per data column, placed by its cellIndex (a column can have none)
+const columns = Math.max(0, ...rows.map((row) => row.cells?.length ?? 0));
+const headers = Array.from({ length: columns }, (_, i) => columnHeaders.find((h) => h.cellIndex === i)?.title ?? "");
 ---
 
 <div class="body-table" tabindex="0" role="region" aria-label="Таблиця">
@@ -29,8 +32,8 @@ const hasRowTitles = rowTitlesOn && rows.some((row) => row.title?.trim());
       <thead>
         <tr>
           {hasRowTitles && <td />}
-          {columnHeaders.map((header) => (
-            <th scope="col">{header.title}</th>
+          {headers.map((title) => (
+            <th scope="col">{title}</th>
           ))}
         </tr>
       </thead>
