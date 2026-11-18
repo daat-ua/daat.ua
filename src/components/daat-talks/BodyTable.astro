@@ -13,7 +13,14 @@ interface RichTable {
   hasRowTitles?: boolean;
 }
 
-const { rows, columnHeaders = [], hasColumnTitles, hasRowTitles } = Astro.props.node as unknown as RichTable;
+const {
+  rows,
+  columnHeaders = [],
+  hasColumnTitles,
+  hasRowTitles: rowTitlesOn,
+} = Astro.props.node as unknown as RichTable;
+// the Studio's switch can be on with no titles filled in: an empty column would only indent the table
+const hasRowTitles = rowTitlesOn && rows.some((row) => row.title?.trim());
 ---
 
 <div class="body-table" tabindex="0" role="region" aria-label="Таблиця">
@@ -73,6 +80,10 @@ const { rows, columnHeaders = [], hasColumnTitles, hasRowTitles } = Astro.props.
   }
   tbody th {
     font-weight: 500;
+  }
+  /* the last row ends the table without a rule under it */
+  tbody tr:last-child > * {
+    border-bottom: 0;
   }
   /* a cell's text is a paragraph or two: no gap above the first or below the last */
   td :global(p) {

@@ -58,6 +58,25 @@ export const daatTalksArticle = defineType({
       validation: (rule) => rule.required().max(400),
     }),
     defineField({
+      name: 'shortVersion',
+      title: 'Short version',
+      description:
+        '«Коротка версія» at the top of the text: the main points, best as a numbered list. Empty: not shown',
+      type: 'array',
+      group: 'content',
+      of: [
+        defineArrayMember({
+          type: 'block',
+          styles: [{title: 'Normal', value: 'normal'}],
+          lists: [
+            {title: 'Numbered', value: 'number'},
+            {title: 'Bullet', value: 'bullet'},
+          ],
+          marks: {decorators: [{title: 'Strong', value: 'strong'}], annotations: []},
+        }),
+      ],
+    }),
+    defineField({
       name: 'body',
       description: 'H2 headings make the "На цій сторінці" list beside the text',
       type: 'array',
@@ -210,6 +229,23 @@ export const daatTalksArticle = defineType({
     }),
 
     // ---------- SEO ----------
+    defineField({
+      name: 'primary_keyword',
+      title: 'Primary keyword',
+      description: 'The search query the article answers first, e.g. "касовий розрив"',
+      type: 'string',
+      group: 'seo',
+    }),
+    defineField({
+      name: 'secondary_keywords',
+      title: 'Secondary keywords',
+      description: 'Related queries it also answers; press Enter after each',
+      type: 'array',
+      of: [defineArrayMember({type: 'string'})],
+      options: {layout: 'tags'},
+      group: 'seo',
+      validation: (rule) => rule.unique(),
+    }),
     defineField({
       name: 'seo_title',
       title: 'SEO title',

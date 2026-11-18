@@ -177,6 +177,7 @@ export const TALKS_ARTICLES_QUERY =
   "slug": slug.current,
   excerpt,
   summary,
+  shortVersion,
   body[]{
     ...,
     _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
@@ -207,5 +208,7 @@ export const TALKS_ARTICLES_QUERY =
   seo_title,
   seo_description,
   seo_image{ hotspot, crop, asset->{ _id } },
+  primary_keyword,
+  secondary_keywords,
   no_index
 }`);
