@@ -58,6 +58,10 @@ const people = [...article.authors, ...(article.contributors ?? [])].map((p) => 
   photo: p.photo?.asset ? p.photo : null,
 }));
 const minutes = readingMinutes(article.text);
+// «Коротка версія»: only the blocks with text in them, so an empty one doesn't show a heading over nothing
+const shortVersion = (article.shortVersion ?? []).filter((block) =>
+  block.children?.some((child) => child.text?.trim()),
+);
 // a shared link's image: the Studio's social image, else the hero image, else the episode's cover
 const socialImage = article.seo_image?.asset ? article.seo_image : article.heroImage?.asset ? article.heroImage : null;
 const shareImage = socialImage ? urlFor(socialImage).width(1200).height(630).url() : image.src;
@@ -122,9 +126,7 @@ const articleData = {
 
   <div class="wrap article-layout">
     <article class="article-text">
-      {article.shortVersion && article.shortVersion.length > 0 && (
-        <ShortVersion class="article-tldr" value={article.shortVersion} />
-      )}
+      {shortVersion.length > 0 && <ShortVersion class="article-tldr" value={shortVersion} anchor={false} />}
       <div class="article-body">
         <PortableText value={body} components={bodyComponents} />
       </div>
@@ -387,6 +389,7 @@ const articleData = {
     }
     .byline__faces {
       flex-wrap: wrap;
+      max-width: 100%; /* the strip itself wraps rather than overflow the screen */
       row-gap: 4px;
       padding-left: 12px; /* the overlap's room for the first face in a wrapped row */
     }

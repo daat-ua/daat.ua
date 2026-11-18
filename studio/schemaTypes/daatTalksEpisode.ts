@@ -4,8 +4,9 @@ import {ALL_FIELDS_GROUP, defineArrayMember, defineField, defineType} from 'sani
 // page, by number) and its page (/uk-UA/daat-talks/<slug>). The articles written from it point to it
 // (`daatTalksArticle.episode`); the episode doesn't list them.
 
-/** the 11-character video ID in a YouTube link (youtube.com/watch?v=, youtu.be/, /embed/, /shorts/ on a YouTube host);
- * null if it isn't one */
+/** the 11-character video ID in a YouTube link: youtube.com/watch?v=…, youtu.be/…, /embed/… or /shorts/… on a
+ * YouTube host; null if it isn't one. The ID must appear in the link as typed (not percent-encoded): the site reads
+ * it from the link's text (src/data/delivery-management.ts), and both must find the same video */
 function youtubeId(value?: string) {
   let url: URL
   try {
@@ -17,10 +18,12 @@ function youtubeId(value?: string) {
   const id =
     host === 'youtu.be'
       ? url.pathname.slice(1)
-      : ['youtube.com', 'youtube-nocookie.com'].includes(host)
-        ? (url.searchParams.get('v') ?? url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1])
-        : null
-  return id && /^[\w-]{11}$/.test(id) ? id : null
+      : !['youtube.com', 'youtube-nocookie.com'].includes(host)
+        ? null
+        : url.pathname === '/watch'
+          ? url.searchParams.get('v')
+          : url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)$/)?.[1]
+  return id && /^[\w-]{11}$/.test(id) && value?.includes(id) ? id : null
 }
 
 /** Olena Kyianovska (`authors`): she hosts every episode */
@@ -54,10 +57,14 @@ export const daatTalksEpisode = defineType({
             if (value === undefined) return true
             // the published ID, whether this is a draft or a version in a content release
             const id = document?._id.replace(/^drafts\./, '').replace(/^versions\.[^.]+\./, '')
-            const taken = await getClient({apiVersion: '2025-02-19'}).fetch<number>(
-              `count(*[_type == "daatTalksEpisode" && number == $value && !(_id in [$id, "drafts." + $id])])`,
-              {value, id},
-            )
+            // every copy of every other episode, drafts and release versions too (the raw perspective);
+            // sanity::versionOf() leaves out this episode's own copies
+            const taken = await getClient({apiVersion: '2025-02-19'})
+              .withConfig({perspective: 'raw'})
+              .fetch<number>(
+                `count(*[_type == "daatTalksEpisode" && number == $value && !sanity::versionOf($id)])`,
+                {value, id},
+              )
             return taken ? `Episode ${value} already exists` : true
           }),
     }),
@@ -76,13 +83,13 @@ export const daatTalksEpisode = defineType({
       options: {source: 'title'},
       group: 'content',
       validation: (rule) =>
-        rule
-          .required()
-          .custom((value) =>
-            value?.current && /^\d+$/.test(value.current)
-              ? 'A number alone is taken by the index’s pages'
-              : true,
-          ),
+        rule.required().custom((value) => {
+          const slug = value?.current
+          if (!slug) return true
+          // one path segment: letters, digits, "-" and "_" (no "/", "#", "?" or spaces that would change the link)
+          if (!/^[\p{L}\p{N}_-]+$/u.test(slug)) return 'Use letters, digits and hyphens only'
+          return /^\d+$/.test(slug) ? 'A number alone is taken by the index’s pages' : true
+        }),
     }),
     defineField({
       name: 'youtubeUrl',
