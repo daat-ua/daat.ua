@@ -3,11 +3,10 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../layouts/FindingsLayout.astro";
 import { enablerNames, type Enabler } from "../../data/enablers";
 import { legalLinks, menu, projects, toc, type Link } from "../../data/navigation";
-import { episodes as talksEpisodes } from "../../data/daat-talks";
-import { getCaseStudyTeasers, getDeliveryEpisodes, getFindingTeasers } from "../../sanity/shared";
+import { getCaseStudyTeasers, getDeliveryEpisodes, getFindingTeasers, getTalksEpisodes } from "../../sanity/shared";
 
 // The site map (DAA-219), modelled on bcg.com/sitemap: a section per part of the site, its sub-groups and their
-// links. It's rebuilt with the site: the findings, case studies and delivery management episodes come from Sanity at build time, and the menu's
+// links. It's rebuilt with the site: the findings, case studies, delivery management and Daat Talks episodes come from Sanity at build time, and the menu's
 // pages appear as soon as their files exist under src/pages (until then the menu links to pages that aren't built).
 
 const locale = Astro.currentLocale ?? "uk-UA";
@@ -67,7 +66,10 @@ const episodeLinks = (await getDeliveryEpisodes()).map((e) => ({
 }));
 
 // every Daat Talks episode, newest first
-const talksLinks = talksEpisodes.map((e) => ({ label: escapeHtml(e.title), href: url(`daat-talks/${e.slug}`) }));
+const talksLinks = (await getTalksEpisodes()).map((e) => ({
+  label: escapeHtml(e.title),
+  href: url(`daat-talks/${e.slug}`),
+}));
 
 // the menu's pages, but the indexes that head their own sections
 const companyLinks = built([...menu.flatMap((item) => ("href" in item ? [item] : [])), ...projects]).filter(

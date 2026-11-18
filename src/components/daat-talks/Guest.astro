@@ -1,12 +1,14 @@
 ---
 import ExternalLink from "../../assets/icons/icon-link-external.svg";
-import { initials, type TalksContributor } from "../../data/daat-talks";
+import { initials } from "../../data/daat-talks";
+import { srcsetFor, urlFor } from "../../sanity/image";
+import type { TALKS_EPISODES_QUERY_RESULT } from "../../sanity/sanity.types";
 
-// A Daat Talks guest: the avatar (initials until the guests have photos), the name and the role. On the episode page
-// the name links to the guest's LinkedIn.
+// A Daat Talks guest (Sanity's daatTalksContributor): the photo (the initials without one), the name and the role.
+// On the episode page the name links to the guest's LinkedIn.
 
 interface Props {
-  guest: TalksContributor;
+  guest: TALKS_EPISODES_QUERY_RESULT[number]["guests"][number];
   /** the name links to LinkedIn */
   linked?: boolean;
   size?: "md" | "lg";
@@ -15,12 +17,26 @@ interface Props {
 const { guest, linked = false, size = "md" } = Astro.props;
 const role = [guest.role, guest.company].filter(Boolean).join(", ");
 const href = linked ? guest.linkedin : undefined;
+const photo = guest.photo?.asset ? guest.photo : null;
 ---
 
 <div class:list={["guest", `guest--${size}`]}>
-  <span class="guest__avatar" aria-hidden="true">
-    {initials(guest.name)}
-  </span>
+  {photo ? (
+    <img
+      class="guest__avatar"
+      src={urlFor(photo).width(128).height(128).fit("crop").url()}
+      srcset={srcsetFor(photo, [64, 128], 1)}
+      sizes="64px"
+      alt=""
+      width="64"
+      height="64"
+      loading="lazy"
+    />
+  ) : (
+    <span class="guest__avatar" aria-hidden="true">
+      {initials(guest.name)}
+    </span>
+  )}
   <div>
     {href ? (
       <a class="guest__name" href={href} target="_blank" rel="noopener">
@@ -52,6 +68,7 @@ const href = linked ? guest.linkedin : undefined;
     height: calc(56 * var(--px));
     border-radius: 50%;
     background: var(--c-cream);
+    object-fit: cover;
     font-size: var(--text-small);
     font-weight: 600;
   }

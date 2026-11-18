@@ -6,21 +6,23 @@ import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import YouTube from "../../../assets/icons/icon-youtube.svg";
 import { cover } from "../../../data/delivery-management";
-import { articlesOf, episodes, EPISODES_PER_PAGE } from "../../../data/daat-talks";
+import { EPISODES_PER_PAGE, episodesCount } from "../../../data/daat-talks";
+import { getTalksEpisodes } from "../../../sanity/shared";
 
 // Daat Talks (DAA-239), page A of the "Daat Talks section" canvas: the podcast's episodes, newest first, five to a
 // page (/uk-UA/daat-talks, then /2, /3…). Each episode: its cover, number, title, teaser and guest on the left;
 // «Головне з розмови», the articles written from it, on the right; a fading orange rule between episodes.
-// Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
+// Content: Sanity's daatTalksEpisode, by number, each with its daatTalksArticle cards.
 
-export const getStaticPaths = (({ paginate }) =>
-  paginate(episodes, { pageSize: EPISODES_PER_PAGE })) satisfies GetStaticPaths;
+export const getStaticPaths = (async ({ paginate }) =>
+  paginate(await getTalksEpisodes(), { pageSize: EPISODES_PER_PAGE })) satisfies GetStaticPaths;
 
 const { page } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths>;
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 const pageHref = (n: number) => url(n === 1 ? "daat-talks" : `daat-talks/${n}`);
 const pages = Array.from({ length: page.lastPage }, (_, i) => i + 1);
+const total = page.total;
 
 const intro =
   "Подкаст Daat про те, як будують і ведуть IT-компанії: відверті розмови з фаундерами, CEO та експертами. З кожного епізоду ми робимо кілька статей — щоб до ідей можна було повернутися.";
@@ -35,7 +37,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
   <div class="talks-hero" slot="hero">
     <p class="talks-intro">{intro}</p>
     <p class="talks-meta">
-      {episodes.length} епізодів ·{" "}
+      {total > 0 && `${episodesCount(total)} · `}
       <a href={playlist} target="_blank" rel="noopener">
         <YouTube class="talks-meta__icon" aria-hidden="true" />
         <span class="talks-meta__words">Дивитися на YouTube</span>
@@ -46,9 +48,10 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
 
   <div class="wrap talks">
     <h2 class="sr-only">Епізоди</h2>
+    {total === 0 && <p class="talks-empty">Перші епізоди з’являться тут найближчим часом.</p>}
     {page.data.map((episode, i) => {
       const href = url(`daat-talks/${episode.slug}`);
-      const articles = articlesOf(episode);
+      const { articles } = episode;
       return (
         <>
           {i > 0 && <Divider class="talks-divider" fade />}
@@ -56,7 +59,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
             <div class="talks-episode__main">
               <a class="talks-episode__cover" href={href} tabindex="-1" aria-hidden="true">
                 <img
-                  {...cover({ youtubeUrl: episode.youtubeUrl, thumbnail: null })}
+                  {...cover(episode)}
                   sizes="(width < 64rem) 100vw, 33vw"
                   alt=""
                   loading={i === 0 ? "eager" : "lazy"}
@@ -197,6 +200,12 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
 
   .talks {
     padding-bottom: var(--space-2xl);
+  }
+  .talks-empty {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
   }
   .talks :global(.talks-divider) {
     display: block;

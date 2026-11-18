@@ -1,5 +1,11 @@
 import { sanityClient } from "./client";
-import { CASE_STUDY_TEASERS_QUERY, DELIVERY_EPISODES_QUERY, FINDING_TEASERS_QUERY, FOUNDERS_QUERY } from "./queries";
+import {
+  CASE_STUDY_TEASERS_QUERY,
+  DELIVERY_EPISODES_QUERY,
+  FINDING_TEASERS_QUERY,
+  FOUNDERS_QUERY,
+  TALKS_EPISODES_QUERY,
+} from "./queries";
 
 // Queries that many pages run, fetched once per build and shared: the build renders every page in one process,
 // so each of these is one request to Sanity, not one per page. The dev server keeps modules between requests,
@@ -22,3 +28,6 @@ export const getCaseStudyTeasers = once(() => sanityClient.fetch(CASE_STUDY_TEAS
 
 /** the delivery management episodes: the index and the site map */
 export const getDeliveryEpisodes = once(() => sanityClient.fetch(DELIVERY_EPISODES_QUERY));
+
+/** the Daat Talks episodes with their articles' cards: the index, the episode pages and the site map */
+export const getTalksEpisodes = once(() => sanityClient.fetch(TALKS_EPISODES_QUERY));
