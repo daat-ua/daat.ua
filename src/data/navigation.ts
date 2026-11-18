@@ -1,5 +1,5 @@
 // Navigation copy: table of contents, global menu and footer.
-// TODO content: cookie settings and social profiles are placeholders.
+// TODO content: cookie settings are a placeholder.
 
 import { getRelativeLocaleUrl } from "astro:i18n";
 
@@ -55,8 +55,8 @@ export const legalLinks: Link[] = [
 
 export type SocialNetwork = "LinkedIn" | "Facebook" | "Instagram" | "YouTube";
 export const social: { network: SocialNetwork; href: string }[] = [
-  { network: "LinkedIn", href: "#" },
-  { network: "Facebook", href: "#" },
-  { network: "Instagram", href: "#" },
-  { network: "YouTube", href: "#" },
+  { network: "LinkedIn", href: "https://www.linkedin.com/company/daat-ua" },
+  { network: "YouTube", href: "https://www.youtube.com/@daat_ua" },
+  { network: "Facebook", href: "https://facebook.com/daat.consulting" },
+  { network: "Instagram", href: "https://www.instagram.com/daat.ua" },
 ];
