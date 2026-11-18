@@ -141,7 +141,8 @@ export const DELIVERY_EPISODE_PAGES_QUERY =
 // (`daatTalksArticle`) and their guests (`daatTalksContributor`) ----------
 
 /** Every episode, newest first, with its guests and its articles' cards (oldest first): the index, the episode
- * pages and the site map. `words` gives the cards' reading time */
+ * pages and the site map. `text` (the prose, quotes, callouts and table cells) gives the reading time. References
+ * to unpublished documents (a guest in a release) are left out before they're followed */
 export const TALKS_EPISODES_QUERY =
   defineQuery(`*[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){
   _id,
@@ -151,7 +152,7 @@ export const TALKS_EPISODES_QUERY =
   youtubeUrl,
   teaser,
   description,
-  "guests": guests[]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },
+  "guests": guests[defined(@->_id)]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },
   thumbnail{ hotspot, crop, asset->{ _id } },
   "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){
     _id,
@@ -159,7 +160,7 @@ export const TALKS_EPISODES_QUERY =
     "slug": slug.current,
     excerpt,
     summary,
-    "words": length(string::split(pt::text(body), " "))
+    "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " ")
   },
   seo_title,
   seo_description,
@@ -183,12 +184,12 @@ export const TALKS_ARTICLES_QUERY =
     _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
     _type == "pullQuote" => { ..., "speaker": speaker->name }
   },
-  "words": length(string::split(pt::text(body), " ")),
+  "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " "),
   publishedAt,
-  "authors": authors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
+  "authors": authors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
   "contributors": select(
-    count(contributors) > 0 => contributors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
-    episode->guests[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }
+    count(contributors[defined(@->_id)]) > 0 => contributors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
+    episode->guests[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }
   ),
   heroImage{ hotspot, crop, asset->{ _id } },
   "episode": episode->{

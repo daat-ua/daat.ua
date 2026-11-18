@@ -13,9 +13,11 @@ interface Props {
   noindex?: boolean;
   /** the page's search keywords, the primary first (the Daat Talks articles) */
   keywords?: string[];
+  /** the image a shared link shows (og:image), an absolute URL */
+  shareImage?: string;
 }
 
-const { title, description, noindex = false, keywords = [] } = Astro.props;
+const { title, description, noindex = false, keywords = [], shareImage } = Astro.props;
 const locale = Astro.currentLocale ?? "uk-UA";
 // pages are built as .html files but served without the extension; the 404 page gets no canonical URL
 const path = Astro.url.pathname.replace(/\.html$/, "");
@@ -35,6 +37,7 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
     {keywords.length > 0 && <meta name="keywords" content={keywords.join(", ")} />}
+    {shareImage && <meta property="og:image" content={shareImage} />}
     {canonical && (
       <>
         <link rel="canonical" href={canonical} />

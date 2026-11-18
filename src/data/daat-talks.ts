@@ -13,12 +13,13 @@ export const initials = (name: string) =>
     .join("")
     .toUpperCase();
 
-/** minutes to read a text of so many words, at 180 words a minute */
-export const readingMinutes = (words: number) => Math.max(1, Math.round(words / 180));
+/** minutes to read a text, at 180 words a minute (any run of whitespace, line breaks too, separates words) */
+export const readingMinutes = (text: string | null) =>
+  Math.max(1, Math.round((text?.split(/\s+/).filter(Boolean).length ?? 0) / 180));
 
-/** "20 червня 2026" */
+/** "20 червня 2026", the date in Kyiv, wherever the site is built */
 export const formatDate = (iso: string) =>
-  new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long", year: "numeric" })
+  new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Kyiv" })
     .format(new Date(iso))
     .replace(/\s*р\.$/, "");
 
@@ -27,3 +28,7 @@ export function episodesCount(n: number) {
   const forms = { one: "епізод", few: "епізоди", many: "епізодів", other: "епізоду" };
   return `${n} ${forms[new Intl.PluralRules("uk").select(n) as keyof typeof forms] ?? forms.many}`;
 }
+
+/** the index's intro, under its title */
+export const TALKS_INTRO =
+  "Подкаст Daat про те, як будують і ведуть IT-компанії: відверті розмови з фаундерами, CEO та експертами. З кожного епізоду ми робимо кілька статей\u00a0— щоб до ідей можна було повернутися.";

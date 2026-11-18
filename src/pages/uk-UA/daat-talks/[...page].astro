@@ -6,7 +6,7 @@ import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import YouTube from "../../../assets/icons/icon-youtube.svg";
 import { cover } from "../../../data/delivery-management";
-import { EPISODES_PER_PAGE, episodesCount } from "../../../data/daat-talks";
+import { EPISODES_PER_PAGE, episodesCount, TALKS_INTRO } from "../../../data/daat-talks";
 import { getTalksEpisodes } from "../../../sanity/shared";
 
 // Daat Talks (DAA-239), page A of the "Daat Talks section" canvas: the podcast's episodes, newest first, five to a
@@ -24,18 +24,16 @@ const pageHref = (n: number) => url(n === 1 ? "daat-talks" : `daat-talks/${n}`);
 const pages = Array.from({ length: page.lastPage }, (_, i) => i + 1);
 const total = page.total;
 
-const intro =
-  "Подкаст Daat про те, як будують і ведуть IT-компанії: відверті розмови з фаундерами, CEO та експертами. З кожного епізоду ми робимо кілька статей — щоб до ідей можна було повернутися.";
 const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE6iuiSfPaKo";
 ---
 
 <FindingsLayout
   title={page.currentPage === 1 ? "Daat Talks | Daat" : `Daat Talks, сторінка ${page.currentPage} | Daat`}
-  description={intro}
+  description={TALKS_INTRO}
   heading="Daat Talks"
 >
   <div class="talks-hero" slot="hero">
-    <p class="talks-intro">{intro}</p>
+    <p class="talks-intro">{TALKS_INTRO}</p>
     <p class="talks-meta">
       {total > 0 && `${episodesCount(total)} · `}
       <a href={playlist} target="_blank" rel="noopener">
@@ -66,7 +64,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
                 />
               </a>
               <div class="talks-episode__head">
-                <p class="talks-episode__number">Епізод {episode.number}</p>
+                <p class="talks-episode__number">Епізод&nbsp;{episode.number}</p>
                 <h3 class="talks-episode__title" id={`episode-${episode.number}`}>
                   <a href={href}>{episode.title}</a>
                 </h3>
@@ -103,7 +101,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
         <Divider class="talks-divider" fade />
         <nav class="talks-pages" aria-label="Сторінки епізодів">
           {page.url.prev ? (
-            <a class="talks-pages__arrow" href={page.url.prev} aria-label="Попередня сторінка">
+            <a class="talks-pages__arrow" href={pageHref(page.currentPage - 1)} aria-label="Попередня сторінка">
               ‹
             </a>
           ) : (
@@ -121,7 +119,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
             ),
           )}
           {page.url.next ? (
-            <a class="talks-pages__arrow" href={page.url.next} aria-label="Наступна сторінка">
+            <a class="talks-pages__arrow" href={pageHref(page.currentPage + 1)} aria-label="Наступна сторінка">
               ›
             </a>
           ) : (
@@ -297,8 +295,10 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
   }
 
   /* pages: round numbers, the current one filled; the arrows without a border */
+  /* many pages wrap to a second line rather than push the next arrow off a phone's screen */
   .talks-pages {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-xs);
     font-size: var(--text-small);
@@ -316,7 +316,7 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
   }
   .talks-pages a:hover {
     background: var(--c-cream);
-    color: var(--c-primary);
+    color: var(--c-primary-hover); /* the darker blue: 4.5:1 on the cream */
   }
   .talks-pages__current {
     background: var(--c-hero);

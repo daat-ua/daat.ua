@@ -63,11 +63,10 @@ export const daatTalksContributor = defineType({
     // ---------- Meta ----------
     defineField({
       name: 'slug',
-      description: 'For a future guest page with all their episodes',
+      description: 'For a future guest page with all their episodes. Not needed yet',
       type: 'slug',
       options: {source: 'name'},
       group: 'meta',
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'companyUrl',

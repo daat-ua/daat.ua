@@ -4,9 +4,24 @@ import {ALL_FIELDS_GROUP, defineArrayMember, defineField, defineType} from 'sani
 // page, by number) and its page (/uk-UA/daat-talks/<slug>). The articles written from it point to it
 // (`daatTalksArticle.episode`); the episode doesn't list them.
 
-/** the 11-character video ID in a YouTube link (watch, youtu.be, embed, shorts); null if there is none */
-const youtubeId = (url?: string) =>
-  url?.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([\w-]{11})/)?.[1] ?? null
+/** the 11-character video ID in a YouTube link (youtube.com/watch?v=, youtu.be/, /embed/, /shorts/ on a YouTube host);
+ * null if it isn't one */
+function youtubeId(value?: string) {
+  let url: URL
+  try {
+    url = new URL(value ?? '')
+  } catch {
+    return null
+  }
+  const host = url.hostname.replace(/^(www|m)\./, '')
+  const id =
+    host === 'youtu.be'
+      ? url.pathname.slice(1)
+      : ['youtube.com', 'youtube-nocookie.com'].includes(host)
+        ? (url.searchParams.get('v') ?? url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1])
+        : null
+  return id && /^[\w-]{11}$/.test(id) ? id : null
+}
 
 /** Olena Kyianovska (`authors`): she hosts every episode */
 const OLENA = '2901a5d2-ac5e-4b99-9fc1-c4ae271aa281'
@@ -37,8 +52,9 @@ export const daatTalksEpisode = defineType({
           .positive()
           .custom(async (value, {document, getClient}) => {
             if (value === undefined) return true
-            const id = document?._id.replace(/^drafts\./, '')
-            const taken = await getClient({apiVersion: '2025-01-01'}).fetch<number>(
+            // the published ID, whether this is a draft or a version in a content release
+            const id = document?._id.replace(/^drafts\./, '').replace(/^versions\.[^.]+\./, '')
+            const taken = await getClient({apiVersion: '2025-02-19'}).fetch<number>(
               `count(*[_type == "daatTalksEpisode" && number == $value && !(_id in [$id, "drafts." + $id])])`,
               {value, id},
             )
@@ -54,11 +70,19 @@ export const daatTalksEpisode = defineType({
     }),
     defineField({
       name: 'slug',
-      description: 'The URL: /uk-UA/daat-talks/<slug>',
+      description:
+        'The URL: /uk-UA/daat-talks/<slug>. Not just a number: /daat-talks/2 is the index’s page 2',
       type: 'slug',
       options: {source: 'title'},
       group: 'content',
-      validation: (rule) => rule.required(),
+      validation: (rule) =>
+        rule
+          .required()
+          .custom((value) =>
+            value?.current && /^\d+$/.test(value.current)
+              ? 'A number alone is taken by the index’s pages'
+              : true,
+          ),
     }),
     defineField({
       name: 'youtubeUrl',

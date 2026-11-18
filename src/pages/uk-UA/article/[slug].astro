@@ -57,8 +57,11 @@ const people = [...article.authors, ...(article.contributors ?? [])].map((p) => 
   name: p.name,
   photo: p.photo?.asset ? p.photo : null,
 }));
-const minutes = readingMinutes(article.words);
-const shareImage = article.heroImage?.asset ? urlFor(article.heroImage).width(1200).height(630).url() : image.src;
+const minutes = readingMinutes(article.text);
+// a shared link's image: the Studio's social image, else the hero image, else the episode's cover
+const socialImage = article.seo_image?.asset ? article.seo_image : article.heroImage?.asset ? article.heroImage : null;
+const shareImage = socialImage ? urlFor(socialImage).width(1200).height(630).url() : image.src;
+const articleImage = article.heroImage?.asset ? urlFor(article.heroImage).width(1200).height(630).url() : image.src;
 
 // the search keywords from the Studio's SEO tab, the primary first, each once
 const keywords = [
@@ -73,7 +76,7 @@ const articleData = {
   description: article.excerpt,
   datePublished: article.publishedAt,
   author: article.authors.map((a) => ({ "@type": "Person", name: a.name })),
-  image: shareImage,
+  image: articleImage,
   ...(keywords.length > 0 && { keywords: keywords.join(", ") }),
 };
 ---
@@ -83,6 +86,7 @@ const articleData = {
   description={article.seo_description || article.excerpt}
   noindex={article.no_index ?? false}
   keywords={keywords}
+  shareImage={shareImage}
   crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
   heading={article.title}
 >
@@ -376,6 +380,18 @@ const articleData = {
   }
 
   @media (width < 64rem) {
+    /* many people: the faces wrap, and the names and date go under them rather than off the screen */
+    .byline {
+      flex-wrap: wrap;
+    }
+    .byline__faces {
+      flex-wrap: wrap;
+      row-gap: 4px;
+      padding-left: 12px; /* the overlap's room for the first face in a wrapped row */
+    }
+    .byline__faces > :first-child {
+      margin-left: -12px;
+    }
     .byline__faces > * {
       width: 40px;
       height: 40px;

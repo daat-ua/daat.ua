@@ -62,15 +62,17 @@ const isBlock = (node: TypedObject): node is Block => node._type === "block";
 const isHeading = (node: TypedObject): node is Block => isBlock(node) && (node.style === "h2" || node.style === "h3");
 
 /** The body with an id on every h2/h3 for Heading to render: the heading's text, and a repeated one numbered
- * ("pryklad", "pryklad-2"), so each "on this page" link reaches its own heading */
+ * ("pryklad", "pryklad-2"), so each "on this page" link reaches its own heading. A number is skipped when another
+ * heading already has that id ("План", "План", "План-2" → plan, plan-2, plan-2-2) */
 export function withHeadingIds<T extends TypedObject>(body: T[] | null | undefined): T[] {
-  const seen = new Map<string, number>();
+  const taken = new Set<string>();
   return (body ?? []).map((node) => {
     if (!isHeading(node)) return node;
     const base = slugify(textOf(node));
-    const n = (seen.get(base) ?? 0) + 1;
-    seen.set(base, n);
-    return { ...node, headingId: n === 1 ? base : `${base}-${n}` };
+    let id = base;
+    for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+    taken.add(id);
+    return { ...node, headingId: id };
   });
 }
 

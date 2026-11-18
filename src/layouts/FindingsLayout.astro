@@ -24,6 +24,8 @@ interface Props {
   noindex?: boolean;
   /** search keywords for the page's head (Base) */
   keywords?: string[];
+  /** the image a shared link shows (Base) */
+  shareImage?: string;
   /** the hero's artwork: a Sanity image, or a local one */
   image?: HeroImage | ImageMetadata | null;
   /** the breadcrumb: where it leads and what it says; none without it (the legal pages) */
@@ -32,13 +34,13 @@ interface Props {
   heading: string;
 }
 
-const { title, description, noindex = false, keywords, image, crumb, heading } = Astro.props;
+const { title, description, noindex = false, keywords, shareImage, image, crumb, heading } = Astro.props;
 const isLocal = (img: typeof image): img is ImageMetadata => !!img && "src" in img;
 const sanityImage = image && !isLocal(image) ? image : null;
 const lqip = sanityImage?.asset?.metadata?.lqip;
 ---
 
-<Base title={title} description={description} noindex={noindex} keywords={keywords}>
+<Base title={title} description={description} noindex={noindex} keywords={keywords} shareImage={shareImage}>
   <main id="main" class="finding-page">
     <!-- ═══ Hero: the artwork fades into the page ═══ -->
     <header class="finding-hero">
