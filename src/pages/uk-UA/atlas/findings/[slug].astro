@@ -8,6 +8,7 @@ import FoundersCta from "../../../../components/findings/FoundersCta.astro";
 import TocCta from "../../../../components/findings/TocCta.astro";
 import AuditFindings from "../../../../components/atlas-landing/sections/AuditFindings.astro";
 import Heading from "../../../../components/portable-text/Heading.astro";
+import ShortVersion from "../../../../components/ShortVersion.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
@@ -195,15 +196,7 @@ const sectors = efforts.map(({ name, value }, i) => {
         </div>
       )}
 
-      {summarisation && (
-        <section class="tldr" id="tldr" aria-labelledby="tldr-title">
-          <h2 class="tldr__title" id="tldr-title">
-            <Bulb class="tldr__icon" aria-hidden="true" />
-            Коротка версія
-          </h2>
-          <PortableText value={summarisation} />
-        </section>
-      )}
+      {summarisation && <ShortVersion value={summarisation} />}
     </article>
 
     {toc.length > 0 && (
@@ -535,62 +528,6 @@ const sectors = efforts.map(({ name, value }, i) => {
     background: var(--c-primary-hover);
   }
 
-  /* article body: typography from .article-body (patterns.css) */
-  .tldr :global(strong) {
-    font-weight: 600;
-  }
-
-  /* TL/DR */
-  /* The heading's icon and the list's numbers hang in the left padding, so the heading and the items
-     start at one edge (--tldr-indent from the box's side). */
-  .tldr {
-    --tldr-icon: calc(var(--text-title) * 1.1); /* ~28px at 1440 */
-    --tldr-indent: calc(var(--space-lg) + var(--tldr-icon) + var(--space-sm));
-    padding: var(--space-xl) var(--space-xl) 0 var(--tldr-indent);
-    border-radius: 6px; /* as the panels and teaser images on the ATLAS page */
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--c-accent) 14%, var(--c-paper)), var(--c-paper));
-    font-size: var(--text-small);
-    line-height: var(--leading-body);
-    scroll-margin-top: var(--space-xl);
-  }
-  .tldr__title {
-    position: relative;
-    margin: 0 0 var(--space-md);
-    /* the article's section headings' type */
-    font-family: var(--font-display);
-    font-size: var(--text-title);
-    font-weight: 500;
-    line-height: var(--leading-title);
-  }
-  .tldr__title :global(.tldr__icon) {
-    position: absolute;
-    top: 50%;
-    right: calc(100% + var(--space-sm));
-    width: var(--tldr-icon);
-    height: var(--tldr-icon);
-    translate: 0 -50%;
-    color: #c47a1e; /* the accent, darkened to read on the light ground */
-  }
-  /* numbers hang to the left of the text, right-aligned, with a gap of their own */
-  .tldr :global(ol) {
-    display: grid;
-    row-gap: var(--space-sm);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: tldr;
-  }
-  .tldr :global(ol > li) {
-    position: relative;
-    counter-increment: tldr;
-  }
-  .tldr :global(ol > li)::before {
-    content: counter(tldr) ".";
-    position: absolute;
-    right: calc(100% + 0.75em);
-    font-variant-numeric: tabular-nums;
-  }
-
   /* "on this page": the link to the short version at the list's foot */
   .finding-toc__tldr {
     display: flex;
@@ -773,10 +710,6 @@ const sectors = efforts.map(({ name, value }, i) => {
     .efforts__chart {
       justify-self: center;
       max-width: 380px; /* keeps the labels near the body text size */
-    }
-    .tldr {
-      --tldr-indent: calc(20px + var(--tldr-icon) + var(--space-sm));
-      padding: 32px 20px 0 var(--tldr-indent);
     }
     .more-findings :global(.report) {
       padding-top: 32px;

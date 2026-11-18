@@ -10,6 +10,7 @@ import BodyImage from "../../../components/daat-talks/BodyImage.astro";
 import BodyTable from "../../../components/daat-talks/BodyTable.astro";
 import Callout from "../../../components/daat-talks/Callout.astro";
 import PullQuote from "../../../components/daat-talks/PullQuote.astro";
+import ShortVersion from "../../../components/ShortVersion.astro";
 import { cover, youtubeId } from "../../../data/delivery-management";
 import { formatDate, initials, readingMinutes } from "../../../data/daat-talks";
 import { sanityClient } from "../../../sanity/client";
@@ -59,6 +60,11 @@ const people = [...article.authors, ...(article.contributors ?? [])].map((p) => 
 const minutes = readingMinutes(article.words);
 const shareImage = article.heroImage?.asset ? urlFor(article.heroImage).width(1200).height(630).url() : image.src;
 
+// the search keywords from the Studio's SEO tab, the primary first, each once
+const keywords = [
+  ...new Set([article.primary_keyword, ...(article.secondary_keywords ?? [])].map((k) => k?.trim()).filter(Boolean)),
+] as string[];
+
 // the article for search engines: schema.org's Article
 const articleData = {
   "@context": "https://schema.org",
@@ -68,6 +74,7 @@ const articleData = {
   datePublished: article.publishedAt,
   author: article.authors.map((a) => ({ "@type": "Person", name: a.name })),
   image: shareImage,
+  ...(keywords.length > 0 && { keywords: keywords.join(", ") }),
 };
 ---
 
@@ -75,6 +82,7 @@ const articleData = {
   title={article.seo_title || `${article.title} | Daat Talks`}
   description={article.seo_description || article.excerpt}
   noindex={article.no_index ?? false}
+  keywords={keywords}
   crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
   heading={article.title}
 >
@@ -109,6 +117,9 @@ const articleData = {
 
   <div class="wrap article-layout">
     <article class="article-text">
+      {article.shortVersion && article.shortVersion.length > 0 && (
+        <ShortVersion class="article-tldr" value={article.shortVersion} />
+      )}
       <div class="article-body">
         <PortableText value={body} components={bodyComponents} />
       </div>
@@ -229,10 +240,14 @@ const articleData = {
     display: grid;
     grid-template-columns: var(--span-2) 1fr;
     column-gap: calc(var(--col-gap) * 2);
-    padding-block: var(--space-xl);
+    padding-block: 0 var(--space-xl); /* the hero's own padding (64) is the space under the lead */
   }
   .article-text {
     min-width: 0;
+  }
+  /* «Коротка версія» opens the text, as far above it as a section heading */
+  .article-text :global(.article-tldr) {
+    margin-bottom: var(--space-2xl);
   }
   .article-text :global(.article-body > :last-child) {
     margin-bottom: 0;
@@ -374,7 +389,7 @@ const articleData = {
     .article-layout {
       grid-template-columns: 1fr;
       row-gap: 48px;
-      padding-block: 32px;
+      padding-block: 0 32px;
     }
     .wrap :global(.article-divider) {
       margin-bottom: 32px;

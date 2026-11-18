@@ -1,0 +1,85 @@
+---
+import type { TypedObject } from "astro-portabletext/types";
+import { PortableText } from "astro-portabletext";
+import Bulb from "../assets/icons/icon-bulb.svg";
+
+// «Коротка версія»: a text's points in brief, on an orange-tinted ground fading into the paper. Under a finding's
+// text (its `summarisation`, "on this page" links to it as #tldr) and above a Daat Talks article's (`shortVersion`).
+
+interface Props {
+  value: TypedObject[];
+  class?: string;
+}
+
+const { value, class: className } = Astro.props;
+---
+
+<section class:list={["tldr", className]} id="tldr" aria-labelledby="tldr-title">
+  <h2 class="tldr__title" id="tldr-title">
+    <Bulb class="tldr__icon" aria-hidden="true" />
+    Коротка версія
+  </h2>
+  <PortableText value={value} />
+</section>
+
+<style>
+  /* The heading's icon and the list's numbers hang in the left padding, so the heading and the items
+     start at one edge (--tldr-indent from the box's side). */
+  .tldr {
+    --tldr-icon: calc(var(--text-title) * 1.1); /* ~28px at 1440 */
+    --tldr-indent: calc(var(--space-lg) + var(--tldr-icon) + var(--space-sm));
+    padding: var(--space-xl) var(--space-xl) 0 var(--tldr-indent);
+    border-radius: 6px; /* as the panels and teaser images on the ATLAS page */
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--c-accent) 14%, var(--c-paper)), var(--c-paper));
+    font-size: var(--text-small);
+    line-height: var(--leading-body);
+    scroll-margin-top: var(--space-xl);
+  }
+  .tldr :global(strong) {
+    font-weight: 600;
+  }
+  .tldr__title {
+    position: relative;
+    margin: 0 0 var(--space-md);
+    /* the article's section headings' type */
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .tldr__title :global(.tldr__icon) {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + var(--space-sm));
+    width: var(--tldr-icon);
+    height: var(--tldr-icon);
+    translate: 0 -50%;
+    color: #c47a1e; /* the accent, darkened to read on the light ground */
+  }
+  /* numbers hang to the left of the text, right-aligned, with a gap of their own */
+  .tldr :global(ol) {
+    display: grid;
+    row-gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: tldr;
+  }
+  .tldr :global(ol > li) {
+    position: relative;
+    counter-increment: tldr;
+  }
+  .tldr :global(ol > li)::before {
+    content: counter(tldr) ".";
+    position: absolute;
+    right: calc(100% + 0.75em);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (width < 64rem) {
+    .tldr {
+      --tldr-indent: calc(20px + var(--tldr-icon) + var(--space-sm));
+      padding: 32px 20px 0 var(--tldr-indent);
+    }
+  }
+</style>

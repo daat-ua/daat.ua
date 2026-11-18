@@ -11,9 +11,11 @@ interface Props {
   description: string;
   /** keep the page out of search results (demo and service pages) */
   noindex?: boolean;
+  /** the page's search keywords, the primary first (the Daat Talks articles) */
+  keywords?: string[];
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, keywords = [] } = Astro.props;
 const locale = Astro.currentLocale ?? "uk-UA";
 // pages are built as .html files but served without the extension; the 404 page gets no canonical URL
 const path = Astro.url.pathname.replace(/\.html$/, "");
@@ -32,6 +34,7 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
+    {keywords.length > 0 && <meta name="keywords" content={keywords.join(", ")} />}
     {canonical && (
       <>
         <link rel="canonical" href={canonical} />
