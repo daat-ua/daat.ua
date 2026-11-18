@@ -162,6 +162,10 @@ const articleData = {
 </FindingsLayout>
 
 <style>
+  /* a hairline across the screen sets the page off from the footer, as on the about page */
+  :global(main:has(.article-layout)) {
+    border-bottom: 1px solid var(--rule);
+  }
   /* ---------- Byline and lead, under the title ---------- */
   .byline {
     display: flex;
@@ -228,6 +232,11 @@ const articleData = {
   }
   .article-text :global(.article-body > :last-child) {
     margin-bottom: 0;
+  }
+
+  /* every link turns blue on hover, "on this page" too (elsewhere its links darken) */
+  :global(main:has(.article-layout)) {
+    --toc-hover: var(--c-primary);
   }
 
   /* the episode's video, at the foot of "on this page" */
@@ -301,7 +310,7 @@ const articleData = {
   .article-others {
     display: grid;
     row-gap: var(--space-lg);
-    padding-bottom: var(--space-3xl);
+    padding-bottom: var(--space-2xl);
   }
   .article-others__title {
     margin: 0;
@@ -332,7 +341,11 @@ const articleData = {
     font-weight: 500;
     line-height: var(--leading-title);
   }
+  .article-others__name {
+    transition: color 0.2s ease;
+  }
   .article-others a:hover .article-others__name {
+    color: var(--c-primary);
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.15em;
@@ -371,7 +384,7 @@ const articleData = {
       height: 56px;
     }
     .article-others {
-      padding-bottom: 64px;
+      padding-bottom: 48px;
     }
     .article-others ul {
       grid-template-columns: 1fr;

@@ -1,4 +1,5 @@
 ---
+import ExternalLink from "../../assets/icons/icon-link-external.svg";
 import { initials, type TalksContributor } from "../../data/daat-talks";
 
 // A Daat Talks guest: the avatar (initials until the guests have photos), the name and the role. On the episode page
@@ -23,7 +24,9 @@ const href = linked ? guest.linkedin : undefined;
   <div>
     {href ? (
       <a class="guest__name" href={href} target="_blank" rel="noopener">
-        {guest.name}&nbsp;↗<span class="sr-only"> (LinkedIn, відкриється в новій вкладці)</span>
+        <span class="guest__words">{guest.name}</span>
+        <ExternalLink class="guest__icon" aria-hidden="true" />
+        <span class="sr-only"> (LinkedIn, відкриється в новій вкладці)</span>
       </a>
     ) : (
       <p class="guest__name">{guest.name}</p>
@@ -68,10 +71,19 @@ const href = linked ? guest.linkedin : undefined;
     font-size: var(--text-body);
   }
   a.guest__name {
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  /* the name underlined, the external-link mark after it, not underlined */
+  .guest__words {
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
-    transition: color 0.2s ease;
+  }
+  a.guest__name :global(.guest__icon) {
+    width: 0.9em;
+    height: 0.9em;
+    vertical-align: -0.05em; /* after the space that follows the name */
   }
   a.guest__name:hover {
     color: var(--c-primary);
