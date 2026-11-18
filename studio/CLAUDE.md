@@ -36,8 +36,11 @@ All document types use the same set of field group names so the editor UX stays 
 ### Project ID / dataset are duplicated
 `projectId` and `dataset` appear in both `sanity.config.ts` and `sanity.cli.ts`. Changes must be made in both files.
 
+### Content list (structure)
+`structure.ts` (passed to `structureTool`) keeps the default list of types but groups "Daat Talks articles" by episode, newest first, then "Without an episode" and "All articles". A new article created inside an episode starts with it set, via the `daatTalksArticle-by-episode` template in `sanity.config.ts`. A new document type appears in the list on its own.
+
 ### Plugins
-Registered in `sanity.config.ts`: `structureTool`, `visionTool` (GROQ playground at `/vision` in dev), `@sanity/table`, and `sanity-plugin-rich-table` (`richTableBlock` in Daat Talks article bodies; rows → cells → Portable Text). Add new plugins to the `plugins: []` array in the same file.
+Registered in `sanity.config.ts`: `structureTool` (with `structure.ts`), `visionTool` (GROQ playground at `/vision` in dev), `@sanity/table`, and `sanity-plugin-rich-table` (`richTableBlock` in Daat Talks article bodies; rows → cells → Portable Text). Add new plugins to the `plugins: []` array in the same file.
 
 ## Conventions
 
