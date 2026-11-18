@@ -79,8 +79,9 @@ const { items } = Astro.props;
     color: var(--ink-soft);
     transition: color 0.2s ease;
   }
+  /* a page can choose the hover colour (the Daat Talks articles: the links' blue) */
   .finding-toc nav a:hover {
-    color: var(--c-hero);
+    color: var(--toc-hover, var(--c-hero));
   }
   .finding-toc nav a[aria-current] {
     color: var(--c-hero);

@@ -7,7 +7,7 @@ import Divider from "../../../components/ui/Divider.astro";
 import { cover, youtubeId } from "../../../data/delivery-management";
 import { articlesOf, episodes, readingMinutes } from "../../../data/daat-talks";
 
-// A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the number over the title, the guest (the name
+// A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the title and the guest (the name
 // links to LinkedIn); the player across the content width (YouTube loads only when the reader presses play, as on
 // the delivery management episodes); the description at reading width; «Головне з розмови», the articles written
 // from the episode, two to a row. Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
@@ -43,11 +43,9 @@ const videoData = {
   description={episode.teaser}
   crumb={{ href: url("daat-talks"), label: "Daat Talks" }}
   heading={episode.title}
-  eyebrow={`Епізод ${episode.number}`}
 >
   <script type="application/ld+json" set:html={JSON.stringify(videoData).replace(/</g, "\\u003c")} />
   <div class="talk-guests" slot="hero">
-    <p class="talk-guests__label">У гостях</p>
     {episode.guests.map((guest) => (
       <Guest guest={guest} linked size="lg" />
     ))}
@@ -114,10 +112,25 @@ const videoData = {
 </script>
 
 <style>
-  /* the title starts 120 below the bar, as on the cases index and the delivery management episodes */
+  /* a hairline across the screen sets the page off from the footer, as on the about page */
+  :global(main:has(.talk-player)) {
+    border-bottom: 1px solid var(--rule);
+  }
+  /* the title starts 120 below the bar, as on the cases index and the delivery management episodes; the guest
+     beside the title (70 / 30), their bottoms on one line, the breadcrumb across both */
   @media (width >= 64rem) {
     :global(body:has(.talk-player) .finding-hero) {
       --hero-pad-top: calc(120 * var(--px));
+    }
+    :global(body:has(.talk-player) .finding-hero__inner) {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+      column-gap: var(--space-xl);
+    }
+    :global(body:has(.talk-player) .finding-hero__inner > nav) {
+      grid-column: 1 / -1;
+    }
+    .talk-guests {
+      align-self: end;
     }
   }
 
@@ -125,12 +138,6 @@ const videoData = {
     display: grid;
     justify-items: start;
     row-gap: var(--space-xs);
-  }
-  .talk-guests__label {
-    margin: 0;
-    color: var(--ink-soft);
-    font-size: calc(14 * var(--px)); /* as the site's labels (the cards' tags, a case's profile) */
-    line-height: var(--leading-small);
   }
 
   /* ---------- The player ---------- */
@@ -208,7 +215,7 @@ const videoData = {
   .talk-articles {
     display: grid;
     row-gap: var(--space-lg);
-    padding-bottom: var(--space-3xl);
+    padding-bottom: var(--space-2xl);
   }
   .talk-articles__title {
     margin: 0;
@@ -230,6 +237,11 @@ const videoData = {
     border-top: 1px solid var(--rule);
     font-size: var(--text-small);
     line-height: var(--leading-small);
+  }
+  /* the first row sits right under the heading: no hairline over it */
+  .talk-card:nth-child(-n + 2) {
+    padding-top: 0;
+    border-top: 0;
   }
   .talk-card p {
     margin: 0;
@@ -253,8 +265,10 @@ const videoData = {
     text-decoration-line: none;
     text-underline-offset: 0.15em;
     text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
   }
   .talk-card__title a:hover {
+    color: var(--c-primary);
     text-decoration-line: underline;
   }
 
@@ -270,11 +284,16 @@ const videoData = {
       margin-bottom: 32px;
     }
     .talk-articles {
-      padding-bottom: 64px;
+      padding-bottom: 48px;
     }
     .talk-articles__grid {
       grid-template-columns: 1fr;
       row-gap: 32px;
+    }
+    /* one to a row: only the first card goes without the hairline */
+    .talk-card:nth-child(2) {
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--rule);
     }
   }
 </style>
