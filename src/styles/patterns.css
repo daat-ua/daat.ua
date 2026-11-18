@@ -313,6 +313,26 @@
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
+/* ---------- Status squares: 🟢 🟡 🔴 in Daat Talks articles (StatusText, icon-square-filled.svg) ---------- */
+/* in the site's warm palette: a muted sage, the brand orange, a terracotta from the error coral's family; the
+   icon's edge a shade darker keeps the light orange visible on the paper */
+.status-square {
+  width: calc(20 * var(--px));
+  height: calc(20 * var(--px));
+  margin-inline-end: var(--space-xs); /* clear of the text it marks */
+  vertical-align: middle;
+  translate: 0 -0.08em; /* centred on the lowercase letters, not the line box */
+  stroke: color-mix(in srgb, currentColor 82%, var(--c-hero));
+}
+.status-square--green {
+  color: #5f9e84;
+}
+.status-square--yellow {
+  color: var(--c-accent);
+}
+.status-square--red {
+  color: #dd6a53;
+}
 /* ---------- Audit findings carousel ---------- */
 .findings {
   width: var(--span-3);

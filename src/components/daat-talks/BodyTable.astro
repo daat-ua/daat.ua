@@ -1,6 +1,8 @@
 ---
 import type { TypedObjectProps } from "astro-portabletext/types";
 import { PortableText } from "astro-portabletext";
+import StatusText from "./StatusText.astro";
+import TalksText from "./TalksText.astro";
 
 // A table in an article's body (`richTableBlock`, the Rich Table plugin in the Studio): optional column titles and
 // row titles, each cell a short Portable Text. It scrolls sideways on its own when it's wider than the text.
@@ -33,7 +35,9 @@ const headers = Array.from({ length: columns }, (_, i) => columnHeaders.find((h)
         <tr>
           {hasRowTitles && <td />}
           {headers.map((title) => (
-            <th scope="col">{title}</th>
+            <th scope="col">
+              <StatusText text={title} />
+            </th>
           ))}
         </tr>
       </thead>
@@ -41,10 +45,14 @@ const headers = Array.from({ length: columns }, (_, i) => columnHeaders.find((h)
     <tbody>
       {rows.map((row) => (
         <tr>
-          {hasRowTitles && <th scope="row">{row.title}</th>}
+          {hasRowTitles && (
+            <th scope="row">
+              <StatusText text={row.title ?? ""} />
+            </th>
+          )}
           {row.cells?.map((cell) => (
             <td>
-              <PortableText value={cell.content} />
+              <PortableText value={cell.content} components={{ text: TalksText }} />
             </td>
           ))}
         </tr>
