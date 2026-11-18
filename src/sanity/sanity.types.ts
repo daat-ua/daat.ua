@@ -1292,6 +1292,216 @@ export type DELIVERY_EPISODE_PAGES_QUERY_RESULT = Array<{
   no_index: boolean | null;
 }>;
 
+// Source: ../src/sanity/queries.ts
+// Variable: TALKS_EPISODES_QUERY
+// Query: *[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){  _id,  number,  title,  "slug": slug.current,  youtubeUrl,  teaser,  description,  "guests": guests[]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },  thumbnail{ hotspot, crop, asset->{ _id } },  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){    _id,    title,    "slug": slug.current,    excerpt,    summary,    "words": length(string::split(pt::text(body), " "))  },  seo_title,  seo_description,  seo_image{ hotspot, crop, asset->{ _id } },  no_index}
+export type TALKS_EPISODES_QUERY_RESULT = Array<{
+  _id: string;
+  number: number;
+  title: string;
+  slug: string;
+  youtubeUrl: string;
+  teaser: string;
+  description: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal";
+    listItem?: never;
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  guests: Array<{
+    _id: string;
+    name: string;
+    role: string;
+    company: string | null;
+    linkedin: string | null;
+    photo: {
+      hotspot: SanityImageHotspot | null;
+      crop: SanityImageCrop | null;
+      asset: {
+        _id: string;
+      } | null;
+    } | null;
+  }>;
+  thumbnail: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  } | null;
+  articles: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    excerpt: string;
+    summary: string;
+    words: number;
+  }>;
+  seo_title: string | null;
+  seo_description: string | null;
+  seo_image: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  } | null;
+  no_index: boolean | null;
+}>;
+
+// Source: ../src/sanity/queries.ts
+// Variable: TALKS_ARTICLES_QUERY
+// Query: *[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{  _id,  title,  "slug": slug.current,  excerpt,  summary,  body[]{    ...,    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },    _type == "pullQuote" => { ..., "speaker": speaker->name }  },  "words": length(string::split(pt::text(body), " ")),  publishedAt,  "authors": authors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },  "contributors": select(    count(contributors) > 0 => contributors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },    episode->guests[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }  ),  heroImage{ hotspot, crop, asset->{ _id } },  "episode": episode->{    _id,    number,    title,    "slug": slug.current,    youtubeUrl,    thumbnail{ hotspot, crop, asset->{ _id } },    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){      _id,      title,      "slug": slug.current,      excerpt    }  },  seo_title,  seo_description,  seo_image{ hotspot, crop, asset->{ _id } },  no_index}
+export type TALKS_ARTICLES_QUERY_RESULT = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  summary: string;
+  body: Array<
+    | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?: "blockquote" | "h2" | "h3" | "h4" | "normal";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      }
+    | {
+        title?: string;
+        text: string;
+        _type: "callout";
+        _key: string;
+      }
+    | {
+        asset: {
+          _id: string;
+          metadata: {
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+            } | null;
+          } | null;
+        } | null;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt: string;
+        caption?: string;
+        _type: "image";
+        _key: string;
+      }
+    | {
+        text: string;
+        speaker: string | null;
+        time?: string;
+        _type: "pullQuote";
+        _key: string;
+      }
+    | {
+        _key: string;
+        _type: "richTable";
+        rows: Array<
+          {
+            _key: string;
+          } & Row
+        >;
+        columnHeaders?: Array<
+          {
+            _key: string;
+          } & ColumnHeader
+        >;
+        hasColumnTitles?: boolean;
+        hasRowTitles?: boolean;
+        rowTitleWidth?: number;
+      }
+  >;
+  words: number;
+  publishedAt: string;
+  authors: Array<{
+    _id: string;
+    name: string;
+    photo: {
+      hotspot: SanityImageHotspot | null;
+      crop: SanityImageCrop | null;
+      asset: {
+        _id: string;
+      } | null;
+    } | null;
+  }>;
+  contributors: Array<{
+    _id: string;
+    name: string;
+    photo: {
+      hotspot: SanityImageHotspot | null;
+      crop: SanityImageCrop | null;
+      asset: {
+        _id: string;
+      } | null;
+    } | null;
+  }> | null;
+  heroImage: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  } | null;
+  episode: {
+    _id: string;
+    number: number;
+    title: string;
+    slug: string;
+    youtubeUrl: string;
+    thumbnail: {
+      hotspot: SanityImageHotspot | null;
+      crop: SanityImageCrop | null;
+      asset: {
+        _id: string;
+      } | null;
+    } | null;
+    articles: Array<{
+      _id: string;
+      title: string;
+      slug: string;
+      excerpt: string;
+    }>;
+  };
+  seo_title: string | null;
+  seo_description: string | null;
+  seo_image: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+    } | null;
+  } | null;
+  no_index: boolean | null;
+}>;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -1302,6 +1512,8 @@ declare global {
     '*[_type == "caseStudy" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  lead,\n  featured,\n  cardTag,\n  industry,\n  companySize,\n  commissionedBy,\n  "figure": figures[0]{ value, label },\n  anonymised,\n  clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },\n  heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip } } }\n}': CASE_STUDY_TEASERS_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  thumbnail{ hotspot, crop, asset->{ _id } }\n}': DELIVERY_EPISODES_QUERY_RESULT;
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_PAGES_QUERY_RESULT;
+    '*[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){\n  _id,\n  number,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  description,\n  "guests": guests[]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n    _id,\n    title,\n    "slug": slug.current,\n    excerpt,\n    summary,\n    "words": length(string::split(pt::text(body), " "))\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  no_index\n}': TALKS_EPISODES_QUERY_RESULT;
+    '*[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{\n  _id,\n  title,\n  "slug": slug.current,\n  excerpt,\n  summary,\n  body[]{\n    ...,\n    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n    _type == "pullQuote" => { ..., "speaker": speaker->name }\n  },\n  "words": length(string::split(pt::text(body), " ")),\n  publishedAt,\n  "authors": authors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n  "contributors": select(\n    count(contributors) > 0 => contributors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n    episode->guests[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }\n  ),\n  heroImage{ hotspot, crop, asset->{ _id } },\n  "episode": episode->{\n    _id,\n    number,\n    title,\n    "slug": slug.current,\n    youtubeUrl,\n    thumbnail{ hotspot, crop, asset->{ _id } },\n    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n      _id,\n      title,\n      "slug": slug.current,\n      excerpt\n    }\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  no_index\n}': TALKS_ARTICLES_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

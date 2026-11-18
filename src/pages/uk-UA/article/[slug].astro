@@ -11,17 +11,19 @@ import BodyTable from "../../../components/daat-talks/BodyTable.astro";
 import Callout from "../../../components/daat-talks/Callout.astro";
 import PullQuote from "../../../components/daat-talks/PullQuote.astro";
 import { cover, youtubeId } from "../../../data/delivery-management";
-import { articles, articlesOf, episodeOf, formatDate, initials, readingMinutes } from "../../../data/daat-talks";
+import { formatDate, initials, readingMinutes } from "../../../data/daat-talks";
+import { sanityClient } from "../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../sanity/image";
-import { getFounders } from "../../../sanity/shared";
 import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
+import { TALKS_ARTICLES_QUERY } from "../../../sanity/queries";
 
 // An article written from a Daat Talks episode (DAA-239), page C of the "Daat Talks section" canvas: the episode in
 // the breadcrumb, the title, the byline (the hosts' and guests' faces, the reading time and date) and the lead; the
 // text at reading width with "on this page" (its h2s) and the episode's video beside it; then the episode's other
-// articles. Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
+// articles. Content: Sanity's daatTalksArticle (only those with an episode get a page).
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  const articles = await sanityClient.fetch(TALKS_ARTICLES_QUERY);
   return articles.map((article) => ({ params: { slug: article.slug }, props: { article } }));
 }
 
@@ -29,15 +31,16 @@ const { article } = Astro.props as InferGetStaticPropsType<typeof getStaticPaths
 const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
-const episode = episodeOf(article);
+// the query keeps only the articles whose episode is published
+const episode = article.episode!;
 const episodeHref = url(`daat-talks/${episode.slug}`);
 const watchUrl = `https://www.youtube.com/watch?v=${youtubeId(episode.youtubeUrl)}`;
-const image = cover({ youtubeUrl: episode.youtubeUrl, thumbnail: null });
-const others = articlesOf(episode).filter((a) => a.slug !== article.slug);
+const image = cover(episode);
+const others = episode.articles.filter((a) => a.slug !== article.slug);
 
 // the body with ids on its headings, and a guest's quote linked to its moment in the video
 const body = withHeadingIds(article.body).map((node) => {
-  const { _type, time } = node as { _type: string; time?: string };
+  const { _type, time } = node as { _type: string; time?: string | null };
   if (_type !== "pullQuote" || !time) return node;
   const [s = 0, m = 0, h = 0] = time.split(":").map(Number).reverse();
   return { ...node, href: `${watchUrl}&t=${h * 3600 + m * 60 + s}s` };
@@ -48,13 +51,13 @@ const bodyComponents = {
   type: { pullQuote: PullQuote, callout: Callout, image: BodyImage, richTableBlock: BodyTable },
 };
 
-// the byline's faces: the hosts' photos (the founders, from the Studio), the guests' initials
-const founders = await getFounders();
-const people = [
-  ...article.authors.map((name) => ({ name, photo: founders.find((f) => f.name === name)?.photo ?? null })),
-  ...article.contributors.map((c) => ({ name: c.name, photo: null })),
-];
-const minutes = readingMinutes(article.body);
+// the byline: the hosts, then the guests (the episode's, unless the article names its own); faces or initials
+const people = [...article.authors, ...(article.contributors ?? [])].map((p) => ({
+  name: p.name,
+  photo: p.photo?.asset ? p.photo : null,
+}));
+const minutes = readingMinutes(article.words);
+const shareImage = article.heroImage?.asset ? urlFor(article.heroImage).width(1200).height(630).url() : image.src;
 
 // the article for search engines: schema.org's Article
 const articleData = {
@@ -63,14 +66,15 @@ const articleData = {
   headline: article.title,
   description: article.excerpt,
   datePublished: article.publishedAt,
-  author: article.authors.map((name) => ({ "@type": "Person", name })),
-  image: image.src,
+  author: article.authors.map((a) => ({ "@type": "Person", name: a.name })),
+  image: shareImage,
 };
 ---
 
 <FindingsLayout
-  title={`${article.title} | Daat Talks`}
-  description={article.excerpt}
+  title={article.seo_title || `${article.title} | Daat Talks`}
+  description={article.seo_description || article.excerpt}
+  noindex={article.no_index ?? false}
   crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
   heading={article.title}
 >

@@ -1,18 +1,21 @@
 ---
 import type { InferGetStaticPropsType } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { PortableText } from "astro-portabletext";
 import FindingsLayout from "../../../layouts/FindingsLayout.astro";
 import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import { cover, youtubeId } from "../../../data/delivery-management";
-import { articlesOf, episodes, readingMinutes } from "../../../data/daat-talks";
+import { readingMinutes } from "../../../data/daat-talks";
+import { getTalksEpisodes } from "../../../sanity/shared";
 
 // A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the title and the guest (the name
 // links to LinkedIn); the player across the content width (YouTube loads only when the reader presses play, as on
 // the delivery management episodes); the description at reading width; «Головне з розмови», the articles written
-// from the episode, two to a row. Content: dummy data (src/data/daat-talks.ts) until the Sanity types are in.
+// from the episode, two to a row. Content: Sanity's daatTalksEpisode, its guests and its daatTalksArticle cards.
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  const episodes = await getTalksEpisodes();
   return episodes.map((episode) => ({ params: { slug: episode.slug }, props: { episode } }));
 }
 
@@ -22,9 +25,8 @@ const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLoca
 
 const videoId = youtubeId(episode.youtubeUrl);
 const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
-const image = cover({ youtubeUrl: episode.youtubeUrl, thumbnail: null });
-const articles = articlesOf(episode);
-const [lead, ...description] = episode.description;
+const image = cover(episode);
+const { articles } = episode;
 
 // the episode for search engines: schema.org's VideoObject
 const videoData = {
@@ -39,8 +41,9 @@ const videoData = {
 ---
 
 <FindingsLayout
-  title={`${episode.title} | Daat Talks #${episode.number}`}
-  description={episode.teaser}
+  title={episode.seo_title || `${episode.title} | Daat Talks #${episode.number}`}
+  description={episode.seo_description || episode.teaser}
+  noindex={episode.no_index ?? false}
   crumb={{ href: url("daat-talks"), label: "Daat Talks" }}
   heading={episode.title}
 >
@@ -62,10 +65,7 @@ const videoData = {
   </div>
 
   <div class="wrap talk-about">
-    <p class="talk-about__lead">{lead}</p>
-    {description.map((paragraph) => (
-      <p>{paragraph}</p>
-    ))}
+    <PortableText value={episode.description} />
   </div>
 
   {articles.length > 0 && (
@@ -81,7 +81,7 @@ const videoData = {
       <div class="talk-articles__grid">
         {articles.map((a) => (
           <article class="talk-card">
-            <p class="talk-card__meta">Стаття · {readingMinutes(a.body)} хв читання</p>
+            <p class="talk-card__meta">Стаття · {readingMinutes(a.words)} хв читання</p>
             <h3 class="talk-card__title">
               <a href={url(`article/${a.slug}`)}>{a.title}</a>
             </h3>
@@ -195,11 +195,12 @@ const videoData = {
     font-size: var(--text-body);
     line-height: var(--leading-body);
   }
-  .talk-about p {
+  /* the description's paragraphs (Portable Text) at reading width; the first is the lead, set larger */
+  .talk-about :global(p) {
     max-width: var(--span-2);
     margin: 0;
   }
-  .talk-about .talk-about__lead {
+  .talk-about :global(p:first-child) {
     font-size: var(--text-lead);
   }
 

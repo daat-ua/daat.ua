@@ -1,7 +1,7 @@
 import { defineQuery } from "groq";
 
-// GROQ queries for the "Delivery audit findings" (`post`), "Case Studies" (`caseStudy`) and "Delivery management
-// episodes" (`deliveryEpisode`) collections. Types are generated from these by `npm run typegen`
+// GROQ queries for the "Delivery audit findings" (`post`), "Case Studies" (`caseStudy`), "Delivery management
+// episodes" (`deliveryEpisode`) and Daat Talks (`daatTalksEpisode`, `daatTalksArticle`) collections. Types are generated from these by `npm run typegen`
 // (src/sanity/sanity.types.ts), and sanityClient.fetch() returns them. A page per document gets its whole
 // collection in one query in getStaticPaths, not a query per page; queries several pages share run once
 // (src/sanity/shared.ts).
@@ -134,5 +134,78 @@ export const DELIVERY_EPISODE_PAGES_QUERY =
   thumbnail{ hotspot, crop, asset->{ _id } },
   seo_title,
   seo_description,
+  no_index
+}`);
+
+// ---------- Daat Talks (DAA-239): episodes (`daatTalksEpisode`), the articles written from them
+// (`daatTalksArticle`) and their guests (`daatTalksContributor`) ----------
+
+/** Every episode, newest first, with its guests and its articles' cards (oldest first): the index, the episode
+ * pages and the site map. `words` gives the cards' reading time */
+export const TALKS_EPISODES_QUERY =
+  defineQuery(`*[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){
+  _id,
+  number,
+  title,
+  "slug": slug.current,
+  youtubeUrl,
+  teaser,
+  description,
+  "guests": guests[]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },
+  thumbnail{ hotspot, crop, asset->{ _id } },
+  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    summary,
+    "words": length(string::split(pt::text(body), " "))
+  },
+  seo_title,
+  seo_description,
+  seo_image{ hotspot, crop, asset->{ _id } },
+  no_index
+}`);
+
+/** Every article with an episode, everything its page shows, for getStaticPaths: the byline's people (the guests
+ * default to the episode's), the body with its images' assets and its quotes' speakers, and the episode with
+ * its articles for "other articles" */
+export const TALKS_ARTICLES_QUERY =
+  defineQuery(`*[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{
+  _id,
+  title,
+  "slug": slug.current,
+  excerpt,
+  summary,
+  body[]{
+    ...,
+    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
+    _type == "pullQuote" => { ..., "speaker": speaker->name }
+  },
+  "words": length(string::split(pt::text(body), " ")),
+  publishedAt,
+  "authors": authors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
+  "contributors": select(
+    count(contributors) > 0 => contributors[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
+    episode->guests[]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }
+  ),
+  heroImage{ hotspot, crop, asset->{ _id } },
+  "episode": episode->{
+    _id,
+    number,
+    title,
+    "slug": slug.current,
+    youtubeUrl,
+    thumbnail{ hotspot, crop, asset->{ _id } },
+    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){
+      _id,
+      title,
+      "slug": slug.current,
+      excerpt
+    }
+  },
+  seo_title,
+  seo_description,
+  seo_image{ hotspot, crop, asset->{ _id } },
   no_index
 }`);
