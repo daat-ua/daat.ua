@@ -5,6 +5,7 @@ import { deliveryEpisode } from './deliveryEpisode';
 import { daatTalksEpisode } from './daatTalksEpisode';
 import { daatTalksArticle } from './daatTalksArticle';
 import { daatTalksContributor } from './daatTalksContributor';
+import { videoTestimonial } from './videoTestimonial';
 
 export const schemaTypes = [
     post,
@@ -14,4 +15,5 @@ export const schemaTypes = [
     daatTalksEpisode,
     daatTalksArticle,
     daatTalksContributor,
+    videoTestimonial,
 ];
