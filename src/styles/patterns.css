@@ -314,8 +314,9 @@
   text-underline-offset: 0.2em;
 }
 /* ---------- Status squares: 🟢 🟡 🔴 in Daat Talks articles (StatusText, icon-square-filled.svg) ---------- */
-/* in the site's warm palette: a muted sage, the brand orange, a terracotta from the error coral's family; the
-   icon's edge a shade darker keeps the light orange visible on the paper */
+/* in the site's warm palette: a muted sage, the brand orange, a terracotta from the error coral's family; each
+   icon's edge a shade darker, so the square has 3:1 against the paper (WCAG 1.4.11): green 3.9, red 4.2, the
+   orange's edge darker still for 3.7 */
 .status-square {
   width: calc(20 * var(--px));
   height: calc(20 * var(--px));
@@ -329,6 +330,7 @@
 }
 .status-square--yellow {
   color: var(--c-accent);
+  stroke: color-mix(in srgb, currentColor 60%, var(--c-hero)); /* the light orange needs a darker edge: 3.7:1 */
 }
 .status-square--red {
   color: #dd6a53;

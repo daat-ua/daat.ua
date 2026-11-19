@@ -161,6 +161,8 @@ const testimonials = raw.map((t) => {
           video.src = src;
         }
       })();
+      // a failed attachment (the player didn't load, say offline) isn't kept: the next play or open tries again
+      ready.catch(() => attached.delete(video));
       attached.set(video, ready);
     }
     return ready;
@@ -190,13 +192,19 @@ const testimonials = raw.map((t) => {
         else stop(it);
       });
       const video = videoOf(item);
-      if (video && near) attach(video);
+      if (video && near) attach(video).catch(() => {});
       if (focus) item.querySelector<HTMLElement>(".vt__control")!.focus({ preventScroll: true });
     }
     async function play(item: HTMLElement) {
       const video = videoOf(item);
       if (!video) return;
-      await attach(video);
+      try {
+        await attach(video);
+      } catch {
+        return; // the poster stays; the next press tries again
+      }
+      // the teaser may have closed while the player was loading
+      if (!item.classList.contains("is-open")) return;
       raiseBuffer.get(video)?.();
       item.classList.add("is-playing");
       video.controls = true;
@@ -223,7 +231,7 @@ const testimonials = raw.map((t) => {
         near = true;
         observer.disconnect();
         const video = videoOf(items.find((it) => it.classList.contains("is-open"))!);
-        if (video) attach(video);
+        if (video) attach(video).catch(() => {});
       },
       { rootMargin: "50% 0px" },
     ).observe(list);
@@ -376,7 +384,7 @@ const testimonials = raw.map((t) => {
      play button (the delivery management and Daat Talks players'). While the columns swap (0.6s) it grows and fills
      with the blue, the arrow shrinking away as the triangle grows in. */
   .vt__control {
-    --vt-control: 44px;
+    --vt-control: calc(44 * var(--px));
     position: absolute;
     z-index: 1;
     top: 50%;

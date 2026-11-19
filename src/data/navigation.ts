@@ -45,7 +45,7 @@ export const menu: MenuItem[] = [
     })),
     open: true,
   },
-  { label: "Знахідки аудитів", href: "/uk-UA/atlas/findings" },
+  { label: "Знахідки аудитів", href: page("atlas/findings") },
   { label: "Кейси", href: "/uk-UA/atlas/case-studies" },
   { label: "Про нас", href: "/uk-UA/about" },
 ];

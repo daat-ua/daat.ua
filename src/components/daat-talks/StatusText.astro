@@ -9,17 +9,18 @@ interface Props {
   text: string;
 }
 
-const STATUS: Record<string, { tone: string; label: string }> = {
-  "🟢": { tone: "green", label: "зелений" },
-  "🟡": { tone: "yellow", label: "жовтий" },
-  "🔴": { tone: "red", label: "червоний" },
-};
+// a Map, so a word like "constructor" isn't mistaken for a status
+const STATUS = new Map([
+  ["🟢", { tone: "green", label: "зелений" }],
+  ["🟡", { tone: "yellow", label: "жовтий" }],
+  ["🔴", { tone: "red", label: "червоний" }],
+]);
 
 const parts = Astro.props.text.split(/(🟢|🟡|🔴)/u).filter(Boolean);
 ---
 
 {parts.map((part) => {
-  const status = STATUS[part];
+  const status = STATUS.get(part);
   return status ? (
     <Square class={`status-square status-square--${status.tone}`} role="img" aria-label={status.label} />
   ) : (
