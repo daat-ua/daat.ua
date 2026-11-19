@@ -43,7 +43,7 @@ reviews:
         - Placeholders: links with `href="#"` and `TODO` comments are deliberate until content arrives; don't flag them unless a TODO looks forgotten in finished-looking work.
         - Static output only, no client framework; client JS lives in component `<script>` tags or src/scripts (TypeScript), bundled by Astro.
         - Component CSS is unlayered `<style is:global>` (Astro orders CSS chunks unpredictably, so don't rely on source order between components: make a value explicit where two equal-specificity rules meet); the base reset is in `@layer base`; Tailwind utilities are layered.
-        - Images go through `astro:assets` (`<Image>`/`<Picture>`) with sensible `sizes`; the LCP image is eager/high priority, the rest lazy. Frame sequences for the canvases live in public/frames.
+        - Images go through `astro:assets` (`<Image>`/`<Picture>`) with sensible `sizes`; the LCP image is eager/high priority, the rest lazy. Exception: images from Sanity (findings, cases, Daat Talks, video testimonials) are plain `<img>` with `srcset`/`sizes` built by `urlFor`/`srcsetFor` (src/sanity/image.ts): the Sanity CDN crops, resizes and encodes them, so they aren't re-encoded at build time. Frame sequences for the canvases live in public/frames.
         - Fonts come from Astro's Fonts API (no hand-written `@font-face`).
         - Section components live in src/components/atlas-landing/sections; copy lives in src/data as typed data.
         - i18n: one locale, `uk-UA`, always in the URL (pages under src/pages/uk-UA/, no trailing slash, built as .html). Internal links to pages go through `getRelativeLocaleUrl(…, { normalizeLocale: false })` so the locale keeps its casing.
