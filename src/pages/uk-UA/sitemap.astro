@@ -74,7 +74,7 @@ const talksArticleLinks = talksEpisodes.flatMap((e) =>
 
 // the menu's pages, but the indexes that head their own sections
 const companyLinks = built([...menu.flatMap((item) => ("href" in item ? [item] : [])), ...projects]).filter(
-  (link) => ![casesHref, deliveryHref, talksHref].includes(link.href),
+  (link) => ![catalogueHref, casesHref, deliveryHref, talksHref].includes(link.href),
 );
 
 const sections: Section[] = [

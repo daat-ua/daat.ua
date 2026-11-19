@@ -29,13 +29,23 @@ export type MenuItem = Link | { label: string; items: Link[]; open?: boolean };
 
 const placeholder = (...labels: string[]): Link[] => labels.map((label) => ({ label, href: "#" }));
 
+/** the menu's own wording for an ATLAS section, where it differs from the page's table of contents */
+const MENU_LABELS: Record<string, string> = {
+  "#testimonials-and-case-studies": "Відгуки наших клієнтів",
+};
+
 export const menu: MenuItem[] = [
-  // the ATLAS page's sections, as in its table of contents; full URLs, so they work from every page
+  // the ATLAS page's sections, as in its table of contents but the last two (the findings have their own entry,
+  // the FAQ is left to the page); full URLs, so they work from every page
   {
     label: "Діагностика ATLAS",
-    items: toc.map(({ label, href }) => ({ label, href: `/uk-UA/atlas${href}` })),
+    items: toc.slice(0, -2).map(({ label, href }) => ({
+      label: MENU_LABELS[href] ?? label,
+      href: `/uk-UA/atlas${href}`,
+    })),
     open: true,
   },
+  { label: "Знахідки аудитів", href: "/uk-UA/atlas/findings" },
   { label: "Кейси", href: "/uk-UA/atlas/case-studies" },
   { label: "Про нас", href: "/uk-UA/about" },
 ];
