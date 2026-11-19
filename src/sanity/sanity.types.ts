@@ -15,6 +15,64 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type CaseStudyReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "caseStudy";
+};
+
+export type VideoTestimonial = {
+  _id: string;
+  _type: "videoTestimonial";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  cover: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  videoFolder: string;
+  companyLogo: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  subtitle: string;
+  caseStudy?: CaseStudyReference;
+  order?: number;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
 export type DaatTalksEpisodeReference = {
   _ref: string;
   _type: "reference";
@@ -34,13 +92,6 @@ export type AuthorsReference = {
   _type: "reference";
   _weak?: boolean;
   [internalGroqTypeReferenceTo]?: "authors";
-};
-
-export type SanityImageAssetReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
 };
 
 export type DaatTalksArticle = {
@@ -146,22 +197,6 @@ export type DaatTalksArticle = {
     _type: "image";
   };
   no_index?: boolean;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type DaatTalksContributor = {
@@ -309,13 +344,6 @@ export type PostReference = {
   _type: "reference";
   _weak?: boolean;
   [internalGroqTypeReferenceTo]?: "post";
-};
-
-export type CaseStudyReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "caseStudy";
 };
 
 export type CaseStudy = {
@@ -813,19 +841,20 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | SanityImageAssetReference
+  | CaseStudyReference
+  | VideoTestimonial
+  | SanityImageCrop
+  | SanityImageHotspot
   | DaatTalksEpisodeReference
   | DaatTalksContributorReference
   | AuthorsReference
-  | SanityImageAssetReference
   | DaatTalksArticle
-  | SanityImageCrop
-  | SanityImageHotspot
   | DaatTalksContributor
   | Slug
   | DaatTalksEpisode
   | DeliveryEpisode
   | PostReference
-  | CaseStudyReference
   | CaseStudy
   | Post
   | Authors
@@ -1548,6 +1577,43 @@ export type TALKS_ARTICLES_QUERY_RESULT = Array<{
   no_index: boolean | null;
 }>;
 
+// Source: ../src/sanity/queries.ts
+// Variable: VIDEO_TESTIMONIALS_QUERY
+// Query: *[_type == "videoTestimonial" && defined(videoFolder) && defined(cover.asset)] | order(order asc, _createdAt asc)[0...2]{  _id,  title,  subtitle,  videoFolder,  cover{ hotspot, crop, asset->{ _id, metadata{ dimensions{ width } } } },  companyLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },  "caseSlug": caseStudy->slug.current}
+export type VIDEO_TESTIMONIALS_QUERY_RESULT = Array<{
+  _id: string;
+  title: string;
+  subtitle: string;
+  videoFolder: string;
+  cover: {
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+    asset: {
+      _id: string;
+      metadata: {
+        dimensions: {
+          width: number;
+        } | null;
+      } | null;
+    };
+  };
+  companyLogo: {
+    alt: string;
+    asset: {
+      _id: string;
+      url: string;
+      extension: string;
+      metadata: {
+        dimensions: {
+          width: number;
+          height: number;
+        } | null;
+      } | null;
+    } | null;
+  };
+  caseSlug: string | null;
+}>;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -1560,6 +1626,7 @@ declare global {
     '*[_type == "deliveryEpisode" && defined(slug.current)] | order(publishedAt desc){\n  _id,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  lead,\n  body,\n  publishedAt,\n  duration,\n  "author": author->name,\n  thumbnail{ hotspot, crop, asset->{ _id } },\n  seo_title,\n  seo_description,\n  no_index\n}': DELIVERY_EPISODE_PAGES_QUERY_RESULT;
     '*[_type == "daatTalksEpisode" && defined(slug.current)] | order(number desc){\n  _id,\n  number,\n  title,\n  "slug": slug.current,\n  youtubeUrl,\n  teaser,\n  description,\n  "guests": guests[defined(@->_id)]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },\n  youtubeCover{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n  "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n    _id,\n    title,\n    "slug": slug.current,\n    excerpt,\n    summary,\n    "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " ")\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  no_index\n}': TALKS_EPISODES_QUERY_RESULT;
     '*[_type == "daatTalksArticle" && defined(slug.current) && defined(episode->slug.current)]{\n  _id,\n  title,\n  "slug": slug.current,\n  excerpt,\n  summary,\n  shortVersion,\n  body[]{\n    ...,\n    _type == "image" => { ..., asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n    _type == "pullQuote" => { ..., "speaker": speaker->name }\n  },\n  "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " "),\n  publishedAt,\n  "authors": authors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n  "contributors": select(\n    count(contributors[defined(@->_id)]) > 0 => contributors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },\n    episode->guests[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }\n  ),\n  heroImage{ hotspot, crop, asset->{ _id } },\n  "episode": episode->{\n    _id,\n    number,\n    title,\n    "slug": slug.current,\n    youtubeUrl,\n    youtubeCover{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },\n    "articles": *[_type == "daatTalksArticle" && episode._ref == ^._id && defined(slug.current)] | order(publishedAt asc){\n      _id,\n      title,\n      "slug": slug.current,\n      excerpt\n    }\n  },\n  seo_title,\n  seo_description,\n  seo_image{ hotspot, crop, asset->{ _id } },\n  primary_keyword,\n  secondary_keywords,\n  no_index\n}': TALKS_ARTICLES_QUERY_RESULT;
+    '*[_type == "videoTestimonial" && defined(videoFolder) && defined(cover.asset)] | order(order asc, _createdAt asc)[0...2]{\n  _id,\n  title,\n  subtitle,\n  videoFolder,\n  cover{ hotspot, crop, asset->{ _id, metadata{ dimensions{ width } } } },\n  companyLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },\n  "caseSlug": caseStudy->slug.current\n}': VIDEO_TESTIMONIALS_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

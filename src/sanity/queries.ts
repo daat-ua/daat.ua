@@ -213,3 +213,16 @@ export const TALKS_ARTICLES_QUERY =
   secondary_keywords,
   no_index
 }`);
+
+/** The video testimonials on the ATLAS page: the first two by `order`, each with its cover, its HLS folder, the
+ * company's logo (an SVG as uploaded, else through the image CDN) and its case study's slug */
+export const VIDEO_TESTIMONIALS_QUERY =
+  defineQuery(`*[_type == "videoTestimonial" && defined(videoFolder) && defined(cover.asset)] | order(order asc, _createdAt asc)[0...2]{
+  _id,
+  title,
+  subtitle,
+  videoFolder,
+  cover{ hotspot, crop, asset->{ _id, metadata{ dimensions{ width } } } },
+  companyLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } },
+  "caseSlug": caseStudy->slug.current
+}`);

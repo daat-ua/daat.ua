@@ -1,8 +1,9 @@
 ---
-import { Image } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { type CaseCard, caseTeaser } from "../../../data/case-studies";
-import { testimonials } from "../../../data/testimonials";
+import { sanityClient } from "../../../sanity/client";
+import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../sanity/image";
+import { VIDEO_TESTIMONIALS_QUERY } from "../../../sanity/queries";
 import { getCaseStudyTeasers } from "../../../sanity/shared";
 import Carousel from "../../ui/Carousel.astro";
 
@@ -16,6 +17,39 @@ const featured = all.filter((c) => c.featured);
 const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
   caseTeaser(c, getRelativeLocaleUrl(locale, `atlas/case-studies/${c.slug}`, { normalizeLocale: false })),
 );
+import Play from "../../../assets/icons/icon-play.svg";
+
+// the video testimonials: Sanity's "Video testimonials", the first two by order. The video is the folder's
+// playlist.m3u8; the cover is 16:9 like the video; an SVG logo is used as uploaded (the CSS darkens every logo)
+const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
+// the cover sharp on high-density screens: widths up to 2560 (never past the original), and `sizes` for the open
+// teaser's width (the whole row when it's the only one)
+const COVER_WIDTHS = [640, 960, 1280, 1600, 1920, 2560];
+const raw = await sanityClient.fetch(VIDEO_TESTIMONIALS_QUERY);
+const coverSizes = raw.length === 1 ? "(width < 64rem) 100vw, 69vw" : "(width < 64rem) 82vw, 57vw";
+const testimonials = raw.map((t) => {
+  const logo = t.companyLogo.asset;
+  const svg = logo?.extension === "svg";
+  const original = t.cover.asset.metadata?.dimensions?.width ?? 1920;
+  const widths = COVER_WIDTHS.filter((w) => w <= original);
+  return {
+    id: t._id,
+    title: t.title,
+    subtitle: t.subtitle,
+    video: t.videoFolder.endsWith(".m3u8") ? t.videoFolder : t.videoFolder.replace(/\/?$/, "/") + "playlist.m3u8",
+    poster: {
+      src: urlFor(t.cover, PHOTO_QUALITY).width(1600).height(900).fit("crop").url(),
+      srcset: srcsetFor(t.cover, widths.length ? widths : [original], 16 / 9, PHOTO_QUALITY),
+    },
+    logo: logo && {
+      src: svg ? logo.url : urlFor(t.companyLogo).height(80).fit("max").url(),
+      alt: t.companyLogo.alt,
+      width: logo.metadata?.dimensions?.width,
+      height: logo.metadata?.dimensions?.height,
+    },
+    href: t.caseSlug ? url(`atlas/case-studies/${t.caseSlug}`) : null,
+  };
+});
 ---
 
 <section class="report cases" id="testimonials-and-case-studies" data-toc-theme="light">
@@ -29,44 +63,52 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
       горизонті. Цифри взято з даних клієнтів, а назви компаній приховано за їхньою згодою.
     </p>
 
-    <!-- Video testimonials: the open one takes 70% of the row, the other waits as a blurred slice; clicking it
-         swaps them. TODO: the video players -->
-    <ul class="vt" aria-label="Відеовідгуки клієнтів" data-open="1">
-      {testimonials.map((t, i) => (
-        <li class:list={["vt__item", { "is-open": i === 0 }]}>
-          <div class="vt__media">
-            <Image
-              class="vt__poster"
-              src={t.poster}
-              alt=""
-              widths={[480, 720, 1000, 1400]}
-              sizes="(width < 64rem) 82vw, 48vw"
-              layout="none"
-            />
-            <button class="vt__watch" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 5.5v13l10.5-6.5z" />
-              </svg>
-              <span>Дивитися відео</span>
-            </button>
-            <p class="vt__headline" set:html={t.headline} />
-            <button class="vt__open" type="button" aria-label="Відкрити відеовідгук">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M18.5 12L4.99997 12" />
-                <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
-              </svg>
-            </button>
-          </div>
-          <div class="vt__caption">
-            <Image class="vt__logo" src={t.logo} alt={t.company} layout="none" />
-            <p class="vt__text" set:html={t.text} />
-            <a class="vt__case" href={t.href}>
-              Дивитися кейс <span aria-hidden="true">›</span>
-            </a>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <!-- Video testimonials: the open one takes 80% of the row, the other waits as a blurred slice; clicking it
+         swaps them, and its arrow grows into the play button. TODO: the video players -->
+    {testimonials.length > 0 && (
+      <ul class="vt" aria-label="Відеовідгуки клієнтів" data-open="1" data-count={testimonials.length}>
+        {testimonials.map((t, i) => (
+          <li class:list={["vt__item", { "is-open": i === 0 }]}>
+            <div class="vt__media">
+              <!-- the video waits under the poster (attached and buffered once the section is near), fades in on play -->
+              <video class="vt__video" data-src={t.video} playsinline preload="none" />
+              <img
+                class="vt__poster"
+                src={t.poster.src}
+                srcset={t.poster.srcset}
+                sizes={coverSizes}
+                alt=""
+                loading="lazy"
+              />
+              <p class="vt__headline">{t.title}</p>
+              <!-- one button in the middle: the closed teaser's arrow, which grows into the open one's play button -->
+              <button
+                class="vt__control"
+                type="button"
+                aria-label={i === 0 ? "Дивитися відео" : "Відкрити відеовідгук"}
+              >
+                <svg class="vt__arrow" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18.5 12L4.99997 12" />
+                  <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
+                </svg>
+                <Play class="vt__play" aria-hidden="true" />
+              </button>
+            </div>
+            <div class="vt__caption">
+              {t.logo && (
+                <img class="vt__logo" src={t.logo.src} alt={t.logo.alt} width={t.logo.width} height={t.logo.height} />
+              )}
+              <p class="vt__text">{t.subtitle}</p>
+              {t.href && (
+                <a class="vt__case" href={t.href}>
+                  Читати кейс <span aria-hidden="true">›</span>
+                </a>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
 
     {cases.length > 0 && <h3 class="cases__title">Кейси: від діагностики до змін</h3>}
     {cases.length > 0 && (
@@ -85,40 +127,120 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
 <script>
   // Clicking the blurred slice opens it and closes the other one (CSS animates the swap). Details of a closed
   // teaser are inert, so keyboard and screen-reader users only meet the open one's.
+  //
+  // The videos are HLS (Cloudflare R2, the Studio's "Video folder"). Once the section is near the screen, the open
+  // teaser's video is attached under its poster and starts buffering: hls.js (loaded only then, capped to the
+  // player's size), or the browser's own HLS where hls.js can't run (iOS). Its play button fades the poster out and
+  // plays it with the native controls; opening the other teaser pauses it, and at its end the poster comes back.
+  const HLS_TYPE = "application/vnd.apple.mpegurl";
+  const attached = new WeakMap<HTMLVideoElement, Promise<void>>();
+  // before play only the first seconds are fetched (two 4 s segments), then hls.js's usual 30 s ahead
+  const PRELOAD_BUFFER = 8;
+  const PLAY_BUFFER = 30;
+  const raiseBuffer = new WeakMap<HTMLVideoElement, () => void>();
+
+  function attach(video: HTMLVideoElement) {
+    let ready = attached.get(video);
+    if (!ready) {
+      ready = (async () => {
+        const src = video.dataset.src!;
+        const { default: Hls } = await import("hls.js");
+        if (Hls.isSupported()) {
+          const hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: PRELOAD_BUFFER });
+          raiseBuffer.set(video, () => (hls.config.maxBufferLength = PLAY_BUFFER));
+          hls.on(Hls.Events.ERROR, (_, data) => {
+            if (!data.fatal) return;
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+            else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+            else hls.destroy();
+          });
+          hls.loadSource(src);
+          hls.attachMedia(video);
+        } else if (video.canPlayType(HLS_TYPE)) {
+          video.preload = "auto";
+          video.src = src;
+        }
+      })();
+      attached.set(video, ready);
+    }
+    return ready;
+  }
+
   for (const list of document.querySelectorAll<HTMLElement>(".vt")) {
     const items = [...list.children] as HTMLElement[];
+    const videoOf = (item: HTMLElement) => item.querySelector<HTMLVideoElement>(".vt__video");
+    let near = false;
+
+    function stop(item: HTMLElement) {
+      const video = videoOf(item);
+      item.classList.remove("is-playing");
+      if (video) {
+        video.pause();
+        video.controls = false;
+      }
+    }
     function open(item: HTMLElement, focus = false) {
       items.forEach((it, i) => {
         const on = it === item;
         it.classList.toggle("is-open", on);
-        for (const el of it.querySelectorAll<HTMLElement>(".vt__watch, .vt__headline, .vt__text, .vt__case"))
-          el.inert = !on;
-        it.querySelector<HTMLElement>(".vt__open")!.inert = on;
+        for (const el of it.querySelectorAll<HTMLElement>(".vt__headline, .vt__text, .vt__case")) el.inert = !on;
+        // the same button opens a closed teaser and plays the open one
+        it.querySelector(".vt__control")!.setAttribute("aria-label", on ? "Дивитися відео" : "Відкрити відеовідгук");
         if (on) list.dataset.open = String(i + 1);
+        else stop(it);
       });
-      if (focus) item.querySelector<HTMLElement>(".vt__watch")!.focus({ preventScroll: true });
+      const video = videoOf(item);
+      if (video && near) attach(video);
+      if (focus) item.querySelector<HTMLElement>(".vt__control")!.focus({ preventScroll: true });
     }
+    async function play(item: HTMLElement) {
+      const video = videoOf(item);
+      if (!video) return;
+      await attach(video);
+      raiseBuffer.get(video)?.();
+      item.classList.add("is-playing");
+      video.controls = true;
+      video.play().catch(() => stop(item));
+      video.focus({ preventScroll: true });
+    }
+
     for (const item of items) {
       item.querySelector(".vt__media")!.addEventListener("click", (e) => {
         // a keyboard "click" (detail 0) keeps focus in the teaser
         if (!item.classList.contains("is-open")) open(item, (e as MouseEvent).detail === 0);
       });
+      item.querySelector(".vt__control")!.addEventListener("click", () => {
+        if (item.classList.contains("is-open")) play(item);
+      });
+      videoOf(item)?.addEventListener("ended", () => stop(item));
     }
     open(items.find((it) => it.classList.contains("is-open")) ?? items[0]);
+
+    // preload once the section is near: the open teaser's video under its poster
+    new IntersectionObserver(
+      (entries, observer) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        near = true;
+        observer.disconnect();
+        const video = videoOf(items.find((it) => it.classList.contains("is-open"))!);
+        if (video) attach(video);
+      },
+      { rootMargin: "50% 0px" },
+    ).observe(list);
   }
 </script>
 
 <style is:global>
   /* ---------- Testimonials and case studies: video testimonials, then the findings carousel with a subheading ---------- */
-  /* Two video teasers in one row: the open one takes 70%, the other waits as a blurred slice. Clicking the slice
+  /* Two video teasers in one row: the open one takes 80%, the other waits as a blurred slice. Clicking the slice
          swaps them: the columns, the blur and the details animate. Everything inside a teaser is sized to the open
          width (--vt-open) and clipped, so nothing reflows while a column grows or shrinks. */
   .vt {
     --vt-gap: var(--space-md);
-    --vt-share: 0.7;
-    --vt-ratio: 10 / 16;
+    --vt-share: 0.8;
+    --vt-ratio: 9 / 16; /* the videos' 16:9 */
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    grid-template-columns: minmax(0, 8fr) minmax(0, 2fr);
     grid-template-rows: auto auto;
     column-gap: var(--vt-gap);
     width: var(--span-3);
@@ -130,7 +252,14 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
     transition: grid-template-columns 0.6s var(--ease-out);
   }
   .vt[data-open="2"] {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 8fr);
+  }
+  /* a single testimonial takes the whole row (no gap to leave for a second one) */
+  .vt[data-count="1"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vt[data-count="1"] .vt__item {
+    --vt-open: 100cqw;
   }
   .vt__item {
     --vt-open: calc((100cqw - var(--vt-gap)) * var(--vt-share));
@@ -152,6 +281,20 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
   .vt__item:not(.is-open) .vt__media {
     cursor: pointer;
   }
+  /* the video under the poster, filling the teaser's 16:9 frame (contained, on the night ground, should a video
+     come in another shape) */
+  .vt__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: var(--c-night);
+  }
+  .vt__video:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: -3px;
+  }
   /* the poster keeps the open width and stays centred, so a closing teaser crops it rather than squeezing it */
   .vt__poster {
     position: absolute;
@@ -164,7 +307,20 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
     translate: -50% 0;
     transition:
       filter 0.5s var(--ease-out),
-      scale 0.5s var(--ease-out);
+      scale 0.5s var(--ease-out),
+      opacity 0.5s ease;
+  }
+  /* playing: the poster and everything over it fade away, leaving the video and its controls */
+  .vt__item.is-open.is-playing :is(.vt__poster, .vt__headline, .vt__control),
+  .vt__item.is-open.is-playing .vt__media::after {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .vt__item.is-playing .vt__poster {
+    transition:
+      opacity 0.5s ease,
+      visibility 0s linear 0.5s;
   }
   .vt__item:not(.is-open) .vt__poster {
     filter: blur(14px);
@@ -181,7 +337,6 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
   }
   /* Details of the open teaser fade in once its column has mostly grown; on the closing one they fade out at once */
   .vt__media::after,
-  .vt__watch,
   .vt__headline,
   .vt__text,
   .vt__case {
@@ -193,7 +348,7 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
       background-color 0.2s ease,
       text-decoration-color 0.2s ease;
   }
-  .vt__item.is-open :is(.vt__watch, .vt__headline, .vt__text, .vt__case),
+  .vt__item.is-open :is(.vt__headline, .vt__text, .vt__case),
   .vt__item.is-open .vt__media::after {
     opacity: 1;
     visibility: visible;
@@ -202,43 +357,6 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
       visibility 0s,
       background-color 0.2s ease,
       text-decoration-color 0.2s ease;
-  }
-  .vt__watch {
-    position: absolute;
-    z-index: 1;
-    top: var(--space-md);
-    left: var(--space-md);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: 0.68em 1em 0.52em 0.8em; /* fallback: TT Commons sits high, so a little more on top */
-    border: 0;
-    border-radius: 999px;
-    background: rgb(14 21 27 / 0.6);
-    color: var(--c-white);
-    font: inherit;
-    font-size: var(--text-small);
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  /* where supported, trim the label to cap height + baseline so equal padding centres it with the icon */
-  @supports (text-box: trim-both cap alphabetic) {
-    .vt__watch {
-      padding: 0.6em 1em 0.6em 0.8em;
-    }
-    .vt__watch span {
-      text-box: trim-both cap alphabetic;
-    }
-  }
-  .vt__watch:hover {
-    background: rgb(14 21 27 / 0.85);
-  }
-  .vt__watch svg {
-    width: 1em;
-    height: 1em;
-    fill: currentColor;
   }
   .vt__headline {
     position: absolute;
@@ -254,37 +372,57 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
     text-wrap: balance;
   }
   /* the slice's button: centred, pointing towards the open teaser's side it will take */
-  .vt__open {
+  /* The middle button: on a closed teaser the outlined arrow (it opens the teaser), on the open one the site's
+     play button (the delivery management and Daat Talks players'). While the columns swap (0.6s) it grows and fills
+     with the blue, the arrow shrinking away as the triangle grows in. */
+  .vt__control {
+    --vt-control: 44px;
     position: absolute;
+    z-index: 1;
     top: 50%;
     left: 50%;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
+    width: var(--vt-control);
+    height: var(--vt-control);
     padding: 0;
     border: 1.5px solid rgb(255 255 255 / 0.8);
     border-radius: 50%;
-    background: none;
+    background: rgb(0 102 222 / 0); /* the primary, transparent: the fill fades in rather than through grey */
     color: var(--c-white);
     translate: -50% -50%;
     cursor: pointer;
     transition:
-      opacity 0.35s ease 0.3s,
-      visibility 0s,
-      background-color 0.2s ease;
+      width 0.6s var(--ease-out),
+      height 0.6s var(--ease-out),
+      border-color 0.6s var(--ease-out),
+      background-color 0.6s var(--ease-out),
+      box-shadow 0.6s var(--ease-out),
+      scale 0.2s var(--ease-out);
   }
-  .vt__item.is-open .vt__open {
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 0.15s ease,
-      visibility 0s linear 0.15s;
+  .vt__item.is-open .vt__control {
+    --vt-control: calc(83 * var(--px));
+    border-color: rgb(255 255 255 / 0);
+    background: var(--c-primary);
+    box-shadow: 0 10px 30px rgb(14 21 27 / 0.35);
   }
-  .vt__open:hover {
+  .vt__item:not(.is-open) .vt__control:hover {
     background: rgb(255 255 255 / 0.15);
   }
-  .vt__open svg {
+  .vt__item.is-open .vt__control:hover {
+    scale: 1.06;
+  }
+  .vt__control:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  .vt__control svg {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    transition:
+      opacity 0.3s ease,
+      scale 0.6s var(--ease-out);
+  }
+  .vt__arrow {
     width: 20px;
     height: 20px;
     fill: none;
@@ -293,11 +431,31 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  /* the "Дивитися каталог" arrow */
-  .vt__item:first-child .vt__open svg {
-    scale: -1 1;
-  }
   /* a slice on the left points left */
+  .vt__item:first-child .vt__arrow {
+    rotate: 180deg;
+  }
+  /* the play icon (icon-play.svg), filled and outlined in white: the outline keeps its rounded corners */
+  .vt__play {
+    width: calc(46 * var(--px));
+    height: calc(46 * var(--px));
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    translate: 5% 0; /* the triangle's weight sits left of its box: nudged to look centred */
+    opacity: 0;
+    scale: 0.4;
+  }
+  .vt__item.is-open .vt__arrow {
+    opacity: 0;
+    scale: 0.4;
+  }
+  .vt__item.is-open .vt__play {
+    opacity: 1;
+    scale: 1;
+    transition-delay: 0.15s;
+  }
   .vt__caption {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -309,7 +467,7 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
   /* hero client logos, which are cream: darkened to near the heading ink */
   .vt__logo {
     width: auto;
-    height: calc(40 * var(--px));
+    height: calc(32 * var(--px));
     filter: brightness(0.13);
   }
   .vt__case {
@@ -348,7 +506,6 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
     .vt {
       --vt-gap: 12px;
       --vt-share: 0.82;
-      --vt-ratio: 5 / 4;
       grid-template-columns: minmax(0, 82fr) minmax(0, 18fr);
       margin-top: 32px;
     }
@@ -356,14 +513,19 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
       grid-template-columns: minmax(0, 18fr) minmax(0, 82fr);
     }
     .vt__headline {
-      left: 16px;
-      bottom: 16px;
-      width: calc(var(--vt-open) - 32px);
-      font-size: 18px;
-    }
-    .vt__watch {
-      top: 12px;
       left: 12px;
+      bottom: 10px;
+      width: calc(var(--vt-open) - 24px);
+      font-size: 15px;
+      line-height: 1.25;
+    }
+    /* a 16:9 frame is short on a phone: a smaller play button and headline keep clear of each other */
+    .vt__item.is-open .vt__control {
+      --vt-control: 48px;
+    }
+    .vt__play {
+      width: 26px;
+      height: 26px;
     }
     .vt__caption {
       grid-template-columns: 1fr;
@@ -372,7 +534,7 @@ const cases = (featured.length ? featured : all.slice(0, 4)).map((c) =>
       row-gap: 12px;
     }
     .vt__logo {
-      height: 32px;
+      height: 26px;
       transition: opacity 0.2s ease;
     }
     .vt__item:not(.is-open) .vt__logo {
