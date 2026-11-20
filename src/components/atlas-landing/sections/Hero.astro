@@ -25,11 +25,9 @@ import { clients } from "../../../data/hero";
 
   <div class="wrap">
     <h1 class="hero__title">
-      Ваша компанія здатна на{" "}
-      <span class="nowrap">
-        більше
-        <Image src={arrow} alt="" width={24} height={24} layout="none" />
-      </span>
+      Ваша компанія здатна на <!-- the arrow right after the word, no space: the icon's own inner padding is the gap -->
+      <!-- prettier-ignore -->
+      <span class="nowrap">більше<Image class="hero__arrow" src={arrow} alt="" width={24} height={24} layout="none" /></span>
       <strong>
         ATLAS покаже, що стримує її{" "}
         <span class="nowrap">
@@ -96,7 +94,7 @@ import { clients } from "../../../data/hero";
   }
   .hero .wrap {
     z-index: 1;
-    padding-top: calc(var(--space-3xl) + var(--space-lg));
+    padding-top: calc(var(--space-3xl) + var(--space-2xl)); /* 160 at 1440 */
   }
   .hero__title {
     max-width: calc(832 * var(--px));
@@ -116,6 +114,10 @@ import { clients } from "../../../data/hero";
     height: 1em;
     margin-left: 0.2em;
     vertical-align: -0.19em;
+  }
+  /* the arrow's drawing starts a quarter into its box: pulled in so the visible gap is a letter's width */
+  .hero__title .hero__arrow {
+    margin-left: -0.1em;
   }
   .hero__lead {
     max-width: var(--span-2);
@@ -158,7 +160,7 @@ import { clients } from "../../../data/hero";
     display: grid;
     row-gap: var(--space-md);
     margin: var(--space-2xl) 0;
-    padding-bottom: var(--space-2xl);
+    padding-bottom: calc(2 * var(--space-2xl)); /* 128 at 1440: the logos set apart from the buttons below */
   }
   .clients__label {
     margin: 0;
@@ -190,7 +192,7 @@ import { clients } from "../../../data/hero";
       --hero-gap: 20px;
     }
     .hero .wrap {
-      padding-top: 120px;
+      padding-top: 152px;
       padding-bottom: 40px;
     }
     .hero__title {
