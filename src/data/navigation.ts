@@ -17,7 +17,7 @@ export const toc: Link[] = [
   { label: "Для кого Atlas?", href: "#for-whom" },
   { label: "Що ви отримаєте", href: "#deliverables" },
   { label: "Що всередині звіту", href: "#report" },
-  { label: "Дорожня карта", href: "#roadmap" },
+  { label: "План змін", href: "#roadmap" },
   { label: "Відгуки й кейси", href: "#testimonials-and-case-studies" },
   { label: "Як працює ATLAS", href: "#methodology" },
   { label: "Знахідки аудитів", href: "#audit-findings" },
