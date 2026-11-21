@@ -1,0 +1,20 @@
+// The contact page's form (src/pages/uk-UA/atlas/contact-us.astro) posts here; the Worker mails the request to the
+// founders through Resend. Two secrets, kept out of the repo: `npx wrangler secret put RESEND_API_KEY` and
+// `npx wrangler secret put MAIL_TO` (who gets the requests, comma-separated).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "daat-contact-form",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": true },
+  // its own address on the site's domain (the daat.ua zone is on Cloudflare); the form's PUBLIC_CONTACT_FORM_URL
+  "routes": [{ "pattern": "forms.daat.ua", "custom_domain": true }],
+  "vars": {
+    // the pages allowed to post: the site, its dev copy, and `npm run dev`
+    "ALLOWED_ORIGINS": "https://daat.ua,https://www.daat.ua,https://dev.daat.ua,http://localhost:4321",
+    // a sender on a domain verified in Resend
+    "MAIL_FROM": "Daat <contact@daat.ua>",
+  },
+  // five requests a minute per visitor's IP: enough for a person, not for a script
+  "ratelimits": [{ "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }],
+}

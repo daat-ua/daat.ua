@@ -8,3 +8,4 @@ FIGMA-DEVIATIONS.md
 .impeccable.md
 studio/
 src/sanity/sanity.types.ts
+workers/*/.wrangler/
