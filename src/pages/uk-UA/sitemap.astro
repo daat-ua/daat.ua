@@ -2,7 +2,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import FindingsLayout from "../../layouts/FindingsLayout.astro";
 import { enablerNames, type Enabler } from "../../data/enablers";
-import { legalLinks, menu, projects, toc, type Link } from "../../data/navigation";
+import { contact, legalLinks, menu, projects, toc, type Link } from "../../data/navigation";
 import { getCaseStudyTeasers, getDeliveryEpisodes, getFindingTeasers, getTalksEpisodes } from "../../sanity/shared";
 
 // The site map (DAA-219), modelled on bcg.com/sitemap: a section per part of the site, its sub-groups and their
@@ -73,7 +73,7 @@ const talksArticleLinks = talksEpisodes.flatMap((e) =>
 );
 
 // the menu's pages, but the indexes that head their own sections
-const companyLinks = built([...menu.flatMap((item) => ("href" in item ? [item] : [])), ...projects]).filter(
+const companyLinks = built([...menu.flatMap((item) => ("href" in item ? [item] : [])), ...projects, contact]).filter(
   (link) => ![catalogueHref, casesHref, deliveryHref, talksHref].includes(link.href),
 );
 

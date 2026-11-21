@@ -1,0 +1,922 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { PUBLIC_CAL_BOOKING_URL, PUBLIC_CONTACT_FORM_URL } from "astro:env/client";
+import Base from "../../../layouts/Base.astro";
+import Footer from "../../../components/Footer.astro";
+import Play from "../../../assets/icons/icon-play.svg";
+import { contactFaq } from "../../../data/contact-faq";
+import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../sanity/image";
+import { getFounders, getVideoTestimonials } from "../../../sanity/shared";
+
+// The contact page (DAA-241), the "Contacts" canvas: on the navy first screen the request form (the founders'
+// block fields) and, beside it, the clients' video testimonials, one at a time; the questions asked before the
+// first call below, on the light ground.
+//
+// The form posts its request as JSON to PUBLIC_CONTACT_FORM_URL, the contact-form Worker (workers/contact-form),
+// which mails it to the founders. Without it the dev server simulates sending, so
+// the form can be tried; a production build says it couldn't send and points to the booking page.
+
+const locale = Astro.currentLocale ?? "uk-UA";
+const privacyHref = getRelativeLocaleUrl(locale, "privacy-policy", { normalizeLocale: false });
+const mode = PUBLIC_CONTACT_FORM_URL ? "live" : import.meta.env.DEV ? "demo" : "off";
+
+const founders = await getFounders();
+
+// the testimonials, as on the ATLAS page (Sanity's "Video testimonials", by order): the square player crops the
+// cover and the video alike
+const COVER_WIDTHS = [400, 600, 800, 1200];
+const testimonials = (await getVideoTestimonials()).map((t) => {
+  const logo = t.companyLogo.asset;
+  // the square is as wide as the 16:9 cover is tall
+  const original = Math.round(((t.cover.asset.metadata?.dimensions?.width ?? 1920) * 9) / 16);
+  const widths = COVER_WIDTHS.filter((w) => w <= original);
+  return {
+    id: t._id,
+    title: t.title,
+    company: t.companyLogo.alt,
+    video: t.videoFolder.endsWith(".m3u8") ? t.videoFolder : t.videoFolder.replace(/\/?$/, "/") + "playlist.m3u8",
+    poster: {
+      src: urlFor(t.cover, PHOTO_QUALITY).width(800).height(800).fit("crop").url(),
+      srcset: srcsetFor(t.cover, widths.length ? widths : [original], 1, PHOTO_QUALITY),
+    },
+    // the card's ground: blurred in CSS, so a small one does
+    ground: urlFor(t.cover).width(480).url(),
+    logo: logo && {
+      src: logo.extension === "svg" ? logo.url : urlFor(t.companyLogo).height(56).fit("max").url(),
+      width: logo.metadata?.dimensions?.width,
+      height: logo.metadata?.dimensions?.height,
+    },
+  };
+});
+const count = testimonials.length;
+---
+
+<Base
+  title="Зв’язатися з нами | Daat"
+  description="Розкажіть, що стримує вашу компанію: засновники Daat відповідять протягом робочого дня й запропонують час для 30‑хвилинного дзвінка."
+>
+  <main id="main" class="contact">
+    <!-- ═══ First screen: the form, and the clients' testimonials beside it ═══ -->
+    <section class="cu-first" aria-labelledby="contact-title">
+      <div class="wrap cu-grid">
+        <div class="cu-left">
+          <div class="cu-intro">
+            <h1 class="cu-title" id="contact-title">
+              Розкажіть, що стримує <strong>вашу компанію</strong>
+            </h1>
+            <p class="cu-lead">
+              Відповімо протягом робочого дня й запропонуємо час для 30‑хвилинного дзвінка. На ньому з’ясуємо, чи вам
+              узагалі потрібна діагностика, і нічого не продаватимемо.
+            </p>
+            <div class="cu-who">
+              {founders.length > 0 && (
+                <div class="cu-faces">
+                  {founders.map((f) => (
+                    <img
+                      src={urlFor(f.photo!).width(96).height(96).fit("crop").url()}
+                      srcset={srcsetFor(f.photo!, [48, 96], 1)}
+                      sizes="(min-width: 64rem) calc(100vw / 1440 * 48), 48px"
+                      alt=""
+                      width="48"
+                      height="48"
+                    />
+                  ))}
+                </div>
+              )}
+              <p>
+                Вам напише <b>Олена Кияновська</b> або <b>Сергій Герасимов</b>, засновники{" "}
+                <span class="brand">Daat</span>, які особисто ведуть кожну діагностику.
+              </p>
+            </div>
+          </div>
+
+          <form class="cu-form" novalidate data-mode={mode} data-endpoint={PUBLIC_CONTACT_FORM_URL}>
+            <div class="cu-row">
+              <div class="cu-field">
+                <input
+                  id="cu-name"
+                  name="name"
+                  autocomplete="name"
+                  placeholder=" "
+                  required
+                  aria-describedby="cu-name-err"
+                />
+                <label for="cu-name">
+                  Ім’я <i>*</i>
+                </label>
+                <span class="cu-error" id="cu-name-err" hidden>
+                  Як до вас звертатися?
+                </span>
+              </div>
+              <div class="cu-field">
+                <input
+                  id="cu-email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  placeholder=" "
+                  required
+                  aria-describedby="cu-email-err"
+                />
+                <label for="cu-email">
+                  Робочий email <i>*</i>
+                </label>
+                <span class="cu-error" id="cu-email-err" hidden>
+                  Сюди прийде відповідь: перевірте адресу (name@company.com)
+                </span>
+              </div>
+            </div>
+            <div class="cu-row">
+              <div class="cu-field">
+                <input id="cu-company" name="company" autocomplete="organization" placeholder=" " />
+                <label for="cu-company">Компанія</label>
+              </div>
+              <div class="cu-field">
+                <input id="cu-role" name="role" autocomplete="organization-title" placeholder=" " />
+                <label for="cu-role">Посада</label>
+              </div>
+            </div>
+            <fieldset class="cu-group">
+              <legend>
+                Скільки людей у вашій компанії? <i class="cu-opt">Допоможе нам підготуватися до дзвінка</i>
+              </legend>
+              <div class="cu-chips">
+                {["до 50", "50–150", "150–500", "500+"].map((size) => (
+                  <label class="cu-chip">
+                    <input type="radio" name="size" value={size} />
+                    <span>{size}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <div class="cu-field">
+              <textarea
+                id="cu-message"
+                name="message"
+                rows="3"
+                placeholder=" "
+                aria-describedby="cu-message-hint"
+              ></textarea>
+              <label for="cu-message">Що хочете обговорити?</label>
+              <span class="cu-hint" id="cu-message-hint">
+                Кількох речень достатньо. Наприклад: «Нас 120, зростання зупинилося, а проєкти виходять за бюджет».
+              </span>
+            </div>
+            <!-- left empty by people; a bot that fills it is thanked and ignored -->
+            <div class="cu-trap" aria-hidden="true">
+              <label for="cu-website">Сайт</label>
+              <input id="cu-website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+            <div class="cu-send">
+              <p class="cu-legal">
+                Ваш запит читають лише засновники, і ми використаємо ці дані тільки для відповіді. Деталі в&nbsp;
+                <a href={privacyHref}>Політиці конфіденційності</a>.
+              </p>
+              <div class="cu-actions">
+                <button class="btn btn--primary cu-btn" type="submit" data-submit>
+                  Надіслати запит
+                </button>
+                {/* hidden for now: "Або одразу оберіть час для дзвінка", the booking page
+                <a class="cu-alt" href={PUBLIC_CAL_BOOKING_URL} target="_blank" rel="noopener">
+                  Або одразу оберіть час для дзвінка
+                </a> */}
+              </div>
+              <p class="cu-error cu-error--submit" data-submit-error role="alert" hidden>
+                Не вдалося надіслати запит. Спробуйте ще раз або
+                <a href={PUBLIC_CAL_BOOKING_URL} target="_blank" rel="noopener">
+                  оберіть час для дзвінка
+                </a>{" "}
+                одразу.
+              </p>
+              <p class="cu-done" data-done role="status" hidden>
+                Запит надіслано. Олена або Сергій напишуть вам протягом робочого дня; перевірте також папку «Спам».
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {count > 0 && (
+          <aside class="cu-panel" aria-labelledby="say-title" data-count={count}>
+            <!-- the shown video's cover, blurred, as the card's ground; it fades into the screen's navy -->
+            {testimonials.map((t, i) => (
+              <img class="cu-panel__ground" data-slide={i} hidden={i > 0} src={t.ground} alt="" loading="lazy" />
+            ))}
+            <h2 class="cu-panel__title" id="say-title">
+              Що кажуть наші клієнти
+            </h2>
+            {testimonials.map((t, i) => (
+              <div class="cu-story" data-slide={i} hidden={i > 0}>
+                <!-- the video waits under the poster (attached and buffered once the card is near), fades in on play -->
+                <div class="cu-video">
+                  <video data-src={t.video} playsinline preload="none" />
+                  <img
+                    class="cu-video__poster"
+                    src={t.poster.src}
+                    srcset={t.poster.srcset}
+                    sizes="(width < 64rem) calc(100vw - 112px), 28vw"
+                    alt=""
+                    loading={i > 0 ? "lazy" : undefined}
+                  />
+                  <button class="cu-video__play" type="button" aria-label={`Дивитися відеовідгук: ${t.title}`}>
+                    <span>
+                      <Play aria-hidden="true" />
+                    </span>
+                  </button>
+                </div>
+                <div class="cu-case">
+                  {t.logo && <img src={t.logo.src} alt={t.company} width={t.logo.width} height={t.logo.height} />}
+                  <p>{t.title}</p>
+                </div>
+              </div>
+            ))}
+            {count > 1 && (
+              <div class="cu-pager">
+                <button type="button" aria-label="Попередній відгук" data-step="-1">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5.5 12H19" />
+                    <path d="M11 6C11 6 5 10.4189 5 12C5 13.5812 11 18 11 18" />
+                  </svg>
+                </button>
+                <button type="button" aria-label="Наступний відгук" data-step="1">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18.5 12L4.99997 12" />
+                    <path d="M13 18C13 18 19 13.5811 19 12C19 10.4188 13 6 13 6" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </aside>
+        )}
+      </div>
+    </section>
+
+    <!-- ═══ FAQ: the main page's, on the light ground ═══ -->
+    <section class="cu-faq" aria-labelledby="contact-faq-title">
+      <div class="wrap">
+        <h2 class="section-title" id="contact-faq-title">
+          <strong>Питання,</strong> які ставлять перед першим дзвінком
+        </h2>
+        <dl class="cu-faq__list">
+          {contactFaq.map((item) => (
+            <div class="cu-faq__item">
+              <dt set:html={item.q} />
+              <dd set:html={item.a} />
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  /* the light paper of the findings pages, halfway to white (#faf9f6): the FAQ, the footer and the menu panel */
+  :global(body:has(.contact)) {
+    --c-paper: color-mix(in srgb, var(--color-paper) 50%, var(--color-white));
+  }
+  .contact {
+    --on-dark: var(--c-on-primary-muted);
+    --on-dark-soft: rgb(244 241 234 / 0.72);
+    --on-dark-body: rgb(244 241 234 / 0.82);
+  }
+
+  /* ── First screen: the form at reading width (two columns), a double gap, the testimonials over the third ── */
+  .cu-first {
+    padding-block: calc(120 * var(--px)) calc(128 * var(--px));
+    background: var(--c-hero);
+    color: var(--on-dark);
+  }
+  .cu-grid {
+    display: grid;
+    grid-template-columns: var(--span-2) minmax(0, 1fr);
+    column-gap: calc(2 * var(--col-gap));
+  }
+  .cu-left {
+    display: grid;
+    align-content: start;
+    gap: var(--space-xl);
+  }
+  .cu-intro {
+    display: grid;
+    gap: var(--space-md);
+  }
+  .cu-intro p,
+  .cu-panel p {
+    margin: 0;
+  }
+  .cu-title {
+    margin: 0;
+    color: var(--on-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 300;
+    line-height: var(--leading-display);
+    font-feature-settings: "dlig" 1;
+    text-wrap: balance;
+  }
+  .cu-title strong {
+    font-weight: var(--weight-emphasis);
+  }
+  .cu-lead {
+    color: var(--on-dark-body);
+    font-size: var(--text-lead);
+    line-height: 1.4;
+  }
+  .cu-who {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--on-dark-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+  .cu-who b {
+    color: var(--on-dark);
+    font-weight: 600;
+  }
+  .cu-faces {
+    display: flex;
+    flex: none;
+  }
+  .cu-faces img {
+    width: calc(48 * var(--px));
+    height: calc(48 * var(--px));
+    border: 2px solid var(--c-hero);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .cu-faces img + img {
+    margin-left: calc(-12 * var(--px));
+  }
+
+  /* the founders' block fields: underline only, the label inside, rising above the value */
+  .cu-form {
+    display: grid;
+    gap: var(--space-lg);
+  }
+  .cu-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg) var(--space-xl);
+  }
+  .cu-field {
+    position: relative;
+    display: grid;
+  }
+  .cu-field input,
+  .cu-field textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1.5em 0 0.55em;
+    border: 0;
+    border-bottom: 1px solid rgb(244 241 234 / 0.32);
+    border-radius: 0;
+    background: transparent;
+    color: var(--on-dark);
+    font: inherit;
+    font-size: var(--text-body);
+    outline: none;
+    resize: vertical;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .cu-field textarea {
+    min-height: calc(120 * var(--px));
+    line-height: 1.45;
+  }
+  .cu-field input:focus,
+  .cu-field textarea:focus {
+    border-bottom-color: var(--on-dark);
+    box-shadow: 0 1px 0 var(--on-dark);
+  }
+  .cu-field input[aria-invalid="true"] {
+    border-bottom-color: #ff8f7c;
+  }
+  .cu-field label {
+    position: absolute;
+    top: 1.5em;
+    left: 0;
+    color: var(--on-dark);
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: 1.2;
+    pointer-events: none;
+    transform-origin: left top;
+    transition:
+      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.2s ease;
+  }
+  .cu-field label i {
+    color: var(--on-dark-soft);
+    font-style: normal;
+  }
+  .cu-field :is(input, textarea):is(:focus, :not(:placeholder-shown)) + label {
+    color: var(--on-dark-soft);
+    transform: translateY(-1.1em) scale(0.75);
+  }
+  .cu-group {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .cu-group legend {
+    margin-bottom: var(--space-sm);
+    padding: 0;
+    color: var(--on-dark);
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: var(--leading-small);
+  }
+  .cu-opt {
+    display: block;
+    margin-top: calc(4 * var(--px));
+    color: var(--on-dark-soft);
+    font-size: var(--text-small);
+    font-style: normal;
+    font-weight: 400;
+  }
+  .cu-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+  .cu-chip {
+    position: relative;
+  }
+  .cu-chip input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .cu-chip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: calc(52 * var(--px));
+    padding: 0 calc(22 * var(--px));
+    border: 1px solid rgb(244 241 234 / 0.32);
+    border-radius: 999px;
+    color: var(--on-dark);
+    font-size: var(--text-body);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .cu-chip:hover span {
+    border-color: var(--on-dark-soft);
+  }
+  .cu-chip input:checked + span {
+    border-color: var(--on-dark);
+    background: var(--on-dark);
+    color: var(--c-hero);
+    font-weight: 500;
+  }
+  .cu-chip input:focus-visible + span {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  .cu-hint,
+  .cu-error,
+  .cu-legal {
+    font-size: var(--text-small);
+    line-height: 1.4;
+  }
+  .cu-hint,
+  .cu-error {
+    margin-top: var(--space-xs);
+  }
+  .cu-hint,
+  .cu-legal {
+    color: var(--on-dark-soft);
+  }
+  .cu-error {
+    color: #ffb4a6;
+  }
+  .cu-error--submit {
+    margin: 0;
+  }
+  .cu-error a,
+  .cu-legal a {
+    color: var(--on-dark);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .cu-trap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .cu-send {
+    display: grid;
+    gap: var(--space-md);
+    margin-top: var(--space-sm);
+  }
+  .cu-send p {
+    margin: 0;
+  }
+  .cu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-lg);
+  }
+  .cu-btn {
+    color: var(--c-on-primary);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .cu-btn[aria-busy="true"] {
+    opacity: 0.7;
+    cursor: progress;
+  }
+  .cu-alt {
+    color: var(--on-dark);
+    font-size: var(--text-body);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+  .cu-alt:hover {
+    color: var(--c-accent);
+  }
+  .cu-done {
+    padding: var(--space-sm) calc(20 * var(--px));
+    border-radius: 6px;
+    background: rgb(244 241 234 / 0.08);
+    color: var(--on-dark);
+    font-size: var(--text-body);
+    line-height: 1.45;
+  }
+
+  /* the testimonials card: the shown video's cover, blurred, as its ground, fading into the navy at the sides and
+     the foot; shorter than the form, it stays in view while the form scrolls past */
+  .cu-panel {
+    position: sticky;
+    top: var(--space-lg);
+    isolation: isolate;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    overflow: hidden;
+    padding: var(--space-lg);
+    border-radius: 6px 6px 0 0;
+  }
+  .cu-panel__ground {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(28px) saturate(1.1);
+    transform: scale(1.15);
+    mask-image:
+      linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
+      linear-gradient(to bottom, #000 30%, transparent 92%);
+    mask-composite: intersect;
+  }
+  .cu-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom, rgb(28 38 50 / 0.35), rgb(28 38 50 / 0.7) 55%, var(--c-hero));
+  }
+  [data-slide][hidden] {
+    display: none;
+  }
+  .cu-panel__title {
+    margin: 0;
+    color: var(--on-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 500;
+    line-height: var(--leading-title);
+  }
+  .cu-story {
+    display: grid;
+    gap: var(--space-sm);
+  }
+  /* the player is square: the cover and the playing video both cropped to it, centred */
+  .cu-video {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--c-night);
+  }
+  .cu-video video,
+  .cu-video__poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .cu-video video {
+    object-fit: cover;
+  }
+  .cu-video__poster {
+    object-fit: cover;
+    transition: opacity 0.4s ease;
+  }
+  .cu-video__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .cu-video__play span {
+    display: grid;
+    place-items: center;
+    width: calc(72 * var(--px));
+    height: calc(72 * var(--px));
+    border-radius: 50%;
+    background: var(--c-primary);
+    box-shadow: 0 10px 30px rgb(14 21 27 / 0.35);
+    color: var(--c-white);
+    transition: scale 0.2s var(--ease-out);
+  }
+  .cu-video__play:hover span {
+    scale: 1.06;
+  }
+  .cu-video__play svg {
+    width: 52%;
+    height: 52%;
+    margin-left: 4%;
+  }
+  .cu-video__play:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: -3px;
+  }
+  .cu-video.is-playing .cu-video__poster {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .cu-video.is-playing .cu-video__play {
+    display: none;
+  }
+  .cu-case {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .cu-case img {
+    width: auto;
+    height: calc(28 * var(--px));
+    filter: brightness(0) invert(0.95);
+  }
+  .cu-case p {
+    color: var(--on-dark);
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: var(--leading-small);
+  }
+  .cu-pager {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-xl);
+  }
+  .cu-pager button {
+    display: grid;
+    place-items: center;
+    width: calc(44 * var(--px));
+    height: calc(44 * var(--px));
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--on-dark);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  /* the first arrow's stroke lines up with the card's text, not its 44 tap area */
+  .cu-pager button:first-child {
+    margin-left: calc(-9 * var(--px));
+  }
+  .cu-pager button:hover {
+    color: var(--c-accent);
+  }
+  .cu-pager button:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+  .cu-pager svg {
+    width: 60%;
+    height: 60%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ── FAQ: the main page's, on the light ground; the same 128 the dark screen ends with ── */
+  .cu-faq {
+    --title-color: var(--c-hero);
+    padding-block: calc(128 * var(--px));
+    background: var(--c-paper);
+    color: var(--c-hero);
+  }
+  .cu-faq__list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: var(--space-2xl);
+    width: var(--span-3);
+    max-width: 100%;
+    margin: var(--space-xl) 0 0;
+  }
+  .cu-faq__item {
+    padding: var(--space-md) 0;
+    border-top: 1px solid rgb(28 38 50 / 0.12);
+    font-size: var(--text-body);
+  }
+  .cu-faq__item dt {
+    color: var(--c-hero);
+    font-size: var(--text-lead);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .cu-faq__item dd {
+    margin: var(--space-sm) 0 0;
+    color: var(--c-ink);
+    line-height: var(--leading-body);
+  }
+
+  @media (width < 64rem) {
+    .cu-first {
+      padding-block: 104px 64px;
+    }
+    .cu-grid {
+      grid-template-columns: 1fr;
+      gap: 64px;
+    }
+    .cu-left {
+      gap: 32px;
+    }
+    .cu-row {
+      grid-template-columns: 1fr;
+    }
+    .cu-btn {
+      min-height: 52px;
+      padding-inline: 32px;
+    }
+    .cu-panel {
+      position: relative;
+      top: auto;
+    }
+    .cu-faq {
+      padding-block: 64px;
+    }
+    .cu-faq__list {
+      grid-template-columns: 1fr;
+      margin-top: 32px;
+    }
+  }
+</style>
+
+<script>
+  // The testimonials card: one testimonial at a time, the arrows step through them (the cover behind and the player
+  // change together). Once the card is near the screen the shown video is attached under its poster
+  // and starts buffering (src/scripts/hls-video.ts); its play button fades the poster out and plays it with the
+  // native controls; stepping away pauses it, and at its end the poster comes back.
+  import { attach, startPlaying } from "../../../scripts/hls-video";
+
+  const panel = document.querySelector<HTMLElement>(".cu-panel");
+  if (panel) {
+    const count = Number(panel.dataset.count);
+    const stories = [...panel.querySelectorAll<HTMLElement>(".cu-story")];
+    const videoOf = (i: number) => stories[i].querySelector("video")!;
+    let current = 0;
+    let near = false;
+
+    const stop = (i: number) => {
+      const video = videoOf(i);
+      video.pause();
+      video.controls = false;
+      stories[i].querySelector(".cu-video")!.classList.remove("is-playing");
+    };
+
+    const show = (i: number) => {
+      stop(current);
+      current = (i + count) % count;
+      for (const el of panel.querySelectorAll<HTMLElement>("[data-slide]")) {
+        el.hidden = Number(el.dataset.slide) !== current;
+      }
+      if (near) attach(videoOf(current)).catch(() => {});
+    };
+
+    for (const button of panel.querySelectorAll<HTMLButtonElement>(".cu-pager button")) {
+      button.addEventListener("click", () => show(current + Number(button.dataset.step)));
+    }
+
+    stories.forEach((story, i) => {
+      const box = story.querySelector<HTMLElement>(".cu-video")!;
+      const video = videoOf(i);
+      story.querySelector(".cu-video__play")!.addEventListener("click", async () => {
+        try {
+          await attach(video);
+        } catch {
+          return; // the player didn't load (offline, say): the poster stays, the next press tries again
+        }
+        box.classList.add("is-playing");
+        video.controls = true;
+        startPlaying(video);
+        video.play().catch(() => stop(i));
+        video.focus();
+      });
+      video.addEventListener("ended", () => stop(i));
+    });
+
+    new IntersectionObserver(
+      (entries, observer) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        near = true;
+        observer.disconnect();
+        attach(videoOf(current)).catch(() => {});
+      },
+      { rootMargin: "50% 0px" },
+    ).observe(panel);
+  }
+
+  // The request form: the name and a valid email are needed (said under the field, on submit and as they're
+  // fixed); then it's posted as JSON and the form gives way to the "sent" message. Without an endpoint the dev
+  // server simulates it, and a production build says it couldn't send, with the booking link.
+  const form = document.querySelector<HTMLFormElement>(".cu-form");
+  if (form) {
+    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+    const checks: [HTMLInputElement, (value: string) => boolean][] = [
+      [field("name"), (v) => v.length > 0],
+      [field("email"), (v) => EMAIL.test(v)],
+    ];
+    const submit = form.querySelector<HTMLButtonElement>("[data-submit]")!;
+    const submitError = form.querySelector<HTMLElement>("[data-submit-error]")!;
+    const done = form.querySelector<HTMLElement>("[data-done]")!;
+
+    const check = (input: HTMLInputElement, valid: (value: string) => boolean) => {
+      const ok = valid(input.value.trim());
+      input.setAttribute("aria-invalid", String(!ok));
+      document.getElementById(input.getAttribute("aria-describedby")!)!.hidden = ok;
+      return ok;
+    };
+    // once an error is shown, it goes as soon as the field is right
+    for (const [input, valid] of checks) {
+      input.addEventListener("input", () => {
+        if (input.getAttribute("aria-invalid") === "true") check(input, valid);
+      });
+    }
+
+    async function send(data: Record<string, string>) {
+      const { mode, endpoint } = form!.dataset;
+      if (mode === "demo") return new Promise((resolve) => setTimeout(resolve, 600));
+      if (mode !== "live" || !endpoint) throw new Error("no endpoint");
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submitError.hidden = true;
+      const invalid = checks.filter(([input, valid]) => !check(input, valid));
+      if (invalid.length) {
+        invalid[0][0].focus();
+        return;
+      }
+      const data = Object.fromEntries(
+        [...new FormData(form)].map(([key, value]) => [key, String(value).trim()]),
+      ) as Record<string, string>;
+      submit.setAttribute("aria-busy", "true");
+      submit.disabled = true;
+      try {
+        if (!data.website) {
+          delete data.website;
+          await send({ ...data, page: location.pathname });
+        }
+        form.reset();
+        done.hidden = false;
+      } catch {
+        submitError.hidden = false;
+      } finally {
+        submit.removeAttribute("aria-busy");
+        submit.disabled = false;
+      }
+    });
+  }
+</script>

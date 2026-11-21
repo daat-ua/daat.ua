@@ -1,6 +1,7 @@
 ---
 import { menu, projects } from "../data/navigation";
 import Burger from "./ui/Burger.astro";
+import ContactLink from "./ui/ContactLink.astro";
 import Logo from "./ui/Logo.astro";
 
 const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" /></svg>`;
@@ -15,6 +16,7 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
     <div class="wrap">
       <Logo class="logo" decorative />
     </div>
+    <ContactLink />
     <button class="menu-btn gmenu__close" type="button" aria-label="Закрити меню" autofocus>
       <Burger />
     </button>
@@ -180,7 +182,7 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
   .gmenu__bar .wrap {
     height: 100%;
   }
-  .gmenu__bar :is(.logo, .menu-btn) {
+  .gmenu__bar :is(.logo, .menu-btn, .contact-link) {
     pointer-events: auto;
   }
   .gmenu__panel {
@@ -213,7 +215,7 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
     translate: none;
     transition-delay: calc(100ms + var(--i, 0) * 50ms);
   }
-  .gmenu a {
+  .gmenu a:not(.contact-link) {
     color: inherit;
   }
   .gmenu ul {
