@@ -187,7 +187,8 @@ const intro =
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scale(1.12) translateX(-5.5%) translateY(5.5%);
+    /* scaled 12% (6% spare on each side), then shifted left and down by less than that, so no edge shows */
+    transform: scale(1.12) translate(-5%, 5%);
   }
   .dm-video::after {
     content: "";
