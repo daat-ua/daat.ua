@@ -23,6 +23,7 @@ interface ContactRequest {
   website: string;
 }
 
+/** bytes */
 const MAX_BODY = 20_000;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** the longest each field may be */
@@ -57,8 +58,9 @@ export default {
     const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
     if (!(await env.LIMITER.limit({ key: ip })).success) return json({ error: "rate" }, 429, cors);
 
-    const text = await request.text();
-    if (text.length > MAX_BODY) return json({ error: "size" }, 413, cors);
+    if (Number(request.headers.get("Content-Length") ?? 0) > MAX_BODY) return json({ error: "size" }, 413, cors);
+    const text = await readText(request, MAX_BODY);
+    if (text === null) return json({ error: "size" }, 413, cors);
     let raw: unknown;
     try {
       raw = JSON.parse(text);
@@ -89,6 +91,31 @@ export default {
     return json({ ok: true }, 200, cors);
   },
 } satisfies ExportedHandler<Env>;
+
+/** the body as text, read as it arrives and given up past `max` bytes (null), so a large one is never buffered */
+async function readText(request: Request, max: number): Promise<string | null> {
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(size);
+  let at = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, at);
+    at += chunk.byteLength;
+  }
+  return new TextDecoder().decode(body);
+}
 
 /** the request's fields as trimmed strings within their limits, or null if the name or the email is missing */
 function parse(raw: unknown): ContactRequest | null {
