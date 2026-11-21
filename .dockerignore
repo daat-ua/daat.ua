@@ -4,6 +4,7 @@ dist
 .git
 _source
 studio
+workers
 tests
 *.md
 .DS_Store
