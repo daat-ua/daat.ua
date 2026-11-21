@@ -723,10 +723,12 @@ const count = testimonials.length;
     stroke-linejoin: round;
   }
 
-  /* ── FAQ: the main page's, on the light ground; the same 128 the dark screen ends with ── */
+  /* ── FAQ: the main page's, on the light ground; the same 128 the dark screen ends with, then a rule to the footer ── */
   .cu-faq {
     --title-color: var(--c-hero);
-    padding-block: calc(128 * var(--px));
+    /* the footer's own 64 above it, so the same 64 on each side of the rule between them */
+    padding-block: calc(128 * var(--px)) var(--space-2xl);
+    border-bottom: 1px solid rgb(28 38 50 / 0.12);
     background: var(--c-paper);
     color: var(--c-hero);
   }
@@ -778,7 +780,7 @@ const count = testimonials.length;
       top: auto;
     }
     .cu-faq {
-      padding-block: 64px;
+      padding-block: 64px var(--space-2xl);
     }
     .cu-faq__list {
       grid-template-columns: 1fr;
