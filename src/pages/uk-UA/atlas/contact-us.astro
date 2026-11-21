@@ -96,6 +96,7 @@ const count = testimonials.length;
                 <input
                   id="cu-name"
                   name="name"
+                  maxlength="200"
                   autocomplete="name"
                   placeholder=" "
                   required
@@ -113,6 +114,7 @@ const count = testimonials.length;
                   id="cu-email"
                   name="email"
                   type="email"
+                  maxlength="320"
                   autocomplete="email"
                   placeholder=" "
                   required
@@ -128,11 +130,11 @@ const count = testimonials.length;
             </div>
             <div class="cu-row">
               <div class="cu-field">
-                <input id="cu-company" name="company" autocomplete="organization" placeholder=" " />
+                <input id="cu-company" name="company" maxlength="200" autocomplete="organization" placeholder=" " />
                 <label for="cu-company">Компанія</label>
               </div>
               <div class="cu-field">
-                <input id="cu-role" name="role" autocomplete="organization-title" placeholder=" " />
+                <input id="cu-role" name="role" maxlength="200" autocomplete="organization-title" placeholder=" " />
                 <label for="cu-role">Посада</label>
               </div>
             </div>
@@ -153,6 +155,7 @@ const count = testimonials.length;
               <textarea
                 id="cu-message"
                 name="message"
+                maxlength="5000"
                 rows="3"
                 placeholder=" "
                 aria-describedby="cu-message-hint"
@@ -833,6 +836,7 @@ const count = testimonials.length;
         } catch {
           return; // the player didn't load (offline, say): the poster stays, the next press tries again
         }
+        if (i !== current) return; // stepped to another testimonial while it loaded
         box.classList.add("is-playing");
         video.controls = true;
         startPlaying(video);
@@ -896,6 +900,7 @@ const count = testimonials.length;
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       submitError.hidden = true;
+      done.hidden = true;
       const invalid = checks.filter(([input, valid]) => !check(input, valid));
       if (invalid.length) {
         invalid[0][0].focus();
