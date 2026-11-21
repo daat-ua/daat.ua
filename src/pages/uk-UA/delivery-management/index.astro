@@ -7,7 +7,7 @@ import { cover } from "../../../data/delivery-management";
 import { getDeliveryEpisodes } from "../../../sanity/shared";
 
 // "Все про менеджмент делівері" (DAA-231): the index of Olena Kyianovska's video series. The previous site's
-// "Делівері блог" block (DeliveryBlogTeaser) in this site's type: a dotted ground, a looping video that stays in
+// "Делівері блог" block (DeliveryBlogTeaser) in this site's type: a looping video that fills the window and stays in
 // view, and a panel in the ATLAS methodology's navy scrolling up over it, the latest episode large, then the rest.
 // Content: Sanity's "Delivery management episodes" (`deliveryEpisode`), newest first.
 
@@ -64,7 +64,7 @@ const intro =
                   <a href={episodeHref(latest.slug)}>{latest.title}</a>
                 </h2>
                 <p class="dm-latest__lead">{latest.lead}</p>
-                <a class="dm-button" href={episodeHref(latest.slug)}>
+                <a class="btn btn--primary dm-button" href={episodeHref(latest.slug)}>
                   Дивитися або читати
                 </a>
               </article>
@@ -130,6 +130,9 @@ const intro =
 <style>
   .dm {
     --gutter-x: var(--gutter);
+    /* the video's height: the whole window (720 at 1440 at the least), so nothing shows under it while it stays
+       in view */
+    --dm-video-h: max(calc(720 * var(--px)), 100svh);
     background: var(--c-paper);
     color: var(--c-hero);
   }
@@ -144,15 +147,15 @@ const intro =
   /* the title over the video, in light colours, above the panel; the eyebrow in the breadcrumb's type */
   .dm-head {
     display: grid;
-    row-gap: var(--space-xl);
+    row-gap: var(--space-md);
     padding-bottom: var(--space-2xl);
     color: var(--c-white);
   }
   .dm-eyebrow {
     color: color-mix(in srgb, var(--c-cream) 85%, transparent);
-    font-size: var(--text-body);
+    font-size: var(--text-small);
     font-weight: 500;
-    line-height: var(--leading-body);
+    line-height: var(--leading-small);
   }
   .dm-title {
     margin: 0;
@@ -160,24 +163,23 @@ const intro =
     font-size: var(--text-display);
     font-weight: 600;
     line-height: var(--leading-display);
+    text-wrap: balance;
   }
 
-  /* the dotted ground of the previous site's block, within the page's margins */
+  /* the stage: the video and the column over it, within the page's margins */
   .dm-stage {
     margin: 0 var(--gutter-x);
-    background: url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 8 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='0.75' cy='0.75' r='0.75' fill='%230B0B0B'/%3E%3Ccircle cx='4.75' cy='4.75' r='0.75' fill='%230B0B0B'/%3E%3C/svg%3E")
-      repeat;
   }
-  /* the video runs edge to edge (out of the stage's margins), 720 tall at 1440, kept in view at the top while
+  /* the video runs edge to edge (out of the stage's margins), the window's height, kept in view at the top while
      the title and the episodes scroll up over it */
   .dm-video {
     position: sticky;
     top: 0;
     z-index: 0;
-    height: calc(720 * var(--px));
+    height: var(--dm-video-h);
     margin: 0 calc(-1 * var(--gutter-x));
     overflow: hidden;
-    background: var(--c-hero); /* under the shifted video's edge, where the dots would show */
+    background: var(--c-hero); /* under the shifted video's edge */
   }
   .dm-video video {
     position: absolute;
@@ -201,7 +203,8 @@ const intro =
   .dm-video__foot {
     position: absolute;
     z-index: 1;
-    bottom: var(--space-3xl);
+    /* 96 above the window's foot on arrival, while the header still sits above the video */
+    bottom: calc(var(--space-3xl) + var(--header-h));
     left: var(--gutter-x);
     display: grid;
     justify-items: start;
@@ -212,6 +215,7 @@ const intro =
     color: color-mix(in srgb, var(--c-white) 88%, transparent);
     font-size: var(--text-body);
     line-height: var(--leading-body);
+    text-wrap: pretty;
   }
 
   /* pause / play for the looping video: a quiet pill in the light text's colour */
@@ -259,8 +263,8 @@ const intro =
     position: relative;
     z-index: 1;
     width: 60%;
-    margin: calc(-720 * var(--px)) 0 0 auto;
-    min-height: calc(720 * var(--px)); /* the video in full, however few the episodes */
+    margin: calc(-1 * var(--dm-video-h)) 0 0 auto;
+    min-height: var(--dm-video-h); /* the video in full, however few the episodes */
     padding-top: var(--space-3xl);
   }
   .dm-panel {
@@ -328,6 +332,7 @@ const intro =
     font-size: var(--text-heading);
     font-weight: 500;
     line-height: var(--leading-heading);
+    text-wrap: balance;
   }
   .dm-latest__title a:hover {
     text-decoration: underline;
@@ -338,19 +343,12 @@ const intro =
     color: color-mix(in srgb, var(--c-cream) 80%, transparent);
     font-size: var(--text-body);
     line-height: var(--leading-body);
+    text-wrap: pretty;
   }
+  /* the site's primary button, with a play mark before the words */
   .dm .dm-button {
-    display: inline-flex;
-    align-items: center;
     gap: 0.6em;
-    min-height: calc(52 * var(--px));
-    padding: 0 var(--space-lg);
-    border-radius: 999px;
-    background: var(--c-primary);
     color: var(--c-on-primary);
-    font-size: var(--text-small);
-    font-weight: 500;
-    transition: background-color 0.2s ease;
   }
   .dm .dm-button::before {
     content: "";
@@ -358,13 +356,6 @@ const intro =
     height: 0.9em;
     background: currentColor;
     clip-path: polygon(0 0, 100% 50%, 0 100%);
-  }
-  .dm .dm-button:hover {
-    background: var(--c-primary-hover);
-  }
-  .dm .dm-button:focus-visible {
-    outline: 3px solid var(--c-accent);
-    outline-offset: 3px;
   }
 
   .dm-list__title {
@@ -404,6 +395,7 @@ const intro =
     font-size: var(--text-body);
     font-weight: 500;
     line-height: 1.3;
+    text-wrap: balance;
   }
   .dm-list a:hover .dm-list__name {
     text-decoration: underline;
@@ -417,9 +409,13 @@ const intro =
     color: color-mix(in srgb, var(--c-cream) 75%, transparent);
     font-size: var(--text-small);
     line-height: var(--leading-body);
+    text-wrap: pretty;
   }
 
   @media (width < 64rem) {
+    .dm {
+      --dm-video-h: 480px;
+    }
     .dm-head {
       row-gap: 24px;
       padding: 0 var(--gutter-x) 32px;
@@ -429,7 +425,6 @@ const intro =
     }
     .dm-video {
       top: 0;
-      height: 480px;
       margin: 0;
     }
     .dm-video__foot {
@@ -441,8 +436,6 @@ const intro =
     }
     .dm-column {
       width: auto;
-      margin-top: -480px;
-      min-height: 480px;
       padding-top: 104px; /* clear of the logo hanging below the bar */
     }
     .dm-panel {
