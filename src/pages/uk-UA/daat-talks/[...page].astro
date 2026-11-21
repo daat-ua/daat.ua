@@ -9,8 +9,9 @@ import { EPISODES_PER_PAGE, episodesCount, TALKS_INTRO, talksCover } from "../..
 import { getTalksEpisodes } from "../../../sanity/shared";
 
 // Daat Talks (DAA-239), page A of the "Daat Talks section" canvas: the podcast's episodes, newest first, five to a
-// page (/uk-UA/daat-talks, then /2, /3…). Each episode: its cover, number, title, teaser and guest on the left;
-// «Головне з розмови», the articles written from it, on the right; a fading orange rule between episodes.
+// page (/uk-UA/daat-talks, then /2, /3…). Each episode: its cover, number, title, teaser and guest on the left,
+// kept in view beside its articles on desktop; «Головне з розмови», the articles written from it (title and excerpt;
+// the summary is on the article's page), on the right; a fading orange rule between episodes.
 // Content: Sanity's daatTalksEpisode, by number, each with its daatTalksArticle cards.
 
 export const getStaticPaths = (async ({ paginate }) =>
@@ -84,7 +85,6 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
                         {a.title}
                       </a>
                       <p>{a.excerpt}</p>
-                      <p>{a.summary}</p>
                     </li>
                   ))}
                 </ul>
@@ -225,6 +225,14 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
     display: grid;
     row-gap: var(--space-sm);
   }
+  /* on desktop the episode stays beside its articles while they scroll, so the column is never empty and the
+     articles keep their episode in view */
+  @media (width >= 64rem) {
+    .talks-episode__main {
+      position: sticky;
+      top: var(--space-lg);
+    }
+  }
   .talks-episode__cover {
     display: block;
     overflow: hidden;
@@ -260,11 +268,11 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
     margin-bottom: var(--space-xs) !important;
     color: var(--ink-soft);
     font-size: var(--text-small);
-    line-height: var(--leading-small);
+    line-height: var(--leading-body); /* paragraphs of 3–4 lines: the body's leading, not the captions' */
   }
 
   /* «Головне з розмови»: a label as "На цій сторінці" is, then each article's title (the body face, under the
-     episode's display title) and two paragraphs between hairlines */
+     episode's display title) and its excerpt between hairlines */
   .talks-label {
     margin: 0 0 var(--space-xs);
     font-size: var(--text-small);
@@ -285,12 +293,14 @@ const playlist = "https://www.youtube.com/playlist?list=PLnPvYdKtAEr5_Ar2uO7bVmE
   .talks-episode__articles li p {
     color: var(--ink-soft);
     font-size: var(--text-small);
-    line-height: var(--leading-small);
+    line-height: var(--leading-body);
   }
+  /* a link, which the global rule for headings doesn't balance */
   .talks-article__title {
     font-size: var(--text-body);
     font-weight: 500;
     line-height: var(--leading-small);
+    text-wrap: balance;
   }
 
   /* pages: round numbers, the current one filled; the arrows without a border */

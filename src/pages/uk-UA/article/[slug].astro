@@ -13,7 +13,14 @@ import PullQuote from "../../../components/daat-talks/PullQuote.astro";
 import ShortVersion from "../../../components/ShortVersion.astro";
 import TalksText from "../../../components/daat-talks/TalksText.astro";
 import { youtubeId } from "../../../data/delivery-management";
-import { formatDate, initials, readingMinutes, talksBackdrop, talksCover } from "../../../data/daat-talks";
+import {
+  formatDate,
+  initials,
+  keepHyphenated,
+  readingMinutes,
+  talksBackdrop,
+  talksCover,
+} from "../../../data/daat-talks";
 import { sanityClient } from "../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../sanity/image";
 import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
@@ -169,13 +176,13 @@ const articleData = {
   {others.length > 0 && (
     <section class="wrap article-others" aria-labelledby="article-others-title">
       <h2 class="article-others__title" id="article-others-title">
-        Інші статті з цього епізоду
+        <strong>Інші статті</strong> з цього епізоду
       </h2>
       <ul>
         {others.map((a) => (
           <li>
             <a href={url(`article/${a.slug}`)}>
-              <span class="article-others__name">{a.title}</span>
+              <span class="article-others__name" set:html={keepHyphenated(a.title)} />
               <span class="article-others__excerpt">{a.excerpt}</span>
             </a>
           </li>
@@ -340,12 +347,16 @@ const articleData = {
     row-gap: var(--space-lg);
     padding-bottom: var(--space-2xl);
   }
+  /* a section heading as the site's others are: the heading size, Light with its first words in Medium */
   .article-others__title {
     margin: 0;
     font-family: var(--font-display);
-    font-size: var(--text-title);
-    font-weight: 600;
-    line-height: var(--leading-title);
+    font-size: var(--text-heading);
+    font-weight: 300;
+    line-height: var(--leading-heading);
+  }
+  .article-others__title strong {
+    font-weight: var(--weight-emphasis);
   }
   .article-others ul {
     display: grid;
@@ -363,13 +374,13 @@ const articleData = {
     color: var(--c-hero);
     text-decoration: none;
   }
+  /* the title and excerpt are spans in the link: the global rules for headings and paragraphs miss them */
   .article-others__name {
     font-family: var(--font-display);
     font-size: var(--text-title);
     font-weight: 500;
     line-height: var(--leading-title);
-  }
-  .article-others__name {
+    text-wrap: balance;
     transition: color 0.2s ease;
   }
   .article-others a:hover .article-others__name {
@@ -381,7 +392,8 @@ const articleData = {
   .article-others__excerpt {
     color: var(--ink-soft);
     font-size: var(--text-small);
-    line-height: var(--leading-small);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
   }
 
   @media (width < 64rem) {

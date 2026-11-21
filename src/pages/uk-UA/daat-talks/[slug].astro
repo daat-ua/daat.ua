@@ -6,7 +6,7 @@ import FindingsLayout from "../../../layouts/FindingsLayout.astro";
 import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import { youtubeId } from "../../../data/delivery-management";
-import { readingMinutes, talksCover } from "../../../data/daat-talks";
+import { keepHyphenated, readingMinutes, talksCover } from "../../../data/daat-talks";
 import { urlFor } from "../../../sanity/image";
 import { getTalksEpisodes } from "../../../sanity/shared";
 
@@ -79,14 +79,14 @@ const videoData = {
   {articles.length > 0 && (
     <section class="wrap talk-articles" aria-labelledby="talk-articles-title">
       <h2 class="talk-articles__title" id="talk-articles-title">
-        Головне з розмови
+        <strong>Головне</strong> з розмови
       </h2>
       <div class="talk-articles__grid">
         {articles.map((a) => (
           <article class="talk-card">
             <p class="talk-card__meta">Стаття · {readingMinutes(a.text)} хв читання</p>
             <h3 class="talk-card__title">
-              <a href={url(`article/${a.slug}`)}>{a.title}</a>
+              <a href={url(`article/${a.slug}`)} set:html={keepHyphenated(a.title)} />
             </h3>
             <p>{a.excerpt}</p>
             <p class="talk-card__summary">{a.summary}</p>
@@ -221,12 +221,16 @@ const videoData = {
     row-gap: var(--space-lg);
     padding-bottom: var(--space-2xl);
   }
+  /* a section heading as the site's others are: the heading size, Light with its first word in Medium */
   .talk-articles__title {
     margin: 0;
     font-family: var(--font-display);
-    font-size: var(--text-title);
-    font-weight: 600;
-    line-height: var(--leading-title);
+    font-size: var(--text-heading);
+    font-weight: 300;
+    line-height: var(--leading-heading);
+  }
+  .talk-articles__title strong {
+    font-weight: var(--weight-emphasis);
   }
   .talk-articles__grid {
     display: grid;
@@ -240,7 +244,7 @@ const videoData = {
     padding-top: var(--space-md);
     border-top: 1px solid var(--rule);
     font-size: var(--text-small);
-    line-height: var(--leading-small);
+    line-height: var(--leading-body); /* paragraphs of 3–5 lines: the body's leading, not the captions' */
   }
   /* the first row sits right under the heading: no hairline over it */
   .talk-card:nth-child(-n + 2) {
@@ -255,7 +259,7 @@ const videoData = {
     color: var(--ink-soft);
   }
   .talk-card__meta {
-    font-size: calc(14 * var(--px));
+    font-size: var(--text-small);
   }
   .talk-card__title {
     margin: 0;

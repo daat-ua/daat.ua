@@ -67,3 +67,11 @@ export function episodesCount(n: number) {
 /** the index's intro, under its title */
 export const TALKS_INTRO =
   "Подкаст Daat про те, як будують і ведуть IT-компанії: відверті розмови з фаундерами, CEO та експертами. З кожного епізоду ми робимо кілька статей\u00a0— щоб до ідей можна було повернутися.";
+
+/** a title as HTML that never breaks at a hyphen: "IT-компанії" stays on one line. Escaped, for set:html */
+export const keepHyphenated = (text: string) =>
+  text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replace(/\S+-\S+/g, (word) => `<span class="nowrap">${word}</span>`);
