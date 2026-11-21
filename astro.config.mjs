@@ -85,6 +85,8 @@ export default defineConfig({
         url: true,
         default: "https://cal.com/serhii-herasymov-qrn95u/30min",
       }),
+      // where the contact page's form posts its request (JSON): the contact-form Worker (workers/contact-form)
+      PUBLIC_CONTACT_FORM_URL: envField.string({ context: "client", access: "public", url: true, optional: true }),
     },
   },
   vite: {

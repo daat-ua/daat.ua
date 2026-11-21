@@ -1,10 +1,8 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { type CaseCard, caseTeaser } from "../../../data/case-studies";
-import { sanityClient } from "../../../sanity/client";
 import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../sanity/image";
-import { VIDEO_TESTIMONIALS_QUERY } from "../../../sanity/queries";
-import { getCaseStudyTeasers } from "../../../sanity/shared";
+import { getCaseStudyTeasers, getVideoTestimonials } from "../../../sanity/shared";
 import Carousel from "../../ui/Carousel.astro";
 
 // the cases: the published case studies marked "Featured" in the Studio, newest first; with none marked, the
@@ -25,7 +23,7 @@ const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLoca
 // the cover sharp on high-density screens: widths up to 2560 (never past the original), and `sizes` for the open
 // teaser's width (the whole row when it's the only one)
 const COVER_WIDTHS = [640, 960, 1280, 1600, 1920, 2560];
-const raw = await sanityClient.fetch(VIDEO_TESTIMONIALS_QUERY);
+const raw = await getVideoTestimonials();
 const coverSizes = raw.length === 1 ? "(width < 64rem) 100vw, 69vw" : "(width < 64rem) 82vw, 57vw";
 const testimonials = raw.map((t) => {
   const logo = t.companyLogo.asset;
@@ -128,45 +126,10 @@ const testimonials = raw.map((t) => {
   // Clicking the blurred slice opens it and closes the other one (CSS animates the swap). Details of a closed
   // teaser are inert, so keyboard and screen-reader users only meet the open one's.
   //
-  // The videos are HLS (Cloudflare R2, the Studio's "Video folder"). Once the section is near the screen, the open
-  // teaser's video is attached under its poster and starts buffering: hls.js (loaded only then, capped to the
-  // player's size), or the browser's own HLS where hls.js can't run (iOS). Its play button fades the poster out and
-  // plays it with the native controls; opening the other teaser pauses it, and at its end the poster comes back.
-  const HLS_TYPE = "application/vnd.apple.mpegurl";
-  const attached = new WeakMap<HTMLVideoElement, Promise<void>>();
-  // before play only the first seconds are fetched (two 4 s segments), then hls.js's usual 30 s ahead
-  const PRELOAD_BUFFER = 8;
-  const PLAY_BUFFER = 30;
-  const raiseBuffer = new WeakMap<HTMLVideoElement, () => void>();
-
-  function attach(video: HTMLVideoElement) {
-    let ready = attached.get(video);
-    if (!ready) {
-      ready = (async () => {
-        const src = video.dataset.src!;
-        const { default: Hls } = await import("hls.js");
-        if (Hls.isSupported()) {
-          const hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: PRELOAD_BUFFER });
-          raiseBuffer.set(video, () => (hls.config.maxBufferLength = PLAY_BUFFER));
-          hls.on(Hls.Events.ERROR, (_, data) => {
-            if (!data.fatal) return;
-            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-            else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-            else hls.destroy();
-          });
-          hls.loadSource(src);
-          hls.attachMedia(video);
-        } else if (video.canPlayType(HLS_TYPE)) {
-          video.preload = "auto";
-          video.src = src;
-        }
-      })();
-      // a failed attachment (the player didn't load, say offline) isn't kept: the next play or open tries again
-      ready.catch(() => attached.delete(video));
-      attached.set(video, ready);
-    }
-    return ready;
-  }
+  // The videos are HLS (src/scripts/hls-video.ts). Once the section is near the screen, the open teaser's video is
+  // attached under its poster and starts buffering. Its play button fades the poster out and plays it with the
+  // native controls; opening the other teaser pauses it, and at its end the poster comes back.
+  import { attach, startPlaying } from "../../../scripts/hls-video";
 
   for (const list of document.querySelectorAll<HTMLElement>(".vt")) {
     const items = [...list.children] as HTMLElement[];
@@ -205,7 +168,7 @@ const testimonials = raw.map((t) => {
       }
       // the teaser may have closed while the player was loading
       if (!item.classList.contains("is-open")) return;
-      raiseBuffer.get(video)?.();
+      startPlaying(video);
       item.classList.add("is-playing");
       video.controls = true;
       video.play().catch(() => stop(item));

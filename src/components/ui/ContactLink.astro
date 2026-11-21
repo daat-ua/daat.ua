@@ -1,0 +1,40 @@
+---
+import { contact } from "../../data/navigation";
+
+// The contact page's link, left of the menu button: in the header, and in the global menu's bar, which repeats the
+// header, so it stays in place while the menu is open. Orange like the menu button, blue on hover.
+const here = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") === contact.href;
+---
+
+<a class="contact-link" href={contact.href} aria-current={here ? "page" : undefined}>
+  {contact.label}
+</a>
+
+<style is:global>
+  .contact-link {
+    position: absolute;
+    top: 0;
+    right: calc(var(--header-h) + var(--space-lg));
+    display: flex;
+    align-items: center;
+    height: var(--header-h);
+    color: var(--c-accent);
+    font-size: var(--text-body);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.35s var(--ease-out);
+  }
+  .contact-link:hover {
+    color: var(--c-primary);
+  }
+  .contact-link:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 4px;
+  }
+  @media (width < 64rem) {
+    .contact-link {
+      right: calc(var(--header-h) + 16px);
+      font-size: var(--text-small);
+    }
+  }
+</style>

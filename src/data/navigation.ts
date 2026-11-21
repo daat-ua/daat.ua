@@ -50,6 +50,9 @@ export const menu: MenuItem[] = [
   { label: "Про нас", href: "/uk-UA/about" },
 ];
 
+/** the contact page: the header's link beside the menu button, and the site map */
+export const contact: Link = { label: "Зв’язатися з нами", href: page("atlas/contact-us") };
+
 /** "Наші проєкти": Daat's projects beside the consulting */
 export const projects: Link[] = [
   { label: "Все про менеджмент делівері", href: page("delivery-management") },

@@ -5,6 +5,7 @@ import {
   FINDING_TEASERS_QUERY,
   FOUNDERS_QUERY,
   TALKS_EPISODES_QUERY,
+  VIDEO_TESTIMONIALS_QUERY,
 } from "./queries";
 
 // Queries that many pages run, fetched once per build and shared: the build renders every page in one process,
@@ -31,3 +32,6 @@ export const getDeliveryEpisodes = once(() => sanityClient.fetch(DELIVERY_EPISOD
 
 /** the Daat Talks episodes with their articles' cards: the index, the episode pages and the site map */
 export const getTalksEpisodes = once(() => sanityClient.fetch(TALKS_EPISODES_QUERY));
+
+/** the video testimonials: the ATLAS page's testimonials and the contact page */
+export const getVideoTestimonials = once(() => sanityClient.fetch(VIDEO_TESTIMONIALS_QUERY));
