@@ -42,7 +42,12 @@ const sets = [
     position: fixed;
     inset: 0;
     z-index: 50;
+    display: none; /* not drawn between transitions */
     pointer-events: none;
+  }
+  .pt.is-active,
+  html[data-pt] .pt {
+    display: block;
   }
   .pt.is-covering {
     pointer-events: auto; /* no second click lands on the page being left */
