@@ -49,8 +49,10 @@ const sets = [
   html[data-pt] .pt {
     display: block;
   }
-  .pt.is-covering {
-    pointer-events: auto; /* no second click lands on the page being left */
+  /* while columns cover the page, clicks land on them, not on links hidden under them */
+  .pt.is-covering,
+  html[data-pt="ripple"] .pt {
+    pointer-events: auto;
   }
   .pt__strips--phone {
     display: none;
@@ -74,9 +76,9 @@ const sets = [
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 16px;
-    height: 18px;
-    margin: -9px 0 0 -8px;
+    width: calc(16 * var(--px));
+    height: calc(18 * var(--px));
+    margin: calc(-9 * var(--px)) 0 0 calc(-8 * var(--px));
     fill: var(--c-accent);
     opacity: 0;
   }

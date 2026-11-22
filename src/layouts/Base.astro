@@ -64,6 +64,8 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
           sessionStorage.removeItem(key);
           const note = JSON.parse(raw);
           if (Date.now() - note.at > 5000) return;
+          // less motion asked for since the click: a plain fade, whatever the link chose
+          if (matchMedia("(prefers-reduced-motion: reduce)").matches) note.kind = "fade";
           window.__pageTransition = note;
           document.documentElement.dataset.pt = note.kind;
           setTimeout(() => {

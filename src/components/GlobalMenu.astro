@@ -112,6 +112,11 @@ const CHEV = `<svg class="gmenu__chev" viewBox="0 0 24 24" aria-hidden="true"><p
 
   openBtn.addEventListener("click", open);
   dialog.querySelector(".gmenu__close")!.addEventListener("click", () => close());
+  // closed from elsewhere (a page transition closes it at once): the button and the slide-in state follow
+  dialog.addEventListener("close", () => {
+    dialog.classList.remove("is-open");
+    openBtn.setAttribute("aria-expanded", "false");
+  });
   dialog.addEventListener("cancel", (e) => {
     e.preventDefault();
     close();
