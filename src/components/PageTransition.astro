@@ -1,0 +1,101 @@
+---
+// The page transitions' layer (DAA-243; the logic: src/scripts/page-transition.ts): the ripple's columns, nine on
+// desktop and five on a phone, in three navies (the night at the sides, the header's in the middle), the Daat «D»
+// in the middle, and the soft step's orange line along the top of the window (under the header it would cut
+// across the hanging logo). Out of sight until a transition uses it; never read out.
+
+/** a column's navy: the night at the sides, the hero's between, the header's in the middle */
+const tone = (i: number, n: number) => {
+  const t = Math.abs(i - (n - 1) / 2) / ((n - 1) / 2);
+  return t > 0.66 ? "var(--c-night)" : t > 0.33 ? "var(--c-hero)" : "var(--c-header)";
+};
+const sets = [
+  { n: 9, class: "pt__strips pt__strips--desk" },
+  { n: 5, class: "pt__strips pt__strips--phone" },
+];
+---
+
+<div class="pt" aria-hidden="true">
+  {sets.map(({ n, class: cls }) => (
+    <div class={cls}>
+      {Array.from({ length: n }, (_, i) => (
+        <i
+          class="pt__strip"
+          style={`left: ${(i * 100) / n}%; width: calc(${100 / n}% + 1px); background: ${tone(i, n)}`}
+        />
+      ))}
+    </div>
+  ))}
+  <svg class="pt__mark" viewBox="0 0 602.451 678">
+    <path d="M243.111 0C313.494 0 375.806 14.5288 430.046 43.5859C484.932 71.9974 527.226 112.031 556.929 163.688C587.277 214.7 602.451 273.137 602.451 339C602.451 404.863 587.277 463.623 556.929 515.28C527.226 566.292 484.932 606.326 430.046 635.383C375.806 663.794 313.494 678 243.111 678H0V0H243.111Z"></path>
+  </svg>
+  <i class="pt__line"></i>
+</div>
+
+<script>
+  import "../scripts/page-transition";
+</script>
+
+<style is:global>
+  /* above the page, the header and the cookie banner (6); the menu dialog is closed before a transition */
+  .pt {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .pt.is-covering {
+    pointer-events: auto; /* no second click lands on the page being left */
+  }
+  .pt__strips--phone {
+    display: none;
+  }
+  @media (width < 64rem) {
+    .pt__strips--desk {
+      display: none;
+    }
+    .pt__strips--phone {
+      display: block;
+    }
+  }
+  .pt__strip {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transform: translateY(-101%);
+  }
+  /* the Daat «D», small, in the accent orange */
+  .pt__mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 18px;
+    margin: -9px 0 0 -8px;
+    fill: var(--c-accent);
+    opacity: 0;
+  }
+  .pt__line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--c-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+  }
+
+  /* arriving: the state the inline script in <head> sets before the first paint, which the second half undoes */
+  html[data-pt="ripple"] .pt__strip {
+    transform: none;
+  }
+  html[data-pt="ripple"] .pt__mark {
+    opacity: 1;
+  }
+  html[data-pt="soft"] main,
+  html[data-pt="fade"] main {
+    opacity: 0;
+  }
+</style>

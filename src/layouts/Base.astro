@@ -3,6 +3,7 @@ import { Font, getImage } from "astro:assets";
 import faviconSource from "../assets/images/favicon.png";
 import GlobalMenu from "../components/GlobalMenu.astro";
 import CookieConsent from "../components/CookieConsent.astro";
+import PageTransition from "../components/PageTransition.astro";
 import Header from "../components/Header.astro";
 import "../styles/global.css";
 
@@ -51,6 +52,28 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <!-- Preload only what's above the fold: the H1 (Turns Light + Medium) and the hero body (Commons Regular) -->
     <Font cssVariable="--font-turns" preload={[{ weight: 300 }, { weight: 500 }]} />
     <Font cssVariable="--font-commons" preload={[{ weight: 400 }]} />
+    <!-- Page transitions (src/scripts/page-transition.ts): a page reached through one starts covered, or with its
+         content hidden, from the first paint; the transition's second half then reveals it. Undone after 4s if
+         that script never runs. -->
+    <script is:inline>
+      (() => {
+        try {
+          const key = "daat:page-transition";
+          const raw = sessionStorage.getItem(key);
+          if (!raw) return;
+          sessionStorage.removeItem(key);
+          const note = JSON.parse(raw);
+          if (Date.now() - note.at > 5000) return;
+          window.__pageTransition = note;
+          document.documentElement.dataset.pt = note.kind;
+          setTimeout(() => {
+            if (!window.__pageTransitionDone) delete document.documentElement.dataset.pt;
+          }, 4000);
+        } catch {
+          // storage refused: the page shows as usual
+        }
+      })();
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">
@@ -61,6 +84,7 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <slot />
     <GlobalMenu />
     <CookieConsent />
+    <PageTransition />
     <script>
       import "../scripts/in-page-links";
     </script>
