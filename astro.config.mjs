@@ -24,6 +24,8 @@ export default defineConfig({
   // URLs without a trailing slash (/uk-UA/atlas), each page built as one .html file
   trailingSlash: "never",
   compressHTML: true,
+  // the next page loads while the pointer rests on its link, so a page transition (DAA-243) rarely waits for it
+  prefetch: { prefetchAll: true, defaultStrategy: "hover" },
   // One locale for now, always in the URL (/uk-UA/…), so more can be added without moving pages
   i18n: {
     locales: ["uk-UA"],
