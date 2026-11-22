@@ -198,7 +198,9 @@ async function arrive(note: Note) {
 function reset() {
   delete root.dataset.pt;
   layer?.classList.remove("is-active", "is-covering");
-  for (const el of [main(), mark(), line(), ...strips()]) el?.getAnimations().forEach((a) => a.cancel());
+  // every column, both sets: a set out of use now (the window resized) may still hold a finished frame
+  const all = [...(layer?.querySelectorAll<HTMLElement>(".pt__strip") ?? [])];
+  for (const el of [main(), mark(), line(), ...all]) el?.getAnimations().forEach((a) => a.cancel());
 }
 
 // ---------- which clicks get a transition ----------
@@ -217,15 +219,24 @@ function target(e: MouseEvent) {
 }
 
 let leaving = false;
+/** counts transitions on this page: an arrival still finishing must not tidy away a departure begun since */
+let operation = 0;
 document.addEventListener("click", (e) => {
   const t = target(e);
-  if (!t || leaving) return;
+  if (!t) return;
   e.preventDefault();
+  if (leaving) return; // already on the way to the first link clicked
   leaving = true;
-  // the menu is a modal dialog in the top layer, above anything else: close it so the transition shows
+  operation++;
+  // the menu is a modal dialog in the top layer, above anything else: close it so the transition shows (its own
+  // "close" listener resets the menu button and the slide-in state)
   document.querySelector<HTMLDialogElement>("dialog[open]")?.close();
   const note = { ...transitionFor(t.from, t.to), origin: e.clientX / innerWidth || 0.5 };
+  let gone = false;
   const go = () => {
+    if (gone) return;
+    gone = true;
+    clearTimeout(fallback);
     try {
       sessionStorage.setItem(KEY, JSON.stringify({ ...note, at: Date.now() } satisfies Note));
     } catch {
@@ -233,26 +244,25 @@ document.addEventListener("click", (e) => {
     }
     location.assign(t.url);
   };
-  // whatever happens to the animation, the reader gets where they clicked
+  // whatever happens to the animation, the reader gets where they clicked, once
   const fallback = setTimeout(go, 900);
-  leave(note).then(() => {
-    clearTimeout(fallback);
-    go();
-  }, go);
+  leave(note).then(go, go);
 });
 
 // a page restored by Back/Forward comes back as it was left, not covered
 addEventListener("pageshow", (e) => {
   if (!e.persisted) return;
   leaving = false;
+  operation++;
   reset();
 });
 
 // the second half, when this page was reached through a transition (the inline script in <head> found the note)
 const note = (window as Window & { __pageTransition?: Note }).__pageTransition;
 if (note && root.dataset.pt) {
+  const mine = operation;
   arrive(note).finally(() => {
-    reset();
+    if (mine === operation) reset();
     (window as Window & { __pageTransitionDone?: boolean }).__pageTransitionDone = true;
   });
 } else {
