@@ -83,6 +83,7 @@ const originIndex = (origin: number, n: number) => Math.min(n - 1, Math.max(0, M
 // ---------- leaving: the first half ----------
 async function leave(note: Omit<Note, "at">) {
   const page = main();
+  layer?.classList.add("is-active");
   if (note.kind === "fade") {
     await page?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 75, fill: "forwards" }).finished;
     return;
@@ -196,7 +197,7 @@ async function arrive(note: Note) {
 /** back to rest: nothing covered, nothing hidden, no animation left holding a frame */
 function reset() {
   delete root.dataset.pt;
-  layer?.classList.remove("is-covering");
+  layer?.classList.remove("is-active", "is-covering");
   for (const el of [main(), mark(), line(), ...strips()]) el?.getAnimations().forEach((a) => a.cancel());
 }
 
