@@ -103,6 +103,11 @@ const intro =
 </Base>
 
 <script>
+  // the latest episode and the list reveal as they scroll into view, as on the ATLAS page (DAA-243)
+  import "../../../scripts/reveal";
+</script>
+
+<script>
   // The looping video can be paused (WCAG 2.2.2): one control under the intro on desktop, one under the title on
   // phones, where the panel covers the rest of the video. Readers who ask for less motion get it paused.
   const video = document.querySelector<HTMLVideoElement>("#dm-video");

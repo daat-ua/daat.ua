@@ -727,3 +727,75 @@
     margin-top: 48px;
   }
 }
+
+/* ---------- Scroll reveals (src/scripts/reveal.ts, on the pages that import it) ----------
+   An element waits in .reveal-pending (set by the script, below the fold only) and moves while .is-revealing;
+   transform, opacity and clip-path only, so nothing reflows. Never in print. */
+@media screen {
+  html.has-reveal {
+    --reveal-y: calc(24 * var(--px));
+    --reveal-ease: cubic-bezier(0.16, 1, 0.3, 1); /* ease-out-expo */
+  }
+  .is-revealing {
+    transition-property: opacity, transform, clip-path;
+    transition-timing-function: var(--reveal-ease);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* rise: text and cards */
+  .reveal-pending[data-reveal="rise"] {
+    opacity: 0;
+    transform: translateY(var(--reveal-y));
+  }
+  .is-revealing[data-reveal="rise"] {
+    transition-duration: 700ms;
+  }
+
+  /* beat: a title rises with its Light words; the Medium ones land 140ms later */
+  .reveal-pending[data-reveal="beat"] {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+  .reveal-pending[data-reveal="beat"] strong {
+    opacity: 0;
+  }
+  .is-revealing[data-reveal="beat"] {
+    transition-duration: 800ms;
+  }
+  .is-revealing[data-reveal="beat"] strong {
+    transition: opacity 700ms var(--reveal-ease) 140ms;
+  }
+
+  /* media: charts and videos unmask upwards from a slight crop, settling into place */
+  .reveal-pending[data-reveal="media"] {
+    opacity: 0.001;
+    clip-path: inset(12% 0 0 0);
+    transform: translateY(calc(var(--reveal-y) * 0.66)) scale(1.02);
+  }
+  .is-revealing[data-reveal="media"] {
+    transition-duration: 1000ms;
+  }
+
+  /* bar: the impact bars grow from zero to their value */
+  .reveal-pending[data-reveal="bar"] {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .is-revealing[data-reveal="bar"] {
+    transform-origin: left;
+    transition-duration: 1100ms;
+  }
+
+  /* fade: the FAQ's questions, without moving */
+  .reveal-pending[data-reveal="fade"] {
+    opacity: 0;
+  }
+  .is-revealing[data-reveal="fade"] {
+    transition-duration: 600ms;
+  }
+}
+@media screen and (width < 64rem) {
+  html.has-reveal {
+    --reveal-y: 16px;
+  }
+}
