@@ -2,6 +2,7 @@
 import { defineConfig, envField, fontProviders } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "./src/integrations/sitemap";
+import seoToolbar from "./src/integrations/seo-toolbar";
 
 /**
  * One weight of a local woff2 font.
@@ -92,8 +93,9 @@ export default defineConfig({
       PUBLIC_CONTACT_FORM_URL: envField.string({ context: "client", access: "public", url: true, optional: true }),
     },
   },
-  // sitemap.xml from the built pages, without the noindex ones (src/integrations/sitemap.ts)
-  integrations: [sitemap()],
+  // sitemap.xml from the built pages, without the noindex ones (src/integrations/sitemap.ts); the dev toolbar's
+  // SEO app: search and share previews, SEO checks (dev only, src/integrations/seo-toolbar.ts)
+  integrations: [sitemap(), seoToolbar()],
   vite: {
     plugins: [tailwindcss()],
   },
