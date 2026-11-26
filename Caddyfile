@@ -49,10 +49,12 @@
 	@oldFinding path_regexp oldFinding ^/insights/delivery-audit-findings/([^/]+)/?$
 	redir @oldFinding /uk-UA/atlas/findings/{re.oldFinding.1} 301
 
-	# one URL per page (DAA-220): /uk-UA/atlas.html and /uk-UA/atlas/ lead to /uk-UA/atlas, the query kept
-	@htmlExt path_regexp htmlExt ^(/.+)\.html$
+	# one URL per page (DAA-220): /uk-UA/atlas.html and /uk-UA/atlas/ lead to /uk-UA/atlas, the query kept.
+	# The target is the request's own path, so it must stay a path on this host: no backslash or whitespace in it
+	# and no "/" after the first (browsers read "/\evil.example" or "/<tab>/evil.example" as another site)
+	@htmlExt path_regexp htmlExt ^(/[^/\\\s][^\\\s]*)\.html$
 	redir @htmlExt {re.htmlExt.1}{?query} 301
-	@trailingSlash path_regexp trailingSlash ^(/.+)/$
+	@trailingSlash path_regexp trailingSlash ^(/[^/\\\s][^\\\s]*)/$
 	redir @trailingSlash {re.trailingSlash.1}{?query} 301
 
 	# pages are built as /uk-UA/atlas.html and served without the extension
