@@ -5,6 +5,7 @@ import {
   defineField,
   defineType,
 } from 'sanity'
+import {seoDescriptionRule, seoTitleRule} from './seo'
 
 // A case study (DAA-230): one field per block of the case page (src/pages/uk-UA/atlas/case-studies/[slug].astro),
 // one tab per section of the page. Keys of the lists below are mapped to Ukrainian by the website
@@ -535,8 +536,7 @@ export const caseStudy = defineType({
       description: 'Empty: the title',
       type: 'string',
       group: 'seo',
-      validation: (rule) =>
-        rule.max(60).warning('Search engines cut titles longer than ~60 characters'),
+      validation: seoTitleRule,
     }),
     defineField({
       name: 'seo_description',
@@ -545,8 +545,7 @@ export const caseStudy = defineType({
       type: 'text',
       rows: 3,
       group: 'seo',
-      validation: (rule) =>
-        rule.max(160).warning('Search engines cut descriptions longer than ~160 characters'),
+      validation: seoDescriptionRule,
     }),
     defineField({
       name: 'seo_image',

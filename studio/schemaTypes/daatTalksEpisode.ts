@@ -1,4 +1,5 @@
 import {ALL_FIELDS_GROUP, defineArrayMember, defineField, defineType} from 'sanity'
+import {seoDescriptionRule, seoTitleRule} from './seo'
 
 // A Daat Talks episode (DAA-239), the podcast on YouTube: its block on the index (/uk-UA/daat-talks, five to a
 // page, by number) and its page (/uk-UA/daat-talks/<slug>). The articles written from it point to it
@@ -176,8 +177,7 @@ export const daatTalksEpisode = defineType({
       description: 'Empty: "<title> | Daat Talks #<number>"',
       type: 'string',
       group: 'seo',
-      validation: (rule) =>
-        rule.max(60).warning('Search engines cut titles longer than ~60 characters'),
+      validation: seoTitleRule,
     }),
     defineField({
       name: 'seo_description',
@@ -186,8 +186,7 @@ export const daatTalksEpisode = defineType({
       type: 'text',
       rows: 3,
       group: 'seo',
-      validation: (rule) =>
-        rule.max(160).warning('Search engines cut descriptions longer than ~160 characters'),
+      validation: seoDescriptionRule,
     }),
     defineField({
       name: 'seo_image',
