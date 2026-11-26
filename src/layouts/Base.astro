@@ -5,6 +5,7 @@ import GlobalMenu from "../components/GlobalMenu.astro";
 import CookieConsent from "../components/CookieConsent.astro";
 import PageTransition from "../components/PageTransition.astro";
 import Header from "../components/Header.astro";
+import { clip, type ShareImage } from "../data/share";
 import "../styles/global.css";
 
 interface Props {
@@ -12,17 +13,28 @@ interface Props {
   description: string;
   /** keep the page out of search results (demo and service pages) */
   noindex?: boolean;
-  /** the page's search keywords, the primary first (the Daat Talks articles) */
-  keywords?: string[];
-  /** the image a shared link shows (og:image), an absolute URL */
-  shareImage?: string;
+  /** the image a shared link shows (og:image); without one, the site's default (public/share.png) */
+  shareImage?: ShareImage;
+  /** "article" for a page made from a document (a finding, a case, an episode, an article) */
+  type?: "website" | "article";
+  /** the page's canonical URL when it isn't this one (a case first published elsewhere) */
+  canonicalUrl?: string | null;
 }
 
-const { title, description, noindex = false, keywords = [], shareImage } = Astro.props;
+const { title: rawTitle, description: rawDescription, noindex = false, type = "website", canonicalUrl } = Astro.props;
+const title = rawTitle.replace(/\s+/g, " ").trim();
+// search engines show ~160 characters: a longer description is cut between words, not mid-word
+const description = clip(rawDescription);
 const locale = Astro.currentLocale ?? "uk-UA";
 // pages are built as .html files but served without the extension; the 404 page gets no canonical URL
 const path = Astro.url.pathname.replace(/\.html$/, "");
-const canonical = path === "/404" ? undefined : new URL(path, Astro.site);
+const canonical = path === "/404" ? undefined : (canonicalUrl ?? new URL(path, Astro.site).href);
+const shareImage = Astro.props.shareImage ?? {
+  url: new URL("/share.png", Astro.site).href,
+  width: 1200,
+  height: 630,
+  alt: "Daat",
+};
 
 // favicons from the square "D" mark: PNG for the tab, 180px for iOS home screens
 const favicon = await getImage({ src: faviconSource, width: 32, height: 32, format: "png" });
@@ -37,14 +49,24 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
-    {keywords.length > 0 && <meta name="keywords" content={keywords.join(", ")} />}
-    {shareImage && <meta property="og:image" content={shareImage} />}
     {canonical && (
       <>
         <link rel="canonical" href={canonical} />
         <link rel="alternate" hreflang={locale} href={canonical} />
       </>
     )}
+    <!-- a shared link's card (Open Graph; X reads these too, with its own card type) -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="Daat" />
+    <meta property="og:locale" content={locale.replace("-", "_")} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={shareImage.url} />
+    <meta property="og:image:width" content={String(shareImage.width)} />
+    <meta property="og:image:height" content={String(shareImage.height)} />
+    <meta property="og:image:alt" content={shareImage.alt ?? title} />
+    <meta name="twitter:card" content="summary_large_image" />
     <!-- Ahrefs Web Analytics (no cookies), on every page -->
     <script is:inline src="https://analytics.ahrefs.com/analytics.js" data-key="STrJIQfxAdmMR6JOryVuoQ" async></script>
     <link rel="icon" type="image/png" href={favicon.src} />

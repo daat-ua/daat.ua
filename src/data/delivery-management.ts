@@ -9,7 +9,7 @@ import { srcsetFor, urlFor } from "../sanity/image";
 export const youtubeId = (url: string) =>
   url.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([\w-]{11})/)?.[1] ?? "";
 
-const youtubeCover = (id: string, size: "mqdefault" | "maxresdefault") => `https://i.ytimg.com/vi/${id}/${size}.jpg`;
+export const youtubeCover = (id: string, size: "mqdefault" | "maxresdefault") => `https://i.ytimg.com/vi/${id}/${size}.jpg`;
 
 /** an episode's 16:9 cover: the Studio's thumbnail if it has one, else YouTube's */
 export function cover(episode: { youtubeUrl: string; thumbnail: { asset: unknown } | null }) {

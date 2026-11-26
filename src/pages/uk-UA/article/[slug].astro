@@ -25,6 +25,7 @@ import { sanityClient } from "../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../sanity/image";
 import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
 import { TALKS_ARTICLES_QUERY } from "../../../sanity/queries";
+import { pageTitle, videoShareImage } from "../../../data/share";
 
 // An article written from a Daat Talks episode (DAA-239), page C of the "Daat Talks section" canvas: the episode in
 // the breadcrumb, the title, the byline (the hosts' and guests' faces, the reading time and date) and the lead; the
@@ -72,8 +73,7 @@ const shortVersion = (article.shortVersion ?? []).filter((block) =>
   block.children?.some((child) => child.text?.trim()),
 );
 // a shared link's image: the Studio's social image, else the hero image, else the episode's cover
-const socialImage = article.seo_image?.asset ? article.seo_image : article.heroImage?.asset ? article.heroImage : null;
-const shareImage = socialImage ? urlFor(socialImage).width(1200).height(630).url() : image.src;
+const shareImage = videoShareImage(episode.youtubeUrl, article.seo_image, article.heroImage, episode.youtubeCover);
 const articleImage = article.heroImage?.asset ? urlFor(article.heroImage).width(1200).height(630).url() : image.src;
 
 // the search keywords from the Studio's SEO tab, the primary first, each once
@@ -95,11 +95,11 @@ const articleData = {
 ---
 
 <FindingsLayout
-  title={article.seo_title || `${article.title} | Daat Talks`}
+  title={article.seo_title || pageTitle(article.title, " | Daat Talks", " | Daat")}
   description={article.seo_description || article.excerpt}
   noindex={article.no_index ?? false}
-  keywords={keywords}
   shareImage={shareImage}
+  type="article"
   crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
   heading={article.title}
   backdrop={talksBackdrop(episode)}

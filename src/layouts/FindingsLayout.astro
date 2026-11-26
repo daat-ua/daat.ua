@@ -4,6 +4,7 @@ import { Picture } from "astro:assets";
 import Base from "./Base.astro";
 import Footer from "../components/Footer.astro";
 import Crumb from "../components/findings/Crumb.astro";
+import type { ShareImage } from "../data/share";
 import { srcsetFor, urlFor } from "../sanity/image";
 import type { SanityImageCrop, SanityImageHotspot } from "../sanity/sanity.types";
 
@@ -22,10 +23,10 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
-  /** search keywords for the page's head (Base) */
-  keywords?: string[];
   /** the image a shared link shows (Base) */
-  shareImage?: string;
+  shareImage?: ShareImage;
+  /** "article" for a page made from a document (Base) */
+  type?: "website" | "article";
   /** the hero's artwork: a Sanity image, or a local one */
   image?: HeroImage | ImageMetadata | null;
   /** instead of artwork, an image's URL blurred behind the title (a Daat Talks article: its episode's cover) */
@@ -36,13 +37,13 @@ interface Props {
   heading: string;
 }
 
-const { title, description, noindex = false, keywords, shareImage, image, backdrop, crumb, heading } = Astro.props;
+const { title, description, noindex = false, shareImage, type, image, backdrop, crumb, heading } = Astro.props;
 const isLocal = (img: typeof image): img is ImageMetadata => !!img && "src" in img;
 const sanityImage = image && !isLocal(image) ? image : null;
 const lqip = sanityImage?.asset?.metadata?.lqip;
 ---
 
-<Base title={title} description={description} noindex={noindex} keywords={keywords} shareImage={shareImage}>
+<Base title={title} description={description} noindex={noindex} shareImage={shareImage} type={type}>
   <main id="main" class="finding-page">
     <!-- ═══ Hero: the artwork fades into the page ═══ -->
     <header class="finding-hero">

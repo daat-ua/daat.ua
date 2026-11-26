@@ -33,6 +33,7 @@ export const FINDINGS_QUERY = defineQuery(`*[_type == "post" && defined(slug.cur
   ],
   seo_title,
   seo_description,
+  seo_image{ alt, hotspot, crop, asset->{ _id } },
   no_index
 }`);
 
@@ -85,6 +86,8 @@ export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy" && defined
   "otherCases": otherCases[]->{ _id, title, "slug": slug.current, cardTag, industry, companySize, anonymised, clientLogo{ alt, asset->{ _id, url, extension, metadata{ dimensions{ width, height } } } }, heroImage{ hotspot, crop, asset->{ _id } } },
   seo_title,
   seo_description,
+  seo_image{ alt, hotspot, crop, asset->{ _id } },
+  canonical,
   no_index
 }`);
 
@@ -134,6 +137,7 @@ export const DELIVERY_EPISODE_PAGES_QUERY =
   thumbnail{ hotspot, crop, asset->{ _id } },
   seo_title,
   seo_description,
+  seo_image{ alt, hotspot, crop, asset->{ _id } },
   no_index
 }`);
 
@@ -164,7 +168,7 @@ export const TALKS_EPISODES_QUERY =
   },
   seo_title,
   seo_description,
-  seo_image{ hotspot, crop, asset->{ _id } },
+  seo_image{ alt, hotspot, crop, asset->{ _id } },
   no_index
 }`);
 
@@ -208,7 +212,7 @@ export const TALKS_ARTICLES_QUERY =
   },
   seo_title,
   seo_description,
-  seo_image{ hotspot, crop, asset->{ _id } },
+  seo_image{ alt, hotspot, crop, asset->{ _id } },
   primary_keyword,
   secondary_keywords,
   no_index
