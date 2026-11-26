@@ -73,7 +73,12 @@ const shortVersion = (article.shortVersion ?? []).filter((block) =>
   block.children?.some((child) => child.text?.trim()),
 );
 // a shared link's image: the Studio's social image, else the hero image, else the episode's cover
-const shareImage = videoShareImage(episode.youtubeUrl, article.seo_image, article.heroImage, episode.youtubeCover);
+const shareImage = await videoShareImage(
+  episode.youtubeUrl,
+  article.seo_image,
+  article.heroImage,
+  episode.youtubeCover,
+);
 const articleImage = article.heroImage?.asset ? urlFor(article.heroImage).width(1200).height(630).url() : image.src;
 
 // the search keywords from the Studio's SEO tab, the primary first, each once

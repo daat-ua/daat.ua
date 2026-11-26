@@ -29,7 +29,7 @@ const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 const image = talksCover(episode);
 const { articles } = episode;
 // a shared link's image: the Studio's social image, else the cover
-const shareImage = videoShareImage(episode.youtubeUrl, episode.seo_image, episode.youtubeCover);
+const shareImage = await videoShareImage(episode.youtubeUrl, episode.seo_image, episode.youtubeCover);
 
 // the episode for search engines: schema.org's VideoObject
 const videoData = {
