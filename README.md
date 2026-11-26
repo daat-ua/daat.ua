@@ -88,6 +88,14 @@ Astro i18n with one locale, `uk-UA`, always in the URL. The ATLAS page lives at 
 
 The previous daat.ua site's URLs redirect to their new places (301, in the `Caddyfile`): findings (`/insights/delivery-audit-findings/<slug>`), case studies (`/uk-UA/case-studies/…`), `/delivery-management` and `/sitemap`.
 
+Each page has one URL: Caddy 301s `/uk-UA/atlas.html` and `/uk-UA/atlas/` to `/uk-UA/atlas`, keeping the query.
+
+## Search engines
+
+- **`sitemap.xml`** is written after the build (`src/integrations/sitemap.ts`) from the pages the build produced. A page whose HTML has a robots `noindex` (Sanity's "Hide from search engines", the sample page), a redirect page and the 404 are left out, so a new page is listed, or not, without touching the sitemap. Pages made from a Sanity document get `<lastmod>` from its last edit; the others get none.
+- **`robots.txt`** (`public/`) allows everything and points to `https://daat.ua/sitemap.xml`.
+- **Only daat.ua is indexed**: every other host (dev.daat.ua, Railway's domain) answers with `X-Robots-Tag: noindex` (`Caddyfile`). It serves the same pages, so it would be a duplicate of the site.
+
 ## Deploy
 
 Railway builds the `Dockerfile`: Node 26 builds the site, then Caddy (`Caddyfile`) serves it on `$PORT` with compression, long-lived caching for hashed assets and security headers. The contact form Worker deploys separately, with Wrangler (see its README).
@@ -114,7 +122,8 @@ src/
     daat-talks/             Daat Talks: guests, article body blocks
   scripts/      client-side TypeScript (frame animations, in-page links, the HLS player)
   pages/        uk-UA/… (see Pages), 404.astro
-public/         files served as-is (frame sequences for the canvas animations, the delivery management video)
+  integrations/ build steps: sitemap.xml (see Search engines)
+public/         files served as-is (robots.txt, frame sequences for the canvas animations, the delivery management video)
 studio/         Sanity Studio (separate app)
 workers/        contact-form: the contact form's Cloudflare Worker (separate app)
 tests/visual/   the visual check
