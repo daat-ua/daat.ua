@@ -38,6 +38,8 @@ const bodyComponents = { block: { h3: Heading } };
 const videoId = youtubeId(episode.youtubeUrl);
 const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 const image = cover(episode);
+// a shared link's image: the Studio's social image, else the thumbnail, else YouTube's cover (if it has one)
+const shareImage = await videoShareImage(episode.youtubeUrl, episode.seo_image, episode.thumbnail);
 
 // the video for search engines: schema.org's VideoObject
 const videoData = {
@@ -68,7 +70,7 @@ const others: Teaser[] = episodes
   title={episode.seo_title || pageTitle(episode.title, " | Все про менеджмент делівері", " | Daat")}
   description={episode.seo_description || episode.teaser}
   noindex={episode.no_index ?? false}
-  shareImage={videoShareImage(episode.youtubeUrl, episode.seo_image, episode.thumbnail)}
+  shareImage={shareImage}
   type="article"
 >
   <script type="application/ld+json" set:html={JSON.stringify(videoData).replace(/</g, "\\u003c")} />

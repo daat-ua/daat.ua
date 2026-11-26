@@ -28,15 +28,32 @@ export function shareImage(...images: MaybeImage[]): ShareImage | undefined {
   };
 }
 
-/** a video's: the first Sanity image with an asset (the social image, the cover), else YouTube's 1280 × 720 cover */
-export function videoShareImage(youtubeUrl: string, ...images: MaybeImage[]): ShareImage {
-  return (
-    shareImage(...images) ?? {
-      url: youtubeCover(youtubeId(youtubeUrl), "maxresdefault"),
-      width: 1280,
-      height: 720,
-    }
-  );
+/** whether YouTube has a 1280 × 720 cover for a video: it makes one only when the upload is that large, and answers
+ * 404 otherwise. Asked once per video per build */
+const maxResCover = new Map<string, Promise<boolean>>();
+const hasMaxResCover = (id: string) => {
+  if (!maxResCover.has(id)) {
+    const url = youtubeCover(id, "maxresdefault");
+    maxResCover.set(
+      id,
+      fetch(url, { method: "HEAD" }).then(
+        (r) => r.ok,
+        () => false,
+      ),
+    );
+  }
+  return maxResCover.get(id)!;
+};
+
+/** a video's: the first Sanity image with an asset (the social image, the cover), else YouTube's 1280 × 720 cover
+ * when the video has one; else none, and Base uses the site's default */
+export async function videoShareImage(youtubeUrl: string, ...images: MaybeImage[]): Promise<ShareImage | undefined> {
+  const image = shareImage(...images);
+  if (image) return image;
+  const id = youtubeId(youtubeUrl);
+  return id && (await hasMaxResCover(id))
+    ? { url: youtubeCover(id, "maxresdefault"), width: 1280, height: 720 }
+    : undefined;
 }
 
 /** a description for search results and shared links: at most `max` characters, cut between words ("…") */
@@ -44,8 +61,9 @@ export function clip(text: string, max = 160) {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max - 1);
+  // the last word boundary, wherever it is; a text without one (a single long word or link) can only be cut
   const space = cut.lastIndexOf(" ");
-  return `${(space > max / 2 ? cut.slice(0, space) : cut).replace(/[\s,;:—–-]+$/, "")}…`;
+  return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:—–-]+$/, "")}…`;
 }
 
 /** a generated page title: `title` with the first suffix that keeps it within ~60 characters (what search results
