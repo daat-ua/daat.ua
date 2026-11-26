@@ -12,7 +12,7 @@ import Heading from "../../../components/portable-text/Heading.astro";
 import Carousel, { type Teaser } from "../../../components/ui/Carousel.astro";
 import { cover, isoDuration, youtubeId } from "../../../data/delivery-management";
 import { sanityClient } from "../../../sanity/client";
-import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
+import { headingsOf, withHeadingIds, withOutline } from "../../../sanity/portable-text";
 import { DELIVERY_EPISODE_PAGES_QUERY } from "../../../sanity/queries";
 import { pageTitle, videoShareImage } from "../../../data/share";
 import { jsonLd, organizationRef } from "../../../data/structured-data";
@@ -32,7 +32,7 @@ const locale = Astro.currentLocale ?? "uk-UA";
 const url = (path: string) => getRelativeLocaleUrl(locale, path, { normalizeLocale: false });
 
 // "on this page": the body's subheadings (h3, the episode's only heading level), with ids for the links
-const body = withHeadingIds(episode.body);
+const body = withOutline(withHeadingIds(episode.body));
 const toc = headingsOf(body, "h3");
 const bodyComponents = { block: { h3: Heading } };
 

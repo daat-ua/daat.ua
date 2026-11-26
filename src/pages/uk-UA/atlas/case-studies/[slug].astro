@@ -2,9 +2,11 @@
 import type { InferGetStaticPropsType } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PortableText } from "astro-portabletext";
+import { withOutline } from "../../../../sanity/portable-text";
 import Base from "../../../../layouts/Base.astro";
 import Footer from "../../../../components/Footer.astro";
 import Crumb from "../../../../components/findings/Crumb.astro";
+import Heading from "../../../../components/portable-text/Heading.astro";
 import FindingsToc from "../../../../components/findings/FindingsToc.astro";
 import TocCta from "../../../../components/findings/TocCta.astro";
 import FoundersCta from "../../../../components/findings/FoundersCta.astro";
@@ -60,6 +62,8 @@ const caseData = jsonLd({
   mainEntityOfPage: pageUrl(Astro.url, Astro.site),
   inLanguage: "uk-UA",
 });
+// the texts sit under the section's h2: their headings start at h3 in the outline, whatever the Studio's style
+const bodyComponents = { block: { h2: Heading, h3: Heading, h4: Heading } };
 const lqip = hero.asset?.metadata?.lqip;
 
 const profile = [
@@ -220,7 +224,7 @@ const otherTeasers = others.length ? others : placeholderCases;
           <section id="context" class="case-section">
             <h2>Контекст: з чим прийшов клієнт</h2>
             <div class="article-body">
-              <PortableText value={study.context!} />
+              <PortableText value={withOutline(study.context, 3)} components={bodyComponents} />
             </div>
             {study.contextQuote && (
               <blockquote class="case-quote">
@@ -248,7 +252,7 @@ const otherTeasers = others.length ? others : placeholderCases;
             )}
             {study.phasesText && (
               <div class="article-body">
-                <PortableText value={study.phasesText} />
+                <PortableText value={withOutline(study.phasesText, 3)} components={bodyComponents} />
               </div>
             )}
           </section>
@@ -387,7 +391,7 @@ const otherTeasers = others.length ? others : placeholderCases;
             )}
             {study.changesText && (
               <div class="article-body">
-                <PortableText value={study.changesText} />
+                <PortableText value={withOutline(study.changesText, 3)} components={bodyComponents} />
               </div>
             )}
           </section>

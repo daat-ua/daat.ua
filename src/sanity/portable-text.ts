@@ -83,3 +83,20 @@ export const headingsOf = (body: TypedObject[], level: "h2" | "h3" = "h2") =>
     .filter(isBlock)
     .filter((b) => b.style === level)
     .map((b) => ({ id: headingId(b), label: toPlainText(b).trim() }));
+
+/** The body with each heading's level in the page's outline (DAA-220), for Heading to render: one below the nearest
+ * heading above it with a higher Studio style, starting at `top` (the level under the page's own heading). So an h4
+ * straight under an h2 is the page's h3, and an episode's h3s under the page's h1 are its h2s; headings of the same
+ * style under the same parent share a level. The Studio's style stays the look */
+export function withOutline<T extends TypedObject>(body: T[] | null | undefined, top = 2): T[] {
+  const open: { style: number; level: number }[] = [];
+  return (body ?? []).map((node) => {
+    const style = isBlock(node) ? node.style : undefined;
+    if (!style || !/^h[2-6]$/.test(style)) return node;
+    const rank = Number(style.slice(1));
+    while (open.length && open[open.length - 1].style >= rank) open.pop();
+    const level = Math.min(6, (open[open.length - 1]?.level ?? top - 1) + 1);
+    open.push({ style: rank, level });
+    return { ...node, outlineLevel: level };
+  });
+}

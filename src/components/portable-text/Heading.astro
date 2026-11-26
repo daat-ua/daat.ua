@@ -2,13 +2,17 @@
 import type { BlockProps } from "astro-portabletext/types";
 import { headingId } from "../../sanity/portable-text";
 
-// h2/h3 from Portable Text, with an id from the heading text for the "on this page" links
+// A Portable Text heading, with an id from the heading text for the "on this page" links. Its tag is its level in
+// the page's outline (withOutline); when that differs from the Studio's style, a class keeps the style's look
+// (patterns.css: .pt-h3, .pt-h4)
 type Props = BlockProps;
 
 const { node, index, isInline, ...attrs } = Astro.props;
-const Tag = node.style === "h3" ? "h3" : "h2";
+const style = /^h[2-6]$/.test(node.style ?? "") ? (node.style as string) : "h2";
+const level = (node as { outlineLevel?: number }).outlineLevel;
+const Tag = (level ? `h${level}` : style) as "h2" | "h3" | "h4" | "h5" | "h6";
 ---
 
-<Tag id={headingId(node)} {...attrs}>
+<Tag id={headingId(node)} class={Tag !== style ? `pt-${style}` : undefined} {...attrs}>
   <slot />
 </Tag>

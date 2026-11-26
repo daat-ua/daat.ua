@@ -218,7 +218,8 @@
   line-height: var(--leading-title);
   scroll-margin-top: var(--space-xl);
 }
-.article-body h3 {
+/* .pt-h3: a Studio h3 that is the page's h2 (withOutline), styled as the h3 it was written as */
+.article-body :is(h3, .pt-h3) {
   margin-top: var(--space-xl);
   font-size: var(--text-lead);
 }
@@ -285,15 +286,18 @@
 .article-body li > :is(ul, ol) {
   margin: var(--space-xs) 0 0;
 }
-/* the third level: a lead-in at the text's size, close to the paragraph it introduces */
-.article-body h4 {
+/* the third level: a lead-in at the text's size, close to the paragraph it introduces. .pt-h4: a Studio h4 straight
+   under an h2, so the page's h3 (withOutline), which keeps this look over the h3 rules above */
+.article-body :is(h4, .pt-h4) {
   margin: var(--space-lg) 0 var(--space-xs);
+  font-family: var(--font-body);
   font-size: var(--text-body);
   font-weight: 600;
   line-height: var(--leading-body);
+  text-wrap: wrap;
   scroll-margin-top: var(--space-xl);
 }
-.article-body h4:first-child {
+.article-body :is(h4, .pt-h4):first-child {
   margin-top: 0;
 }
 .article-body blockquote {

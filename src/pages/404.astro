@@ -1,12 +1,107 @@
 ---
-import Base from "../layouts/Base.astro";
+import FindingsLayout from "../layouts/FindingsLayout.astro";
+import { contact, legalLinks, projects } from "../data/navigation";
+
+// The page for an address that doesn't exist (Caddy serves it with a 404): the site's main sections, so a reader who
+// followed an old or mistyped link still finds their way (DAA-220). No canonical URL (Base).
+
+const sitemap = legalLinks.find((l) => l.href.endsWith("/sitemap"));
+const [delivery, talks] = projects;
+const sections = [
+  { label: "Діагностика ATLAS", href: "/uk-UA/atlas", note: "Що стримує зростання IT-компанії, за 4–5 тижнів" },
+  { label: "Знахідки аудитів", href: "/uk-UA/atlas/findings", note: "Типові проблеми IT-компаній і як їх розв’язати" },
+  { label: "Кейси", href: "/uk-UA/atlas/case-studies", note: "Що змінилося в компаніях після діагностики" },
+  { ...delivery, note: "Короткі відео про delivery-менеджмент" },
+  { ...talks, note: "Подкаст про бізнес IT-компаній і статті з розмов" },
+  { ...contact, note: "Засновники Daat відповідають протягом робочого дня" },
+];
 ---
 
-<Base title="Сторінку не знайдено | Daat" description="Такої сторінки немає.">
-  <main id="main">
-    <h1>Сторінку не знайдено</h1>
-    <p>
-      <a href="/">На головну</a>
-    </p>
-  </main>
-</Base>
+<FindingsLayout
+  title="Сторінку не знайдено | Daat"
+  description="Такої сторінки немає: можливо, її перенесли або в адресі помилка."
+  heading="Сторінку не знайдено"
+>
+  <p class="nf-intro" slot="hero">
+    Можливо, її перенесли або в адресі помилка. Ось головні розділи сайту:
+  </p>
+  <div class="wrap nf">
+    <ul class="nf__links">
+      {sections.map((s) => (
+        <li>
+          <a href={s.href} set:html={s.label} />
+          <span>{s.note}</span>
+        </li>
+      ))}
+    </ul>
+    {sitemap && (
+      <p class="nf__more">
+        Усі сторінки — на <a href={sitemap.href}>карті сайту</a>.
+      </p>
+    )}
+  </div>
+</FindingsLayout>
+
+<style>
+  .nf-intro {
+    margin: 0;
+    max-width: 40rem;
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+  .nf {
+    padding-bottom: var(--space-3xl);
+  }
+  .nf__links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-lg) var(--col-gap);
+    margin: 0;
+    padding: var(--space-xl) 0 0;
+    border-top: 1px solid var(--rule);
+    list-style: none;
+  }
+  .nf__links li {
+    display: grid;
+    align-content: start;
+    row-gap: var(--space-xs);
+  }
+  .nf__links a {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: var(--leading-title);
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
+  }
+  .nf__links a:hover {
+    color: var(--c-primary);
+    text-decoration-line: underline;
+  }
+  .nf__links span {
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+    line-height: var(--leading-small);
+  }
+  .nf__more {
+    margin: var(--space-xl) 0 0;
+    color: var(--ink-soft);
+    font-size: var(--text-small);
+  }
+  .nf__more a {
+    color: var(--c-primary);
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  @media (width < 64rem) {
+    .nf {
+      padding-bottom: 64px;
+    }
+    .nf__links {
+      grid-template-columns: 1fr;
+      row-gap: 24px;
+    }
+  }
+</style>
