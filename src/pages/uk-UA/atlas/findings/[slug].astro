@@ -12,7 +12,7 @@ import ShortVersion from "../../../../components/ShortVersion.astro";
 import Bulb from "../../../../assets/icons/icon-bulb.svg";
 import { sanityClient } from "../../../../sanity/client";
 import { srcsetFor, urlFor } from "../../../../sanity/image";
-import { headingsOf, withHeadingIds } from "../../../../sanity/portable-text";
+import { headingsOf, withHeadingIds, withOutline } from "../../../../sanity/portable-text";
 import { FINDINGS_QUERY } from "../../../../sanity/queries";
 import { getFounders } from "../../../../sanity/shared";
 import { clip, pageTitle, shareImage } from "../../../../data/share";
@@ -55,9 +55,9 @@ const postingData = jsonLd({
   mainEntityOfPage: pageUrl(Astro.url, Astro.site),
   inLanguage: "uk-UA",
 });
-const bodyWithIds = withHeadingIds(body);
+const bodyWithIds = withOutline(withHeadingIds(body));
 const toc = headingsOf(bodyWithIds);
-const bodyComponents = { block: { h2: Heading, h3: Heading } };
+const bodyComponents = { block: { h2: Heading, h3: Heading, h4: Heading } };
 
 // Efforts radar: how much each department is involved in solving the finding (0–100), drawn as a polar
 // area chart — one equal-angle sector per department, its radius proportional to the effort.
