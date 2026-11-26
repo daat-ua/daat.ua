@@ -7,8 +7,8 @@ import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
 import { youtubeId } from "../../../data/delivery-management";
 import { keepHyphenated, readingMinutes, talksCover } from "../../../data/daat-talks";
-import { urlFor } from "../../../sanity/image";
 import { getTalksEpisodes } from "../../../sanity/shared";
+import { pageTitle, videoShareImage } from "../../../data/share";
 
 // A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the title and the guest (the name
 // links to LinkedIn); the player across the content width (YouTube loads only when the reader presses play, as on
@@ -29,7 +29,7 @@ const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 const image = talksCover(episode);
 const { articles } = episode;
 // a shared link's image: the Studio's social image, else the cover
-const shareImage = episode.seo_image?.asset ? urlFor(episode.seo_image).width(1200).height(630).url() : image.src;
+const shareImage = videoShareImage(episode.youtubeUrl, episode.seo_image, episode.youtubeCover);
 
 // the episode for search engines: schema.org's VideoObject
 const videoData = {
@@ -43,10 +43,11 @@ const videoData = {
 ---
 
 <FindingsLayout
-  title={episode.seo_title || `${episode.title} | Daat Talks #${episode.number}`}
+  title={episode.seo_title || pageTitle(episode.title, ` | Daat Talks #${episode.number}`, " | Daat Talks")}
   description={episode.seo_description || episode.teaser}
   noindex={episode.no_index ?? false}
   shareImage={shareImage}
+  type="article"
   crumb={{ href: url("daat-talks"), label: "Daat Talks" }}
   heading={episode.title}
 >

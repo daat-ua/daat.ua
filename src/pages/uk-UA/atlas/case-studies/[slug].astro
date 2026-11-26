@@ -24,6 +24,7 @@ import { sanityClient } from "../../../../sanity/client";
 import { PHOTO_QUALITY, srcsetFor, urlFor } from "../../../../sanity/image";
 import { CASE_STUDIES_QUERY } from "../../../../sanity/queries";
 import { getCaseStudyTeasers } from "../../../../sanity/shared";
+import { pageTitle, shareImage } from "../../../../data/share";
 
 // A case study (DAA-230), after the mockup "Шаблон сторінки кейсу", in the findings pages' language: the
 // breadcrumb and title over the faded hero image with the client's profile beside them, the key figures, then
@@ -114,9 +115,12 @@ const otherTeasers = others.length ? others : placeholderCases;
 ---
 
 <Base
-  title={`${study.seo_title || study.title} | Кейси Daat`}
+  title={study.seo_title || pageTitle(study.title, " | Кейси Daat", " | Daat")}
   description={study.seo_description || study.lead}
   noindex={Boolean(study.no_index)}
+  shareImage={shareImage(study.seo_image, hero)}
+  type="article"
+  canonicalUrl={study.canonical}
 >
   <main id="main" class="case">
     <!-- ═══ Hero: the breadcrumb, title and lead; the client's profile beside them ═══ -->
