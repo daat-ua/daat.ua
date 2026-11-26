@@ -26,6 +26,7 @@ import { srcsetFor, urlFor } from "../../../sanity/image";
 import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
 import { TALKS_ARTICLES_QUERY } from "../../../sanity/queries";
 import { pageTitle, videoShareImage } from "../../../data/share";
+import { jsonLd, organizationRef, pageUrl, person } from "../../../data/structured-data";
 
 // An article written from a Daat Talks episode (DAA-239), page C of the "Daat Talks section" canvas: the episode in
 // the breadcrumb, the title, the byline (the hosts' and guests' faces, the reading time and date) and the lead; the
@@ -93,8 +94,14 @@ const articleData = {
   headline: article.title,
   description: article.excerpt,
   datePublished: article.publishedAt,
-  author: article.authors.map((a) => ({ "@type": "Person", name: a.name })),
+  dateModified: article._updatedAt,
+  author: article.authors.length
+    ? article.authors.map((a) => person({ name: a.name, linkedin: a.linkedin_link }))
+    : organizationRef,
+  publisher: organizationRef,
   image: articleImage,
+  mainEntityOfPage: pageUrl(Astro.url, Astro.site),
+  inLanguage: "uk-UA",
   ...(keywords.length > 0 && { keywords: keywords.join(", ") }),
 };
 ---
@@ -106,10 +113,15 @@ const articleData = {
   shareImage={shareImage}
   type="article"
   crumb={{ href: episodeHref, label: `Епізод ${episode.number} · ${episode.title}` }}
+  breadcrumbs={[
+    { name: "Daat Talks", href: url("daat-talks") },
+    { name: `Епізод ${episode.number} · ${episode.title}`, href: episodeHref },
+    { name: article.title },
+  ]}
   heading={article.title}
   backdrop={talksBackdrop(episode)}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(articleData).replace(/</g, "\\u003c")} />
+  <script type="application/ld+json" set:html={jsonLd(articleData)} />
   <Fragment slot="hero">
     <div class="byline">
       <div class="byline__faces" aria-hidden="true">

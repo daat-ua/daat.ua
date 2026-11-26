@@ -15,6 +15,7 @@ import { sanityClient } from "../../../sanity/client";
 import { headingsOf, withHeadingIds } from "../../../sanity/portable-text";
 import { DELIVERY_EPISODE_PAGES_QUERY } from "../../../sanity/queries";
 import { pageTitle, videoShareImage } from "../../../data/share";
+import { jsonLd, organizationRef } from "../../../data/structured-data";
 
 // An episode of "Все про менеджмент делівері" (DAA-231), in the findings pages' language: the cover blurred and
 // faded behind the title, the player across the content width (YouTube loads only when the reader presses play),
@@ -53,6 +54,8 @@ const videoData = {
   embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
   contentUrl: watchUrl,
   ...(episode.author && { author: { "@type": "Person", name: episode.author } }),
+  publisher: organizationRef,
+  inLanguage: "uk-UA",
 };
 
 // card titles go to the carousel as HTML, so the plain-text titles are escaped
@@ -71,9 +74,10 @@ const others: Teaser[] = episodes
   description={episode.seo_description || episode.teaser}
   noindex={episode.no_index ?? false}
   shareImage={shareImage}
+  breadcrumbs={[{ name: "Все про менеджмент делівері", href: url("delivery-management") }, { name: episode.title }]}
   type="article"
 >
-  <script type="application/ld+json" set:html={JSON.stringify(videoData).replace(/</g, "\\u003c")} />
+  <script type="application/ld+json" set:html={jsonLd(videoData)} />
   <main id="main" class="ep">
     <!-- ═══ First screen: the cover, blurred and faded into the paper ═══ -->
     <header class="ep-hero">

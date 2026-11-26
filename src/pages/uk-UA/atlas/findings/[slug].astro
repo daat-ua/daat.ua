@@ -15,7 +15,8 @@ import { srcsetFor, urlFor } from "../../../../sanity/image";
 import { headingsOf, withHeadingIds } from "../../../../sanity/portable-text";
 import { FINDINGS_QUERY } from "../../../../sanity/queries";
 import { getFounders } from "../../../../sanity/shared";
-import { pageTitle, shareImage } from "../../../../data/share";
+import { clip, pageTitle, shareImage } from "../../../../data/share";
+import { jsonLd, organizationRef, pageUrl, person } from "../../../../data/structured-data";
 
 // A delivery-audit finding from the Sanity "Delivery audit findings" collection (`post`), one page per
 // finding at build time: hero over the artwork, the article with its efforts radar and TL/DR, a sticky
@@ -37,6 +38,23 @@ const { title, image, author, teaser, body, summarisation } = finding;
 const findingsHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas/findings", { normalizeLocale: false });
 
 const description = finding.seo_description || toPlainText(teaser ?? []);
+const share = shareImage(finding.seo_image, image);
+const atlasHref = getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "atlas", { normalizeLocale: false });
+
+// the finding for search engines: schema.org's BlogPosting, written by its author for Daat
+const postingData = jsonLd({
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: title,
+  description: clip(description),
+  ...(share && { image: share.url }),
+  ...(finding.publishedAt && { datePublished: finding.publishedAt }),
+  dateModified: finding._updatedAt,
+  author: author?.name ? person({ name: author.name, linkedin: author.linkedin_link }) : organizationRef,
+  publisher: organizationRef,
+  mainEntityOfPage: pageUrl(Astro.url, Astro.site),
+  inLanguage: "uk-UA",
+});
 const bodyWithIds = withHeadingIds(body);
 const toc = headingsOf(bodyWithIds);
 const bodyComponents = { block: { h2: Heading, h3: Heading } };
@@ -91,12 +109,14 @@ const sectors = efforts.map(({ name, value }, i) => {
   title={finding.seo_title || pageTitle(title, "\u00a0— знахідки аудитів | Daat", " | Daat")}
   description={description}
   noindex={finding.no_index ?? false}
-  shareImage={shareImage(finding.seo_image, image)}
+  shareImage={share}
+  breadcrumbs={[{ name: "ATLAS", href: atlasHref }, { name: "Знахідки аудитів", href: findingsHref }, { name: title }]}
   type="article"
   image={image}
   crumb={{ href: findingsHref, label: "Знахідки аудитів" }}
   heading={title}
 >
+  <script type="application/ld+json" set:html={postingData} />
   {author && (
     <div class="finding-author" slot="hero">
       {author.photo?.asset && (

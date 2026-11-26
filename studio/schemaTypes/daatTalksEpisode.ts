@@ -145,6 +145,21 @@ export const daatTalksEpisode = defineType({
 
     // ---------- Meta ----------
     defineField({
+      name: 'publishedAt',
+      description: 'When the video came out on YouTube. Not shown; tells search engines (DAA-220)',
+      type: 'datetime',
+      group: 'meta',
+      initialValue: () => new Date().toISOString(),
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'duration',
+      description: 'The video’s length, e.g. "16:42" or "1:02:05". Not shown; tells search engines',
+      type: 'string',
+      group: 'meta',
+      validation: (rule) => rule.regex(/^(\d+:)?[0-5]?\d:[0-5]\d$/, {name: 'm:ss or h:mm:ss'}),
+    }),
+    defineField({
       name: 'hosts',
       description: 'Olena by default. Not shown yet; the articles’ authors are set on each article',
       type: 'array',
