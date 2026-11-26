@@ -1,0 +1,6 @@
+# daat.ua: everything may be crawled. Hosts other than daat.ua (dev.daat.ua, Railway's domain) answer with
+# X-Robots-Tag: noindex (Caddyfile), so they're crawled but never indexed.
+User-agent: *
+Allow: /
+
+Sitemap: https://daat.ua/sitemap.xml

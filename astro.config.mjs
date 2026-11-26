@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, envField, fontProviders } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
+import sitemap from "./src/integrations/sitemap";
 
 /**
  * One weight of a local woff2 font.
@@ -91,6 +92,8 @@ export default defineConfig({
       PUBLIC_CONTACT_FORM_URL: envField.string({ context: "client", access: "public", url: true, optional: true }),
     },
   },
+  // sitemap.xml from the built pages, without the noindex ones (src/integrations/sitemap.ts)
+  integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()],
   },
