@@ -1,4 +1,5 @@
 import { ALL_FIELDS_GROUP, defineField, defineType } from 'sanity'
+import { seoDescriptionRule, seoTitleRule } from './seo'
 import { EffortSliderInput } from './effortSliderInput'
 
 export const post = defineType({
@@ -184,16 +185,20 @@ export const post = defineType({
         defineField({
             name: 'seo_title',
             title: 'SEO title',
+            description: 'Empty: "<title> — знахідки аудитів | Daat"',
             type: 'string',
             group: 'seo',
+            validation: seoTitleRule,
         }),
 
         defineField({
             name: 'seo_description',
             title: 'SEO description',
+            description: 'Empty: the teaser',
             type: 'text',
             rows: 3,
             group: 'seo',
+            validation: seoDescriptionRule,
         }),
 
         defineField({

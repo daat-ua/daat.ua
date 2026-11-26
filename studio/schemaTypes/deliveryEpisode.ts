@@ -1,4 +1,5 @@
 import {ALL_FIELDS_GROUP, defineField, defineType} from 'sanity'
+import {seoDescriptionRule, seoTitleRule} from './seo'
 
 // An episode of "Все про менеджмент делівері" (DAA-231), Olena Kyianovska's YouTube series: the index and the
 // episode pages at /uk-UA/delivery-management (src/pages/uk-UA/delivery-management/). The video is YouTube's;
@@ -121,8 +122,7 @@ export const deliveryEpisode = defineType({
       description: 'Empty: the title',
       type: 'string',
       group: 'seo',
-      validation: (rule) =>
-        rule.max(60).warning('Search engines cut titles longer than ~60 characters'),
+      validation: seoTitleRule,
     }),
     defineField({
       name: 'seo_description',
@@ -131,8 +131,7 @@ export const deliveryEpisode = defineType({
       type: 'text',
       rows: 3,
       group: 'seo',
-      validation: (rule) =>
-        rule.max(160).warning('Search engines cut descriptions longer than ~160 characters'),
+      validation: seoDescriptionRule,
     }),
     defineField({
       name: 'seo_image',
