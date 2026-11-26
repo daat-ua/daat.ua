@@ -5,10 +5,11 @@ import { PortableText } from "astro-portabletext";
 import FindingsLayout from "../../../layouts/FindingsLayout.astro";
 import Guest from "../../../components/daat-talks/Guest.astro";
 import Divider from "../../../components/ui/Divider.astro";
-import { youtubeId } from "../../../data/delivery-management";
+import { isoDuration, youtubeId } from "../../../data/delivery-management";
 import { keepHyphenated, readingMinutes, talksCover } from "../../../data/daat-talks";
 import { getTalksEpisodes } from "../../../sanity/shared";
 import { pageTitle, videoShareImage } from "../../../data/share";
+import { jsonLd, organizationRef } from "../../../data/structured-data";
 
 // A Daat Talks episode (DAA-239), page B of the "Daat Talks section" canvas: the title and the guest (the name
 // links to LinkedIn); the player across the content width (YouTube loads only when the reader presses play, as on
@@ -38,7 +39,12 @@ const videoData = {
   name: episode.title,
   description: episode.teaser,
   thumbnailUrl: image.src,
+  ...(episode.publishedAt && { uploadDate: episode.publishedAt }),
+  ...(episode.duration && { duration: isoDuration(episode.duration) }),
   embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
+  contentUrl: watchUrl,
+  publisher: organizationRef,
+  inLanguage: "uk-UA",
 };
 ---
 
@@ -51,7 +57,7 @@ const videoData = {
   crumb={{ href: url("daat-talks"), label: "Daat Talks" }}
   heading={episode.title}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(videoData).replace(/</g, "\\u003c")} />
+  <script type="application/ld+json" set:html={jsonLd(videoData)} />
   <div class="talk-guests" slot="hero">
     {episode.guests.map((guest) => (
       <Guest guest={guest} linked size="lg" />

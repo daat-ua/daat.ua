@@ -10,6 +10,8 @@ import { defineQuery } from "groq";
 export const FINDINGS_QUERY = defineQuery(`*[_type == "post" && defined(slug.current)]{
   title,
   "slug": slug.current,
+  publishedAt,
+  _updatedAt,
   image{ alt, hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
   art_description,
   artist,
@@ -58,6 +60,8 @@ export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy" && defined
   _id,
   title,
   "slug": slug.current,
+  publishedAt,
+  _updatedAt,
   lead,
   heroImage{ hotspot, crop, asset->{ _id, metadata{ lqip, dimensions{ width, height } } } },
   industry,
@@ -154,6 +158,8 @@ export const TALKS_EPISODES_QUERY =
   title,
   "slug": slug.current,
   youtubeUrl,
+  publishedAt,
+  duration,
   teaser,
   description,
   "guests": guests[defined(@->_id)]->{ _id, name, role, company, linkedin, photo{ hotspot, crop, asset->{ _id } } },
@@ -190,7 +196,8 @@ export const TALKS_ARTICLES_QUERY =
   },
   "text": array::join([pt::text(body)] + body[_type in ["pullQuote", "callout"]].text + [pt::text(body[_type == "richTableBlock"].rows[].cells[].content[])], " "),
   publishedAt,
-  "authors": authors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
+  _updatedAt,
+  "authors": authors[defined(@->_id)]->{ _id, name, linkedin_link, photo{ hotspot, crop, asset->{ _id } } },
   "contributors": select(
     count(contributors[defined(@->_id)]) > 0 => contributors[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } },
     episode->guests[defined(@->_id)]->{ _id, name, photo{ hotspot, crop, asset->{ _id } } }

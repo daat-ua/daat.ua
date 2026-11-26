@@ -1602,6 +1602,20 @@
         },
         "optional": false
       },
+      "publishedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "duration": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "hosts": {
         "type": "objectAttribute",
         "value": {

@@ -27,6 +27,8 @@ interface Props {
   shareImage?: ShareImage;
   /** "article" for a page made from a document (Base) */
   type?: "website" | "article";
+  /** the trail for search engines (Base); without it, the breadcrumb's page, then this one */
+  breadcrumbs?: { name: string; href?: string }[];
   /** the hero's artwork: a Sanity image, or a local one */
   image?: HeroImage | ImageMetadata | null;
   /** instead of artwork, an image's URL blurred behind the title (a Daat Talks article: its episode's cover) */
@@ -38,12 +40,20 @@ interface Props {
 }
 
 const { title, description, noindex = false, shareImage, type, image, backdrop, crumb, heading } = Astro.props;
+const breadcrumbs = Astro.props.breadcrumbs ?? (crumb && [{ name: crumb.label, href: crumb.href }, { name: heading }]);
 const isLocal = (img: typeof image): img is ImageMetadata => !!img && "src" in img;
 const sanityImage = image && !isLocal(image) ? image : null;
 const lqip = sanityImage?.asset?.metadata?.lqip;
 ---
 
-<Base title={title} description={description} noindex={noindex} shareImage={shareImage} type={type}>
+<Base
+  title={title}
+  description={description}
+  noindex={noindex}
+  shareImage={shareImage}
+  type={type}
+  breadcrumbs={breadcrumbs}
+>
   <main id="main" class="finding-page">
     <!-- ═══ Hero: the artwork fades into the page ═══ -->
     <header class="finding-hero">

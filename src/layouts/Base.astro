@@ -6,6 +6,7 @@ import CookieConsent from "../components/CookieConsent.astro";
 import PageTransition from "../components/PageTransition.astro";
 import Header from "../components/Header.astro";
 import { clip, type ShareImage } from "../data/share";
+import { breadcrumbList, jsonLd, siteGraph } from "../data/structured-data";
 import "../styles/global.css";
 
 interface Props {
@@ -19,6 +20,8 @@ interface Props {
   type?: "website" | "article";
   /** the page's canonical URL when it isn't this one (a case first published elsewhere) */
   canonicalUrl?: string | null;
+  /** the trail to this page for search engines (BreadcrumbList): the sections above it, then the page (no href) */
+  breadcrumbs?: { name: string; href?: string }[];
 }
 
 const { title: rawTitle, description: rawDescription, noindex = false, type = "website", canonicalUrl } = Astro.props;
@@ -39,6 +42,15 @@ const shareImage = Astro.props.shareImage ?? {
 // favicons from the square "D" mark: PNG for the tab, 180px for iOS home screens
 const favicon = await getImage({ src: faviconSource, width: 32, height: 32, format: "png" });
 const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, format: "png" });
+
+// structured data: the organisation and the site on every page; the breadcrumb trail on pages below a section
+const site = Astro.site ?? new URL("https://daat.ua");
+const siteData = jsonLd(siteGraph(new URL(touchIcon.src, site).href));
+const { breadcrumbs } = Astro.props;
+const breadcrumbData =
+  breadcrumbs && breadcrumbs.length > 1 && canonical
+    ? jsonLd(breadcrumbList(breadcrumbs.map(({ name, href }) => ({ name, url: new URL(href ?? path, site).href }))))
+    : undefined;
 ---
 
 <!doctype html>
@@ -67,6 +79,8 @@ const touchIcon = await getImage({ src: faviconSource, width: 180, height: 180, 
     <meta property="og:image:height" content={String(shareImage.height)} />
     <meta property="og:image:alt" content={shareImage.alt ?? title} />
     <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={siteData} />
+    {breadcrumbData && <script type="application/ld+json" set:html={breadcrumbData} />}
     <!-- Ahrefs Web Analytics (no cookies), on every page -->
     <script is:inline src="https://analytics.ahrefs.com/analytics.js" data-key="STrJIQfxAdmMR6JOryVuoQ" async></script>
     <link rel="icon" type="image/png" href={favicon.src} />
