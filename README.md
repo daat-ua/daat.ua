@@ -40,7 +40,7 @@ All under `/uk-UA/` (see Locales and URLs):
 
 ## Content (Sanity)
 
-Project `7mfhokh5`, dataset `production`. The site reads it at build time only (`src/sanity/`), so published content reaches the site with the next build: publishing has to trigger a rebuild. The document types (`studio/schemaTypes/`):
+Project `7mfhokh5`, dataset `production`. The site reads it at build time only (`src/sanity/`), so published content reaches the site with the next build. Publishing starts that build by itself: publishing, changing or deleting a document of a type below fires a Sanity webhook that redeploys the site on Railway (see [Deploy](#deploy)), and the change is live within about five minutes. Drafts don't trigger it. The document types (`studio/schemaTypes/`):
 
 | Type                                                           | On the site                                                   |
 | -------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -91,6 +91,12 @@ The previous daat.ua site's URLs redirect to their new places (301, in the `Cadd
 ## Deploy
 
 Railway builds the `Dockerfile`: Node 26 builds the site, then Caddy (`Caddyfile`) serves it on `$PORT` with compression, long-lived caching for hashed assets and security headers. The contact form Worker deploys separately, with Wrangler (see its README).
+
+Content changes deploy through the Sanity webhook `Railway: rebuild daat.ua` (sanity.io/manage → project `7mfhokh5` → API → Webhooks): on a publish, change or delete in `production` (drafts off) of a type the site renders, it POSTs Railway's GraphQL API (`https://backboard.railway.com/graphql/v2`) the mutation `serviceInstanceDeploy(serviceId, environmentId, latestCommit: true)` for the `daat.ua` service's production environment, a fresh build of the latest commit (`serviceInstanceRedeploy` could reuse the old build, and with it the old content). The `Dockerfile` makes sure such a build reads Sanity again instead of reusing Docker's cached build step. The webhook authenticates with a Railway token for that environment only, held in the webhook's header and never in the repo.
+
+- **A new document type** the site renders has to be added to the webhook's filter (`_type in [...]`), or publishing it won't rebuild the site.
+- **Each publish starts its own build**, so publishing several documents in a row queues several; the last one wins.
+- **The attempts log isn't proof**: Railway's API answers 200 even when it refuses the call (the error is in the body), so check that a deployment started in Railway. If a build fails, the site keeps serving the previous one.
 
 ## Structure
 
