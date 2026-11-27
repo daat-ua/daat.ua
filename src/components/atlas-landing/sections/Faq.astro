@@ -47,6 +47,8 @@ import { faq } from "../../../data/faq";
     line-height: var(--leading-body);
   }
   .faq__item a {
+    /* vertical padding on an inline link widens its target to 24px (WCAG 2.5.8) without moving a line (DAA-246) */
+    padding-block: 4px;
     color: var(--c-cream);
     text-decoration: underline;
     text-decoration-thickness: 1px;

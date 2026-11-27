@@ -367,6 +367,7 @@
 }
 /* varied widths with square images give the staggered heights of the mockup */
 .finding {
+  position: relative; /* for "more", which covers the whole teaser */
   flex: none;
   width: 30%;
   scroll-snap-align: start;
@@ -452,6 +453,13 @@
   text-decoration-thickness: 1px;
   text-underline-offset: calc(8 * var(--px)); /* like Tailwind's underline-offset-8 */
   transition: text-decoration-color 0.2s ease;
+}
+/* the whole teaser is the link's target, not its 20px line of text (DAA-246): a tap anywhere on the card follows
+   it, as the image link already did; the card's text stays where it is and still reads as the link's context */
+.finding__more::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 .finding__more:hover,
 .finding__more:focus-visible {

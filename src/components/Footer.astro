@@ -104,6 +104,11 @@ const ICONS: Record<SocialNetwork, string> = {
     gap: var(--space-xs) var(--space-lg);
   }
   .footer__nav a {
+    /* a 24px target (WCAG 2.5.8) around the 16px line, without moving it: the padding is taken back by the
+       margin, and the rows' gap keeps neighbours from overlapping (DAA-246) */
+    display: inline-block;
+    padding-block: 4px;
+    margin-block: -4px;
     font-weight: 500;
     text-decoration: underline;
     text-decoration-thickness: 1px;
