@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import CallBar from "../../components/CallBar.astro";
 import Footer from "../../components/Footer.astro";
 import Toc from "../../components/Toc.astro";
 import AuditFindings from "../../components/atlas-landing/sections/AuditFindings.astro";
@@ -13,6 +14,7 @@ import Roadmap from "../../components/atlas-landing/sections/Roadmap.astro";
 import Scrub from "../../components/atlas-landing/sections/Scrub.astro";
 import Testimonials from "../../components/atlas-landing/sections/Testimonials.astro";
 import WhyNow from "../../components/atlas-landing/sections/WhyNow.astro";
+import { contact } from "../../data/navigation";
 ---
 
 <Base
@@ -34,6 +36,8 @@ import WhyNow from "../../components/atlas-landing/sections/WhyNow.astro";
       <Faq />
     </Toc>
   </main>
+  <!-- phones: booking stays in reach once the hero's buttons have scrolled away, until the footer (DAA-246) -->
+  <CallBar href={contact.href} after=".hero .cta" until=".footer" />
   <Footer />
 </Base>
 

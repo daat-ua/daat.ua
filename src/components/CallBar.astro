@@ -1,0 +1,202 @@
+---
+import { getFounders } from "../sanity/shared";
+import { srcsetFor, urlFor } from "../sanity/image";
+
+// Phones only: a slim bar at the bottom that keeps booking a call in reach while reading (hidden on desktop, where
+// the page has its own way: the findings' TOC card, the ATLAS page's buttons). It shows once the reader is past
+// `after` and steps aside when `until` comes into view; closing it hides it for the rest of the visit. A finding's
+// page and the ATLAS page (DAA-246) use it.
+
+interface Props {
+  /** where "Записатися" leads */
+  href: string;
+  /** a selector: the bar shows once this has scrolled out of view above (the page's own call to action) */
+  after: string;
+  /** a selector: the bar steps aside once this comes into view (the booking block, the footer) */
+  until: string;
+}
+
+const { href, after, until } = Astro.props;
+// the founders' faces on the bar
+const founders = await getFounders();
+---
+
+<aside class="call-bar" aria-label="Запис на дзвінок" data-shown="false" data-after={after} data-until={until} inert>
+  {founders.length > 0 && (
+    <span class="call-bar__faces">
+      {founders.map((f) => (
+        <img
+          src={urlFor(f.photo!).width(72).height(72).fit("crop").url()}
+          srcset={srcsetFor(f.photo!, [36, 72], 1)}
+          sizes="36px"
+          alt=""
+          width="36"
+          height="36"
+          loading="lazy"
+        />
+      ))}
+    </span>
+  )}
+  <span class="call-bar__text">
+    Дзвінок 30&nbsp;хв
+    <small>
+      із засновниками <span class="brand">Daat</span>
+    </small>
+  </span>
+  <a class="call-bar__btn" href={href}>
+    Записатися
+  </a>
+  <button class="call-bar__close" type="button" aria-label="Сховати">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18"></path>
+    </svg>
+  </button>
+</aside>
+
+<script>
+  // Other notices at the bottom (the cookie notice) rise above the bar while it's up, by its height + a gap.
+  const bar = document.querySelector<HTMLElement>(".call-bar");
+  const after = bar && document.querySelector<HTMLElement>(bar.dataset.after!);
+  const until = bar && document.querySelector<HTMLElement>(bar.dataset.until!);
+  if (bar && after && until) {
+    const key = "call-bar-closed";
+    let closed = false;
+    try {
+      closed = sessionStorage.getItem(key) === "1";
+    } catch {}
+    const root = document.documentElement.style;
+    const space = () => {
+      const h = bar.dataset.shown === "true" ? bar.offsetHeight : 0; // 0 on desktop, where the bar isn't shown
+      if (h) root.setProperty("--call-bar-space", `${h + 8}px`);
+      else root.removeProperty("--call-bar-space");
+    };
+    new ResizeObserver(space).observe(bar); // its text can wrap on narrow phones or with larger text
+    const set = (on: boolean) => {
+      bar.dataset.shown = String(on);
+      bar.inert = !on;
+      space();
+    };
+    let queued = false;
+    const update = () => {
+      queued = false;
+      set(!closed && after.getBoundingClientRect().bottom < 0 && until.getBoundingClientRect().top > innerHeight);
+    };
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    };
+    addEventListener("scroll", queue, { passive: true });
+    addEventListener("resize", queue);
+    bar.querySelector(".call-bar__close")!.addEventListener("click", () => {
+      closed = true;
+      try {
+        sessionStorage.setItem(key, "1");
+      } catch {}
+      update();
+    });
+    bar.querySelector(".call-bar__btn")!.addEventListener("click", () => set(false));
+    update();
+  }
+</script>
+
+<style>
+  .call-bar {
+    display: none;
+  }
+  @media (width < 64rem) {
+    .call-bar {
+      position: fixed;
+      z-index: 5; /* above the page, under the menu dialog (top layer) */
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      left: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      max-width: 480px;
+      margin-inline: auto;
+      padding: 8px 6px 8px 8px;
+      border-radius: 999px;
+      background: var(--c-hero);
+      box-shadow: 0 10px 30px rgb(28 38 50 / 0.25);
+      color: var(--c-on-primary-muted);
+      transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.25s ease;
+    }
+    .call-bar[data-shown="false"] {
+      opacity: 0;
+      transform: translateY(calc(100% + 24px));
+    }
+  }
+  @media (width < 64rem) and (prefers-reduced-motion: reduce) {
+    .call-bar {
+      transition: opacity 0.2s ease;
+    }
+    .call-bar[data-shown="false"] {
+      transform: none;
+    }
+  }
+  .call-bar__faces {
+    display: flex;
+  }
+  .call-bar__faces img {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--c-hero);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .call-bar__faces img + img {
+    margin-left: -10px;
+  }
+  .call-bar__text {
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .call-bar__text small {
+    display: block;
+    color: rgb(244 241 234 / 0.72);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .call-bar__btn {
+    padding: 11px 16px;
+    border-radius: 999px;
+    background: var(--c-accent);
+    color: var(--c-hero);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .call-bar__close {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: rgb(244 241 234 / 0.72);
+    cursor: pointer;
+  }
+  .call-bar__close svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .call-bar :is(a, button):focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+</style>

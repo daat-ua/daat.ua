@@ -93,7 +93,6 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 
 | Item | Where | Needed |
 |---|---|---|
-| `#contact` | Both "Записатися на діагностичний дзвінок" buttons | Contact or booking section, or an external booking URL |
 | `#audit-findings` | "Знахідки аудитів" | Audit findings section |
 | `#testimonials-and-case-studies` "Дивитися кейс" and "Читати кейс" | Testimonials and case studies | The case study pages |
 | Menu button | Header | Menu design and content |
