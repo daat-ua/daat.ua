@@ -104,17 +104,20 @@ const ICONS: Record<SocialNetwork, string> = {
     gap: var(--space-xs) var(--space-lg);
   }
   .footer__nav a {
-    /* a 24px target (WCAG 2.5.8) around the 16px line, without moving it: the padding is taken back by the
-       margin, and the rows' gap keeps neighbours from overlapping (DAA-246) */
-    display: inline-block;
-    padding-block: 4px;
-    margin-block: -4px;
+    position: relative;
     font-weight: 500;
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.25em;
     text-decoration-color: rgb(28 38 50 / 0.35);
     transition: text-decoration-color 0.2s ease;
+  }
+  /* a 24px target (WCAG 2.5.8) around the 16px line, drawn outside the layout so nothing moves; the rows' gap
+     keeps neighbours from overlapping (DAA-246) */
+  .footer__nav a::before {
+    content: "";
+    position: absolute;
+    inset: -4px 0;
   }
   .footer__nav a:hover,
   .footer__nav a:focus-visible {
