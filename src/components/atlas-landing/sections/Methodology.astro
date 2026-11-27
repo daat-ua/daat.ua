@@ -290,7 +290,8 @@ const weeksLabel = ([from, to]: [number, number]) => {
   .phases__list li:first-child {
     padding-top: 0;
   }
-  .phases__list p {
+  /* low specificity, so the paragraphs' own margins below win */
+  :where(.phases__list) p {
     margin: 0;
   }
   .phases__n {

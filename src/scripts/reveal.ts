@@ -37,7 +37,8 @@ const RULES: { selector: string; pattern: Pattern; items?: string; step?: number
   { selector: ".impact__scroll", items: ".impact__fill", pattern: "bar", step: 40 },
   // the methodology's phases rise in order, then each phase's weeks draw along its track
   { selector: ".phases__list", items: ":scope > *", pattern: "rise" },
-  { selector: ".phases__list", items: ".phases__track i", pattern: "bar", step: 90 },
+  // (watched from the card around the list, since one element is watched by one rule only)
+  { selector: ".phases", items: ".phases__track i", pattern: "bar", step: 90 },
   // the questions
   { selector: ".faq__list", items: ":scope > *", pattern: "fade", step: 60 },
   // the case studies index: «Усі кейси», each case's photo and its text line by line, the rule between cases
