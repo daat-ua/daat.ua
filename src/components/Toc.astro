@@ -36,6 +36,27 @@ import { toc } from "../data/navigation";
     });
     const scopeSections = [...document.querySelectorAll<HTMLElement>(".toc-scope > section")];
     const nav = toc.querySelector("nav")!;
+    const list = toc.querySelector("ul")!;
+
+    // phones: the TOC is a bar that scrolls sideways; its edges fade where more items continue, and the current
+    // section's link is scrolled into the middle when it changes (DAA-246)
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const edges = () => {
+      const max = list.scrollWidth - list.clientWidth;
+      const more = max > 2 ? [list.scrollLeft > 2 && "start", list.scrollLeft < max - 2 && "end"] : [];
+      list.dataset.more = more.filter(Boolean).join(" ");
+    };
+    list.addEventListener("scroll", () => requestAnimationFrame(edges), { passive: true });
+    addEventListener("resize", edges);
+    edges();
+    let shown: HTMLAnchorElement | null = null;
+    const reveal = (a: HTMLAnchorElement) => {
+      if (a === shown || list.scrollWidth <= list.clientWidth) return; // only where the bar scrolls (phones)
+      shown = a;
+      const r = a.getBoundingClientRect(); // not offsetLeft: each link's offset parent is its own <li>
+      const left = list.scrollLeft + r.left - list.getBoundingClientRect().left - (list.clientWidth - r.width) / 2;
+      list.scrollTo({ left, behavior: reduced.matches ? "auto" : "smooth" });
+    };
 
     function update() {
       if (targets.length) {
@@ -44,6 +65,7 @@ import { toc } from "../data/navigation";
         for (const [a, el] of targets) if (el.getBoundingClientRect().top <= line) current = a;
         for (const a of links) a.toggleAttribute("aria-current", a === current);
         current.setAttribute("aria-current", "true");
+        reveal(current);
       }
       const y = nav.getBoundingClientRect().top + 10;
       const under = scopeSections.find((s) => {
@@ -52,8 +74,18 @@ import { toc } from "../data/navigation";
       });
       toc!.dataset.theme = under?.dataset.tocTheme || "dark";
     }
+    // short screens (landscape phones): the bar steps out of the way while reading down, and is back on the
+    // way up (DAA-246)
+    const short = matchMedia("(width < 64rem) and (max-height: 500px)");
+    let lastY = scrollY;
+    const tuck = () => {
+      const y = scrollY;
+      if (!short.matches || Math.abs(y - lastY) < 6) return;
+      toc!.toggleAttribute("data-tucked", y > lastY && y > innerHeight);
+      lastY = y;
+    };
     update();
-    addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+    addEventListener("scroll", () => requestAnimationFrame(() => (update(), tuck())), { passive: true });
   }
 </script>
 
@@ -147,7 +179,9 @@ import { toc } from "../data/navigation";
       margin: 0;
       background: var(--c-primary);
       box-shadow: 0 1px 0 rgb(250 248 243 / 0.2);
-      transition: background-color 0.25s ease;
+      transition:
+        background-color 0.25s ease,
+        transform 0.25s ease;
     }
     .why__toc nav {
       position: static;
@@ -161,6 +195,19 @@ import { toc } from "../data/navigation";
     }
     .why__toc ul::-webkit-scrollbar {
       display: none;
+    }
+    /* where more items continue past an edge, that edge fades out (set by the script as the bar scrolls) */
+    .why__toc ul[data-more~="end"] {
+      mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+    }
+    .why__toc ul[data-more~="start"] {
+      mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+    }
+    .why__toc ul[data-more~="start"][data-more~="end"] {
+      mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+    }
+    .why__toc[data-tucked] {
+      transform: translateY(-100%);
     }
     .why__toc[data-theme="light"] {
       background: var(--c-paper);

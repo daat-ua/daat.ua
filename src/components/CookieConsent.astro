@@ -162,4 +162,18 @@ const policyHref = `${getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "priv
       font-size: 15px;
     }
   }
+  /* landscape phones: little height to spare, so the notice keeps to the right edge, without its icon, rather
+     than lying across the middle of the screen (DAA-246) */
+  @media (width < 64rem) and (max-height: 500px) {
+    .cookie-consent {
+      left: auto;
+      max-width: min(420px, calc(100% - 24px));
+    }
+    .cookie-consent__icon {
+      display: none;
+    }
+    .cookie-consent__text {
+      font-size: 13px;
+    }
+  }
 </style>
