@@ -130,14 +130,29 @@ import { horizons, impact } from "../../../data/roadmap";
   const impactEl = section.querySelector<HTMLElement>(".impact");
   const panelOf = (tab: HTMLButtonElement) => document.getElementById(tab.getAttribute("aria-controls")!)!;
 
+  // phones: the horizons are stacked and read one after another, so all three stay at full strength and
+  // exposed, and a tab leads to its horizon (DAA-246)
+  const phone = matchMedia("(width < 64rem)");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // which horizons assistive tech gets: all three on phones, the selected one on desktop (as rendered)
+  const expose = () => {
+    for (const t of tabs) {
+      if (phone.matches || t.getAttribute("aria-selected") === "true") panelOf(t).removeAttribute("aria-hidden");
+      else panelOf(t).setAttribute("aria-hidden", "true");
+    }
+  };
+  expose();
+  phone.addEventListener("change", expose);
+
   function select(tab: HTMLButtonElement, focus = false) {
     for (const t of tabs) {
       const on = t === tab;
       t.setAttribute("aria-selected", String(on));
       t.tabIndex = on ? 0 : -1;
       panelOf(t).classList.toggle("is-active", on);
-      // all columns stay visible, but only the selected one is exposed as the tab's panel
-      if (on) panelOf(t).removeAttribute("aria-hidden");
+      // desktop: all columns stay visible, but only the selected one is exposed as the tab's panel
+      if (on || phone.matches) panelOf(t).removeAttribute("aria-hidden");
       else panelOf(t).setAttribute("aria-hidden", "true");
     }
     if (impactEl) impactEl.dataset.active = tab.getAttribute("aria-controls")!.replace("panel-", "");
@@ -145,7 +160,10 @@ import { horizons, impact } from "../../../data/roadmap";
     goTo(tabs.indexOf(tab));
   }
   for (const tab of tabs) {
-    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("click", () => {
+      select(tab);
+      if (phone.matches) panelOf(tab).scrollIntoView({ behavior: reduced.matches ? "auto" : "smooth", block: "start" });
+    });
     tab.addEventListener("keydown", (e) => {
       const i = tabs.indexOf(tab);
       const next = ({ ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 } as Record<string, number>)[
@@ -566,6 +584,15 @@ import { horizons, impact } from "../../../data/roadmap";
     }
     .horizon + .horizon {
       border-left: 0;
+    }
+    /* stacked, each horizon is read in turn: none of them looks switched off */
+    .horizon,
+    .horizon:not(.is-active):hover {
+      opacity: 1;
+      cursor: auto;
+    }
+    .horizon {
+      scroll-margin-top: 64px; /* clear of the sticky section bar when a tab leads here */
     }
     .impact {
       margin-top: 64px;
