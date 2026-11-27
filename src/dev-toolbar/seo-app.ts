@@ -33,8 +33,10 @@ function readHead(): Head {
   });
   const jsonLd = [...document.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"]')].map((s) => {
     try {
-      const data = JSON.parse(s.textContent ?? "");
-      const nodes: { "@type"?: string | string[] }[] = data["@graph"] ?? [data];
+      // a block is one node, a top-level array of nodes, or a {"@graph": [...]} container (or an array of those)
+      type Node = { "@type"?: string | string[]; "@graph"?: Node[] };
+      const data = JSON.parse(s.textContent ?? "") as Node | Node[];
+      const nodes = (Array.isArray(data) ? data : [data]).flatMap((n) => n["@graph"] ?? [n]);
       return { types: nodes.flatMap((n) => n["@type"] ?? "?") };
     } catch (e) {
       return { types: [], error: (e as Error).message };
@@ -61,7 +63,79 @@ function readHead(): Head {
   };
 }
 
-function checks(head: Head): Check[] {
+/** a URL the page gives, resolved against the page; null when it doesn't parse */
+const resolve = (value: string) => {
+  try {
+    return value ? new URL(value, location.href) : null;
+  } catch {
+    return null;
+  }
+};
+const isAbsolute = (value: string) => /^https?:\/\//i.test(value);
+
+/** the share image as loaded: from its own URL, or from this dev server when that host (daat.ua before the domain
+ * moves) isn't reachable */
+interface ShareImageState {
+  status: "none" | "loading" | "loaded" | "failed";
+  src?: string;
+  local?: boolean;
+  width?: number;
+  height?: number;
+}
+
+const load = (src: string) =>
+  new Promise<HTMLImageElement>((done, fail) => {
+    const img = new Image();
+    img.onload = () => done(img);
+    img.onerror = () => fail(new Error(src));
+    img.src = src;
+  });
+
+async function loadShareImage(head: Head): Promise<ShareImageState> {
+  const url = resolve(head.og.image ?? "");
+  if (!url) return { status: head.og.image ? "failed" : "none", src: head.og.image };
+  const loaded = (img: HTMLImageElement, local: boolean): ShareImageState => ({
+    status: "loaded",
+    src: img.src,
+    local,
+    width: img.naturalWidth,
+    height: img.naturalHeight,
+  });
+  try {
+    return loaded(await load(url.href), false);
+  } catch {
+    // already this server: nothing else to try
+    if (url.origin === location.origin) return { status: "failed", src: url.href };
+    const local = new URL(url.pathname + url.search, location.origin).href;
+    try {
+      return loaded(await load(local), true);
+    } catch {
+      return { status: "failed", src: url.href };
+    }
+  }
+}
+
+function imageCheck(head: Head, image: ShareImageState): Check | undefined {
+  if (image.status === "none") return undefined; // the Open Graph check names the missing og:image
+  const from = image.local ? ` (loaded from this dev server: ${resolve(head.og.image)?.host} isn't reachable)` : "";
+  if (image.status === "loading") return { level: "ok", label: "Share image", detail: "loading…" };
+  if (image.status === "failed") return { level: "error", label: "Share image", detail: `doesn't load: ${image.src}` };
+  const { width: w = 0, height: h = 0 } = image;
+  const tagged = head.og["image:width"] && head.og["image:height"];
+  const declared = `${head.og["image:width"]} × ${head.og["image:height"]}`;
+  const problems = [
+    !isAbsolute(head.og.image) && "og:image isn't an absolute URL",
+    !tagged && "no og:image:width / og:image:height (networks lay the card out late)",
+    tagged && `${w} × ${h}` !== declared && `the tags say ${declared}`,
+    Math.abs(w / h - 1200 / 630) > 0.02 && `ratio ${(w / h).toFixed(2)}, not 1.91 (1200 × 630), so networks crop it`,
+    w < 1200 && "narrower than 1200 px, so it may look soft on large cards",
+  ].filter(Boolean);
+  return problems.length
+    ? { level: "warn", label: "Share image", detail: `${w} × ${h}: ${problems.join("; ")}${from}` }
+    : { level: "ok", label: "Share image", detail: `${w} × ${h}${from}` };
+}
+
+function checks(head: Head, image: ShareImageState): Check[] {
   const list: Check[] = [];
   const add = (level: Level, label: string, detail: string) => list.push({ level, label, detail });
   const length = (label: string, text: string, max: number) =>
@@ -72,13 +146,12 @@ function checks(head: Head): Check[] {
   length("Title", head.title, 60);
   length("Description", head.description, 160);
 
-  const here = location.origin + location.pathname.replace(/\.html$/, "");
+  const here = location.pathname.replace(/\.html$/, "");
+  const canonical = resolve(head.canonical);
   if (!head.canonical) add("warn", "Canonical", "none (right only on the 404 page)");
-  else {
-    const path = new URL(head.canonical).pathname;
-    const same = path === location.pathname.replace(/\.html$/, "");
-    add(same ? "ok" : "warn", "Canonical", same ? head.canonical : `${head.canonical}, not this page (${here})`);
-  }
+  else if (!canonical) add("error", "Canonical", `doesn't parse: ${head.canonical}`);
+  else if (canonical.pathname !== here) add("warn", "Canonical", `${canonical.href}, not this page (${here})`);
+  else add("ok", "Canonical", canonical.href);
 
   add(
     head.robots.includes("noindex") ? "warn" : "ok",
@@ -93,6 +166,10 @@ function checks(head: Head): Check[] {
     "Open Graph",
     missing.length ? `missing og:${missing.join(", og:")}` : "complete",
   );
+  if (head.og.url && !isAbsolute(head.og.url))
+    add("warn", "og:url", `${head.og.url} isn't an absolute URL: networks can't follow it`);
+  const share = imageCheck(head, image);
+  if (share) list.push(share);
   add(head.twitterCard ? "ok" : "warn", "X card", head.twitterCard || "missing twitter:card");
 
   if (!head.jsonLd.length) add("warn", "Structured data", "no JSON-LD");
@@ -118,12 +195,13 @@ const escape = (s: string) =>
 const cut = (s: string, max: number) => {
   if (s.length <= max) return s;
   const head = s.slice(0, max - 1);
-  return `${head.slice(0, head.lastIndexOf(" ") > max / 2 ? head.lastIndexOf(" ") : undefined).trimEnd()}…`;
+  const space = head.lastIndexOf(" ");
+  return `${(space > 0 ? head.slice(0, space) : head).trimEnd()}…`;
 };
 
 /** "daat.ua › uk-UA › atlas › findings", as a search result writes the address */
 const crumbs = (url: string) => {
-  const u = new URL(url || location.href);
+  const u = resolve(url) ?? new URL(location.href);
   return [u.host, ...u.pathname.split("/").filter(Boolean)].map(escape).join(" › ");
 };
 
@@ -140,21 +218,24 @@ function searchPreview(head: Head) {
     <p class="note">About as Google shows it: it cuts titles near 600 px (~60 characters) and descriptions near 160.</p>`;
 }
 
-function sharePreviews(head: Head) {
-  const host = escape(new URL(head.og.url || head.canonical || location.href).host);
-  const image = head.og.image
-    ? `<img src="${escape(head.og.image)}" alt="${escape(head.og["image:alt"] ?? "")}" data-share>`
-    : `<div class="noimage">no og:image</div>`;
+function sharePreviews(head: Head, image: ShareImageState) {
+  const host = escape((resolve(head.og.url) ?? resolve(head.canonical) ?? new URL(location.href)).host);
+  const src = image.status === "loaded" ? image.src! : resolve(head.og.image)?.href;
+  const picture =
+    head.og.image && src && image.status !== "failed"
+      ? `<img src="${escape(src)}" alt="${escape(head.og["image:alt"] ?? "")}">`
+      : `<div class="noimage">${head.og.image ? "og:image doesn't load" : "no og:image"}</div>`;
   const title = head.og.title || head.title;
   const text = head.og.description || head.description;
+  const note = imageCheck(head, image);
   return `
     <p class="label">Facebook, LinkedIn</p>
-    <section class="card card--fb">${image}<div><small>${host.toUpperCase()}</small><b>${escape(cut(title, 88))}</b><span>${escape(cut(text, 110))}</span></div></section>
+    <section class="card card--fb">${picture}<div><small>${host.toUpperCase()}</small><b>${escape(cut(title, 88))}</b><span>${escape(cut(text, 110))}</span></div></section>
     <p class="label">X (${escape(head.twitterCard || "no card")})</p>
-    <section class="card card--x">${image}<small>${host}</small><b>${escape(cut(title, 70))}</b></section>
+    <section class="card card--x">${picture}<small>${host}</small><b>${escape(cut(title, 70))}</b></section>
     <p class="label">Telegram</p>
-    <section class="card card--tg"><small>${escape(head.og.site_name || "Daat")}</small><b>${escape(title)}</b><span>${escape(cut(text, 200))}</span>${image}</section>
-    <p class="note" data-image-note></p>`;
+    <section class="card card--tg"><small>${escape(head.og.site_name || "Daat")}</small><b>${escape(title)}</b><span>${escape(cut(text, 200))}</span>${picture}</section>
+    ${note ? `<p class="note">Image: ${escape(note.detail)}</p>` : ""}`;
 }
 
 function checkList(list: Check[]) {
@@ -167,6 +248,8 @@ function checkList(list: Check[]) {
     .join("")}</ul>`;
 }
 
+// Astro's toolbar window is fixed-size UI, and the cards copy each network's own sizes, so plain px here (not the
+// site's --px scale or type tokens)
 const STYLE = `
   :host { all: initial; }
   * { box-sizing: border-box; }
@@ -174,8 +257,9 @@ const STYLE = `
   .tabs button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 6px; border: 1px solid #343841;
     background: transparent; color: inherit; cursor: pointer; }
   .tabs button[aria-selected="true"] { background: #fff; color: #13151a; border-color: #fff; }
+  .tabs button:focus-visible, [role="tabpanel"]:focus-visible { outline: 2px solid #f5b14c; outline-offset: 2px; }
   .tabs .count { margin-left: 6px; color: #f5b14c; }
-  h2 { margin: 0 0 12px; font-size: 18px; color: #fff; }
+  .tabs .count:empty { display: none; }
   .note, .label { margin: 12px 0 6px; font-size: 12px; color: #8a8f98; }
   .label { margin-top: 16px; text-transform: uppercase; letter-spacing: .06em; }
   .serp { background: #fff; color: #202124; border-radius: 10px; padding: 16px 18px; font-family: Arial, sans-serif; }
@@ -209,6 +293,13 @@ const STYLE = `
   em { color: #b3261e; }
 `;
 
+const TABS = [
+  { id: "search", label: "Search" },
+  { id: "share", label: "Share" },
+  { id: "checks", label: "Checks" },
+] as const;
+type Tab = (typeof TABS)[number]["id"];
+
 export default defineToolbarApp({
   init(canvas, app) {
     const win = document.createElement("astro-dev-toolbar-window");
@@ -216,72 +307,87 @@ export default defineToolbarApp({
     win.style.overflowY = "auto";
     const style = document.createElement("style");
     style.textContent = STYLE;
-    const body = document.createElement("div");
-    win.append(style, body);
+
+    // the tabs stay in place while the panel's content changes, so focus stays on the tab (ARIA tabs pattern:
+    // arrow keys, Home and End move between tabs, only the selected one is in the tab order)
+    const tablist = document.createElement("div");
+    tablist.className = "tabs";
+    tablist.setAttribute("role", "tablist");
+    tablist.setAttribute("aria-label", "SEO");
+    const panel = document.createElement("div");
+    panel.id = "seo-panel";
+    panel.setAttribute("role", "tabpanel");
+    panel.tabIndex = 0;
+    const buttons = TABS.map(({ id, label }) => {
+      const b = document.createElement("button");
+      b.id = `seo-tab-${id}`;
+      b.dataset.tab = id;
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-controls", panel.id);
+      b.innerHTML = `${label}<span class="count"></span>`;
+      return b;
+    });
+    tablist.append(...buttons);
+    win.append(style, tablist, panel);
     canvas.append(win);
 
-    let tab: "search" | "share" | "checks" = "search";
+    let tab: Tab = "search";
+    let head = readHead();
+    let image: ShareImageState = { status: "none" };
+    let imageKey = "";
 
-    const render = () => {
-      const head = readHead();
-      const list = checks(head);
+    const update = () => {
+      const list = checks(head, image);
       const problems = list.filter((c) => c.level !== "ok").length;
       app.toggleNotification({
         state: problems > 0,
         level: list.some((c) => c.level === "error") ? "error" : "warning",
       });
-      const tabButton = (id: typeof tab, label: string, count = 0) =>
-        `<button role="tab" data-tab="${id}" aria-selected="${tab === id}">${label}${count ? `<span class="count">${count}</span>` : ""}</button>`;
-      body.innerHTML = `
-        <div class="tabs" role="tablist">${tabButton("search", "Search")}${tabButton("share", "Share")}${tabButton("checks", "Checks", problems)}</div>
-        ${tab === "search" ? searchPreview(head) : tab === "share" ? sharePreviews(head) : checkList(list)}`;
-      body.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((b) =>
-        b.addEventListener("click", () => {
-          tab = b.dataset.tab as typeof tab;
-          render();
-        }),
-      );
-      checkShareImage(body, head);
+      buttons.forEach((b) => {
+        const selected = b.dataset.tab === tab;
+        b.setAttribute("aria-selected", String(selected));
+        b.tabIndex = selected ? 0 : -1;
+        if (b.dataset.tab === "checks") b.querySelector(".count")!.textContent = problems ? String(problems) : "";
+      });
+      panel.setAttribute("aria-labelledby", `seo-tab-${tab}`);
+      panel.innerHTML =
+        tab === "search" ? searchPreview(head) : tab === "share" ? sharePreviews(head, image) : checkList(list);
     };
 
-    render();
-    app.onToggled(({ state }) => state && render());
+    /** read the page again; the share image is loaded once per page and image URL, then folded into the checks */
+    const refresh = () => {
+      head = readHead();
+      const key = `${location.pathname}\n${head.og.image ?? ""}`;
+      if (key !== imageKey) {
+        imageKey = key;
+        image = head.og.image ? { status: "loading" } : { status: "none" };
+        if (head.og.image)
+          loadShareImage(head).then((result) => {
+            if (imageKey !== key) return; // the page or its image changed meanwhile
+            image = result;
+            update();
+          });
+      }
+      update();
+    };
+
+    const select = (next: Tab, focus = false) => {
+      tab = next;
+      update();
+      if (focus) buttons.find((b) => b.dataset.tab === next)!.focus();
+    };
+    buttons.forEach((b) => b.addEventListener("click", () => select(b.dataset.tab as Tab)));
+    tablist.addEventListener("keydown", (e) => {
+      const i = TABS.findIndex((t) => t.id === tab);
+      const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: TABS.length - 1 }[e.key];
+      if (to === undefined) return;
+      e.preventDefault();
+      select(TABS[(to + TABS.length) % TABS.length].id, true);
+    });
+
+    refresh();
+    app.onToggled(({ state }) => state && refresh());
     // the site swaps pages without a reload (page transitions): read the new page's head
-    document.addEventListener("astro:page-load", () => render());
+    document.addEventListener("astro:page-load", refresh);
   },
 });
-
-/** the share image's real size, and a fallback to this dev server when the canonical host (daat.ua) isn't reachable */
-function checkShareImage(root: HTMLElement, head: Head) {
-  const note = root.querySelector<HTMLElement>("[data-image-note]");
-  const images = [...root.querySelectorAll<HTMLImageElement>("img[data-share]")];
-  if (!note || !images.length) return;
-  const first = images[0];
-  const report = () => {
-    const { naturalWidth: w, naturalHeight: h } = first;
-    const tagged = head.og["image:width"] && head.og["image:height"];
-    const declared = `${head.og["image:width"]} × ${head.og["image:height"]}`;
-    const problems = [
-      !/^https?:\/\//.test(head.og.image) && "og:image isn't an absolute URL",
-      !tagged && "no og:image:width / og:image:height (networks lay the card out late)",
-      tagged && w && `${w} × ${h}` !== declared && `the tags say ${declared}`,
-      w &&
-        Math.abs(w / h - 1200 / 630) > 0.02 &&
-        `ratio ${(w / h).toFixed(2)}, not 1.91 (1200 × 630), so networks crop it`,
-      w && w < 1200 && "narrower than 1200 px, so it may look soft on large cards",
-    ].filter(Boolean);
-    note.textContent = `The image is ${w} × ${h}. ${problems.length ? `${problems.join("; ")}.` : "1200 × 630, as the networks want."}`;
-  };
-  const fallBack = () => {
-    const local = new URL(new URL(head.og.image).pathname, location.origin).href;
-    if (first.src === local) {
-      note.textContent = `The image doesn't load: ${head.og.image}`;
-      return;
-    }
-    images.forEach((img) => (img.src = local));
-    note.textContent = `${new URL(head.og.image).host} isn't reachable from here; showing ${local}`;
-  };
-  first.addEventListener("load", report, { once: true });
-  first.addEventListener("error", fallBack);
-  if (first.complete && first.naturalWidth) report();
-}
