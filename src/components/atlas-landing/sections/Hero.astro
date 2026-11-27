@@ -9,7 +9,7 @@ import { clients } from "../../../data/hero";
 
 <section class="hero">
   <div class="hero__photo-clip" aria-hidden="true">
-    <!-- the LCP image: modern formats, sized to the 1344.5px (desktop) / 140vw (phone) box, loaded first -->
+    <!-- the LCP image: modern formats, sized to the 1344.5px (desktop) / 150vw (phone) box, loaded first -->
     <Picture
       class="hero__photo"
       src={photo}
@@ -17,7 +17,7 @@ import { clients } from "../../../data/hero";
       formats={["avif", "webp"]}
       fallbackFormat="webp"
       widths={[640, 960, 1344, 1800, 2400, 2880]}
-      sizes="(width < 64rem) 140vw, 93.37vw"
+      sizes="(width < 64rem) 150vw, 93.37vw"
       loading="eager"
       fetchpriority="high"
       layout="none"
@@ -197,7 +197,7 @@ import { clients } from "../../../data/hero";
     .hero .wrap {
       display: flex;
       flex-direction: column;
-      padding-top: 152px;
+      padding-top: 252px; /* 100px more than the header needs: the founders' faces sit above the headline */
       padding-bottom: 40px;
     }
     .hero__title {
@@ -206,14 +206,30 @@ import { clients } from "../../../data/hero";
     .hero__lead {
       margin-top: 40px;
     }
+    /* the founders at the top, both in frame, their faces above the headline; the photo fades out below their
+       shoulders, and a gradient darkens the band behind the text from the headline down (DAA-246) */
     .hero__photo {
-      left: 20%;
-      top: auto;
-      bottom: 0;
-      width: 140vw;
+      left: 50%;
+      top: 40px;
+      bottom: auto;
+      width: 150vw;
       height: auto;
       aspect-ratio: 1344.5 / 896.5;
-      opacity: 0.3;
+      opacity: 0.9;
+      transform: translateX(-50%);
+      mask-image: linear-gradient(to bottom, #000 28%, transparent 66%);
+    }
+    .hero__photo-clip::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgb(28 38 50 / 0) 0%,
+        rgb(28 38 50 / 0.15) 18%,
+        rgb(28 38 50 / 0.78) 32%,
+        var(--c-hero) 52%
+      );
     }
     .hero__divider {
       margin-top: 40px;
