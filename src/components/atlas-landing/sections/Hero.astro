@@ -191,7 +191,11 @@ import { clients } from "../../../data/hero";
     .hero {
       --hero-gap: 20px;
     }
+    /* the call to action comes right after the lead, so it's on the first screen of a phone (DAA-246); the
+       client logos follow it. Only the order on screen changes: the logos hold no links, so focus order is unaffected */
     .hero .wrap {
+      display: flex;
+      flex-direction: column;
       padding-top: 152px;
       padding-bottom: 40px;
     }
@@ -219,6 +223,7 @@ import { clients } from "../../../data/hero";
       margin-top: 36px;
     }
     .clients {
+      order: 2;
       grid-template-columns: 1fr;
       row-gap: 24px;
       margin-top: 48px;
@@ -230,10 +235,11 @@ import { clients } from "../../../data/hero";
       height: 15.552px;
     }
     .cta {
+      order: 1;
       flex-direction: column;
       align-items: stretch;
       max-width: 480px;
-      margin-top: 48px;
+      margin-top: 40px;
     }
   }
 </style>
