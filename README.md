@@ -124,7 +124,8 @@ src/
     daat-talks/             Daat Talks: guests, article body blocks
   scripts/      client-side TypeScript (frame animations, in-page links, the HLS player)
   pages/        uk-UA/… (see Pages), 404.astro
-  integrations/ build steps: sitemap.xml (see Search engines)
+  integrations/ sitemap.xml after the build (see Search engines); the dev toolbar's SEO app (dev only)
+  dev-toolbar/  that SEO app: search and share previews, SEO checks
 public/         files served as-is (robots.txt, frame sequences for the canvas animations, the delivery management video)
 studio/         Sanity Studio (separate app)
 workers/        contact-form: the contact form's Cloudflare Worker (separate app)
