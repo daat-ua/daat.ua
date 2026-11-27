@@ -42,7 +42,6 @@ const videoData = {
   ...(episode.publishedAt && { uploadDate: episode.publishedAt }),
   ...(episode.duration && { duration: isoDuration(episode.duration) }),
   embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
-  contentUrl: watchUrl,
   publisher: organizationRef,
   inLanguage: "uk-UA",
 };
