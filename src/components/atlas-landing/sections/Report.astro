@@ -70,7 +70,7 @@ const charts = [
 
   <!-- Full-size view for the charts -->
   <dialog class="lightbox" aria-label="Графік зі звіту">
-    <div class="lightbox__pan">
+    <div class="lightbox__pan" aria-label="Графік: прокрутіть, щоб переглянути">
       <img class="lightbox__img" alt="" />
     </div>
     <button class="lightbox__close" type="button" aria-label="Закрити">
@@ -85,15 +85,18 @@ const charts = [
   // close button (or Esc, or back) closes it
   const dialog = document.querySelector<HTMLDialogElement>(".lightbox")!;
   const img = dialog.querySelector<HTMLImageElement>(".lightbox__img")!;
+  const pan = dialog.querySelector<HTMLElement>(".lightbox__pan")!;
+  const phone = matchMedia("(width < 64rem)");
   for (const btn of document.querySelectorAll<HTMLButtonElement>(".chart-zoom")) {
     btn.addEventListener("click", () => {
       const chart = btn.querySelector("img")!;
       img.src = chart.currentSrc || chart.src;
       img.alt = chart.alt;
+      // phones: the chart is wider than the screen, so its area takes focus and scrolls with the arrow keys
+      pan.tabIndex = phone.matches ? 0 : -1;
       dialog.showModal();
     });
   }
-  const phone = matchMedia("(width < 64rem)");
   dialog.addEventListener("click", (e) => {
     if (phone.matches && (e.target as Element).closest(".lightbox__pan")) return;
     dialog.close();
@@ -300,6 +303,11 @@ const charts = [
       overflow: auto;
       overscroll-behavior: contain;
       padding: 56px 16px 16px;
+    }
+    /* keyboard users scroll the chart with the arrows once it has focus (Safari only scrolls a focused area) */
+    .lightbox__pan:focus-visible {
+      outline: 2px solid var(--c-primary);
+      outline-offset: -4px;
     }
     .lightbox__img {
       width: 1000px;

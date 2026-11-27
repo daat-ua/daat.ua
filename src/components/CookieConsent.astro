@@ -97,7 +97,7 @@ const policyHref = `${getRelativeLocaleUrl(Astro.currentLocale ?? "uk-UA", "priv
     opacity: 0.85;
   }
   .cookie-consent__text a {
-    padding-block: 5px; /* a 24px target on an inline link, no line moves (DAA-246) */
+    padding-block: calc(5 * var(--px)); /* a 24px target on an inline link, no line moves (DAA-246) */
     color: inherit;
     text-decoration-line: underline;
     text-underline-offset: 0.2em;

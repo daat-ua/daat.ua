@@ -117,7 +117,7 @@ const ICONS: Record<SocialNetwork, string> = {
   .footer__nav a::before {
     content: "";
     position: absolute;
-    inset: -4px 0;
+    inset: calc(-4 * var(--px)) 0;
   }
   .footer__nav a:hover,
   .footer__nav a:focus-visible {

@@ -82,6 +82,17 @@ There is one breakpoint: at 1024px and up, the 1440 design scales proportionally
 - Founders photo capped at 320px.
 - The table of contents becomes a compact horizontal bar that sticks to the top of the blue section (scrolls sideways, 44px touch targets, active item underlined) instead of being hidden.
 
+Phones, after the mobile review (DAA-246, all new; worth a phone frame):
+
+- Hero: the two buttons come right after the lead paragraph, the client logos after them, so booking is on the first screen.
+- A slim call bar (the founders' faces, "Дзвінок 30 хв", "Записатися") appears at the bottom once the hero's buttons have scrolled away, and steps aside at the footer, as on the findings pages.
+- The section bar centres the current section and fades its edges where more links continue.
+- Report charts carry a "Збільшити" tag and a caption; full size, they open wider than the screen and pan.
+- The roadmap's three horizons are all at full strength (stacked, they are read in turn); the tabs lead to them.
+- The FAQ folds: the first answer open, the others behind their question.
+- The scroll animation's circle labels are at least 13px, in bigger circles.
+- **The one exception to the single breakpoint:** short screens (landscape phones, height ≤ 500px). The bar steps aside while reading down and is back on the way up, and the cookie notice keeps to the right edge, without its icon, in 13px text. Nothing about the layout or `--px` changes there, only these two overlays; if the team prefers to keep strictly to one breakpoint, they are the two rules to drop.
+
 ## Structure and robustness (`/harden`), code only, no visual change
 
 - Hero key points are a definition list (term + description), so the heading outline is H1 → H2 → H3 with no skipped level.

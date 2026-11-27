@@ -78,6 +78,11 @@ import { toc } from "../data/navigation";
     // way up (DAA-246)
     const short = matchMedia("(width < 64rem) and (max-height: 500px)");
     let lastY = scrollY;
+    // leaving short-screen mode (a phone turned upright) brings the bar back
+    short.addEventListener("change", () => {
+      if (!short.matches) toc!.removeAttribute("data-tucked");
+      lastY = scrollY;
+    });
     const tuck = () => {
       const y = scrollY;
       if (!short.matches || Math.abs(y - lastY) < 6) return;
