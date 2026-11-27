@@ -8,10 +8,10 @@ import { reportSections, workingFiles } from "../../../data/report";
 
 // Example charts from a real report; each opens full size in the lightbox
 const charts = [
-  { src: maturity, alt: "Приклад зі звіту: зрілість за складовими за шкалою Ω і надійність кожної оцінки" },
-  { src: priority, alt: "Приклад зі звіту: пріоритети складових, зрілість × сила доказів" },
-  { src: radar, alt: "Приклад зі звіту: профіль RADAR-IT для всієї компанії" },
-];
+  { src: maturity, caption: "Зрілість за складовими за шкалою Ω і надійність кожної оцінки" },
+  { src: priority, caption: "Пріоритети складових: зрілість × сила доказів" },
+  { src: radar, caption: "Профіль RADAR-IT для всієї компанії" },
+].map((c) => ({ ...c, alt: `Приклад зі звіту: ${c.caption.charAt(0).toLowerCase()}${c.caption.slice(1)}` }));
 ---
 
 <section class="report" id="report" data-toc-theme="light">
@@ -27,9 +27,15 @@ const charts = [
     <div class="report__layout">
       <div class="report__charts">
         {charts.map((chart) => (
-          <button class="chart-zoom" type="button" aria-label={`Відкрити графік на весь екран: ${chart.alt}`}>
-            <Image src={chart.src} alt={chart.alt} layout="none" />
-          </button>
+          <figure class="chart">
+            <button class="chart-zoom" type="button" aria-label={`Відкрити графік на весь екран: ${chart.alt}`}>
+              <Image src={chart.src} alt={chart.alt} layout="none" />
+              <span class="chart-zoom__hint" aria-hidden="true">
+                Збільшити
+              </span>
+            </button>
+            <figcaption class="chart__caption">{chart.caption}</figcaption>
+          </figure>
         ))}
       </div>
 
@@ -64,7 +70,9 @@ const charts = [
 
   <!-- Full-size view for the charts -->
   <dialog class="lightbox" aria-label="Графік зі звіту">
-    <img class="lightbox__img" alt="" />
+    <div class="lightbox__pan">
+      <img class="lightbox__img" alt="" />
+    </div>
     <button class="lightbox__close" type="button" aria-label="Закрити">
       ×
     </button>
@@ -72,7 +80,9 @@ const charts = [
 </section>
 
 <script>
-  // Charts open full size; a click anywhere (backdrop, image or the close button) closes the view
+  // Charts open full size; a click anywhere (backdrop, image or the close button) closes the view. On phones the
+  // chart opens larger than the screen to be panned (DAA-246): there a tap on it is part of panning, so only the
+  // close button (or Esc, or back) closes it
   const dialog = document.querySelector<HTMLDialogElement>(".lightbox")!;
   const img = dialog.querySelector<HTMLImageElement>(".lightbox__img")!;
   for (const btn of document.querySelectorAll<HTMLButtonElement>(".chart-zoom")) {
@@ -83,7 +93,11 @@ const charts = [
       dialog.showModal();
     });
   }
-  dialog.addEventListener("click", () => dialog.close());
+  const phone = matchMedia("(width < 64rem)");
+  dialog.addEventListener("click", (e) => {
+    if (phone.matches && (e.target as Element).closest(".lightbox__pan")) return;
+    dialog.close();
+  });
 </script>
 
 <style is:global>
@@ -112,10 +126,21 @@ const charts = [
     background: none;
     cursor: zoom-in;
   }
+  .chart {
+    margin: 0;
+  }
+  .chart-zoom {
+    position: relative;
+  }
   .chart-zoom img {
     display: block;
     width: 100%;
     height: auto;
+  }
+  /* phones: the charts' labels are too small at this width, so say they open larger (desktop: the zoom cursor) */
+  .chart-zoom__hint,
+  .chart__caption {
+    display: none;
   }
   .chart-zoom:focus-visible {
     outline-offset: 4px;
@@ -237,6 +262,57 @@ const charts = [
       position: static;
       order: 2;
       max-width: 480px;
+    }
+    .chart-zoom__hint {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      display: block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--c-hero);
+      color: var(--c-paper);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .chart__caption {
+      display: block;
+      margin-top: 8px;
+      color: var(--c-ink);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    /* the full-size view fills the screen, and the chart in it is drawn wider than the screen, at a size where
+       its labels read; it pans both ways */
+    .lightbox {
+      width: 100vw;
+      max-width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
+    }
+    .lightbox__pan {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 56px 16px 16px;
+    }
+    .lightbox__img {
+      width: 1000px;
+      max-width: none;
+      max-height: none;
+      cursor: auto;
+    }
+    .lightbox__close {
+      position: fixed;
+      z-index: 1;
+      top: calc(6px + env(safe-area-inset-top, 0px));
+      border-radius: 50%;
+      background: var(--c-paper); /* readable over the chart as it pans beneath */
     }
     .report__intro,
     .report-toc,
