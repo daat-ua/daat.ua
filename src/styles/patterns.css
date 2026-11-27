@@ -210,27 +210,30 @@
   font-size: var(--text-body);
   line-height: var(--leading-body);
 }
-.article-body :is(h2, h3) {
+/* Headings are styled by their look: the Studio style that a heading moved in the page's outline carries as a class
+   (withOutline, Heading.astro: .pt-h2, .pt-h3, .pt-h4), else its tag. The selectors weigh the same, (0,2,1), so a
+   later rule wins only where they mean to overlap (the h3 look refines the h2/h3 one) */
+.article-body :is(h2:not([class*="pt-h"]), h3:not([class*="pt-h"]), .pt-h2, .pt-h3) {
   margin: var(--space-2xl) 0 var(--space-md);
   font-family: var(--font-display);
   font-size: var(--text-title);
   font-weight: 500;
   line-height: var(--leading-title);
+  text-wrap: balance; /* as global.css gives h2 and h3 tags, so a moved h3 (an h4 tag) keeps it */
   scroll-margin-top: var(--space-xl);
 }
-/* .pt-h3: a Studio h3 that is the page's h2 (withOutline), styled as the h3 it was written as */
-.article-body :is(h3, .pt-h3) {
+.article-body :is(h3:not([class*="pt-h"]), .pt-h3) {
   margin-top: var(--space-xl);
   font-size: var(--text-lead);
 }
 /* under an h2 the h3 changes face, not just size (25.5 against 24 barely reads): the body font in Semibold. A text
    whose top level is h3 (the delivery management episodes) keeps it in the display face */
-.article-body:has(h2) h3 {
+.article-body:has(h2:not([class*="pt-h"]), .pt-h2) :is(h3:not([class*="pt-h"]), .pt-h3) {
   font-family: var(--font-body);
   font-weight: 600;
   line-height: var(--leading-small);
 }
-.article-body :is(h2, h3):first-child {
+.article-body :is(h2:not([class*="pt-h"]), h3:not([class*="pt-h"]), .pt-h2, .pt-h3):first-child {
   margin-top: 0;
 }
 .article-body :is(p, ul) {
@@ -286,9 +289,8 @@
 .article-body li > :is(ul, ol) {
   margin: var(--space-xs) 0 0;
 }
-/* the third level: a lead-in at the text's size, close to the paragraph it introduces. .pt-h4: a Studio h4 straight
-   under an h2, so the page's h3 (withOutline), which keeps this look over the h3 rules above */
-.article-body :is(h4, .pt-h4) {
+/* the third level: a lead-in at the text's size, close to the paragraph it introduces */
+.article-body :is(h4:not([class*="pt-h"]), .pt-h4) {
   margin: var(--space-lg) 0 var(--space-xs);
   font-family: var(--font-body);
   font-size: var(--text-body);
@@ -297,7 +299,7 @@
   text-wrap: wrap;
   scroll-margin-top: var(--space-xl);
 }
-.article-body :is(h4, .pt-h4):first-child {
+.article-body :is(h4:not([class*="pt-h"]), .pt-h4):first-child {
   margin-top: 0;
 }
 .article-body blockquote {
