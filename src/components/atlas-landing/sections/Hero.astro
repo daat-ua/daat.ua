@@ -1,4 +1,5 @@
 ---
+import { contact } from "../../../data/navigation";
 import { Image, Picture } from "astro:assets";
 import arrow from "../../../assets/icons/icon-arrow-up-right.svg";
 import plant from "../../../assets/icons/icon-plant.svg";
@@ -54,7 +55,7 @@ import { clients } from "../../../data/hero";
     </div>
 
     <div class="cta">
-      <a class="btn btn--primary" href="#contact">
+      <a class="btn btn--primary" href={contact.href}>
         Записатися на діагностичний дзвінок
       </a>
       <a class="btn btn--secondary" href="#deliverables">

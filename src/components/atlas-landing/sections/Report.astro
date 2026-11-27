@@ -1,4 +1,5 @@
 ---
+import { contact } from "../../../data/navigation";
 import { Image } from "astro:assets";
 import maturity from "../../../assets/charts/maturity-scorecard.svg";
 import priority from "../../../assets/charts/priority-quadrant.svg";
@@ -53,7 +54,7 @@ const charts = [
         </div>
 
         <div class="report__cta">
-          <a class="btn btn--primary" href="#contact">
+          <a class="btn btn--primary" href={contact.href}>
             Записатися на діагностичний дзвінок
           </a>
         </div>
