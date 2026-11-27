@@ -9,7 +9,7 @@ import { clients } from "../../../data/hero";
 
 <section class="hero">
   <div class="hero__photo-clip" aria-hidden="true">
-    <!-- the LCP image: modern formats, sized to the 1344.5px (desktop) / 150vw (phone) box, loaded first -->
+    <!-- the LCP image: modern formats, sized to the 1344.5px (desktop) / up to 150vw (phone, tablet) box, loaded first -->
     <Picture
       class="hero__photo"
       src={photo}
@@ -17,7 +17,7 @@ import { clients } from "../../../data/hero";
       formats={["avif", "webp"]}
       fallbackFormat="webp"
       widths={[640, 960, 1344, 1800, 2400, 2880]}
-      sizes="(width < 64rem) 150vw, 93.37vw"
+      sizes="(width < 64rem) min(150vw, 900px), 93.37vw"
       loading="eager"
       fetchpriority="high"
       layout="none"
@@ -191,13 +191,17 @@ import { clients } from "../../../data/hero";
   @media (width < 64rem) {
     .hero {
       --hero-gap: 20px;
+      /* the founders' photo: 150% of a phone's width, at most 900px (tablets) and 150% of the screen's height
+         (landscape phones), so it never fills the first screen; the text block clears it in proportion */
+      --photo-w: min(150vw, 900px, 150svh);
     }
     /* the call to action comes right after the lead, so it's on the first screen of a phone (DAA-246); the
        client logos follow it. Only the order on screen changes: the logos hold no links, so focus order is unaffected */
     .hero .wrap {
       display: flex;
       flex-direction: column;
-      padding-top: 252px; /* 100px more than the header needs: the founders' faces sit above the headline */
+      /* the founders' faces sit above the headline: 252px on a phone, growing with the photo on wider screens */
+      padding-top: max(252px, calc(var(--photo-w) * 0.38 + 30px));
       padding-bottom: 40px;
     }
     .hero__title {
@@ -212,7 +216,7 @@ import { clients } from "../../../data/hero";
       left: 50%;
       top: 40px;
       bottom: auto;
-      width: 150vw;
+      width: var(--photo-w);
       height: auto;
       aspect-ratio: 1344.5 / 896.5;
       opacity: 0.9;
