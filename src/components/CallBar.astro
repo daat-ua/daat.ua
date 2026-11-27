@@ -100,7 +100,7 @@ const founders = await getFounders();
   }
 </script>
 
-<style>
+<style is:global>
   .call-bar {
     display: none;
   }
@@ -158,6 +158,13 @@ const founders = await getFounders();
     font-weight: 600;
     line-height: 1.2;
   }
+  /* one line each, however narrow the phone: the bar stays one slim row */
+  .call-bar__text,
+  .call-bar__text small {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
   .call-bar__text small {
     display: block;
     color: rgb(244 241 234 / 0.72);
@@ -194,12 +201,6 @@ const founders = await getFounders();
     stroke: currentColor;
     stroke-width: 1.8;
     stroke-linecap: round;
-  }
-  /* the narrowest phones: the bar keeps to one line of text */
-  @media (width < 360px) {
-    .call-bar__text small {
-      display: none;
-    }
   }
   .call-bar :is(a, button):focus-visible {
     outline: 3px solid var(--c-accent);

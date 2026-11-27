@@ -455,8 +455,9 @@
   transition: text-decoration-color 0.2s ease;
 }
 /* the whole teaser is the link's target, not its 20px line of text (DAA-246): a tap anywhere on the card follows
-   it, as the image link already did; the card's text stays where it is and still reads as the link's context */
-.finding__more::after {
+   it, as the image link already did; the card's text stays where it is and still reads as the link's context.
+   Only in a card: the heading's "Дивитися каталог" shares the class, and must not cover the section */
+.finding .finding__more::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -485,7 +486,7 @@
 }
 .findings__pages span {
   flex: 0 1 auto;
-  min-width: 6px;
+  min-width: calc(6 * var(--px));
   width: calc(48 * var(--px));
   height: 3px;
   border-radius: 2px;

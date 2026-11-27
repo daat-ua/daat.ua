@@ -10,7 +10,7 @@
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
-import { extname, join, resolve } from "node:path";
+import { extname, join, resolve, sep } from "node:path";
 import { globSync } from "node:fs";
 import { chromium } from "playwright-core";
 
@@ -47,8 +47,16 @@ const types = {
   ".xml": "application/xml",
 };
 const server = createServer(async (req, res) => {
-  const path = decodeURIComponent(new URL(req.url, "http://x").pathname);
-  for (const file of [join(DIST, path), join(DIST, `${path}.html`), join(DIST, path, "index.html")]) {
+  let path;
+  try {
+    path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  } catch {
+    return res.writeHead(400).end();
+  }
+  // only files inside dist/: a decoded "../" mustn't reach the rest of the disk
+  const inside = (file) => file === DIST || file.startsWith(DIST + sep);
+  const candidates = [join(DIST, path), join(DIST, `${path}.html`), join(DIST, path, "index.html")].filter(inside);
+  for (const file of candidates) {
     try {
       if ((await stat(file)).isFile()) {
         res.writeHead(200, { "content-type": types[extname(file)] ?? "application/octet-stream" });
@@ -58,8 +66,9 @@ const server = createServer(async (req, res) => {
   }
   res.writeHead(404).end();
 });
-await new Promise((done) => server.listen(0, done));
-const origin = `http://localhost:${server.address().port}`;
+// loopback only: nothing else on the network reaches the test server
+await new Promise((done) => server.listen(0, "127.0.0.1", done));
+const origin = `http://127.0.0.1:${server.address().port}`;
 
 const browser = await chromium.launch({ channel: "chrome" });
 const failures = [];
@@ -104,7 +113,7 @@ if (!args.pages || String(args.pages).includes("uk-UA/atlas")) {
     const bar = document.querySelector(".why__toc");
     const found = [];
     for (let y = 0; y < document.documentElement.scrollHeight; y += 300) {
-      scrollTo(0, y);
+      scrollTo({ top: y, behavior: "instant" }); // the page scrolls smoothly: measure where it is, not mid-way
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const b = bar.getBoundingClientRect();
       if (b.top !== 0) continue; // not stuck yet, or released at the end
