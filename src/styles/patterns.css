@@ -763,6 +763,16 @@
   }
 }
 
+/* text for screen readers only (what the page shows by drawing, e.g. a phase's weeks) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ---------- Scroll reveals (src/scripts/reveal.ts, on the pages that import it) ----------
    An element waits in .reveal-pending (set by the script, below the fold only) and moves while .is-revealing;
    transform, opacity and clip-path only, so nothing reflows. Never in print. The transitions are !important:

@@ -4,7 +4,7 @@
 // the rules below find what each page has.
 // Five patterns: section titles in two beats (the Light words rise, the Medium ones land 140ms later), text and
 // cards rising, charts and videos unmasking, the roadmap's impact bars growing to their values, the FAQ fading.
-// The hero, the scrubbed clip, the roadmap's horizon animation and the methodology rail keep their own motion.
+// The hero, the scrubbed clip and the roadmap's horizon animation keep their own motion.
 //
 // Nothing is hidden unless this runs: elements wait in .reveal-pending only once it has measured them, and only
 // below 85% of the window. Already on screen, above a deep link's target, scrolled past too fast to be seen or
@@ -35,6 +35,9 @@ const RULES: { selector: string; pattern: Pattern; items?: string; step?: number
   { selector: ".report__charts", items: ":scope > *", pattern: "media", step: 120 },
   // the impact table's bars, row after row
   { selector: ".impact__scroll", items: ".impact__fill", pattern: "bar", step: 40 },
+  // the methodology's phases rise in order, then each phase's weeks draw along its track
+  { selector: ".phases__list", items: ":scope > *", pattern: "rise" },
+  { selector: ".phases__list", items: ".phases__track i", pattern: "bar", step: 90 },
   // the questions
   { selector: ".faq__list", items: ":scope > *", pattern: "fade", step: 60 },
   // the case studies index: «Усі кейси», each case's photo and its text line by line, the rule between cases

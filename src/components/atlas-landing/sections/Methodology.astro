@@ -4,7 +4,14 @@ import divider from "../../../assets/dividers/divider-dark.svg";
 import { enablers, notes, phases, radar, scale } from "../../../data/methodology";
 
 // "file export" icon in front of each phase's artifact
-const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>`;
+const FILE_ICON = `<svg class="phases__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V14C4 17.7712 4 19.6569 5.17157 20.8284C6.34315 22 8.22876 22 12 22M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5" /><path d="M17 22C17.6068 21.4102 20 19.8403 20 19C20 18.1597 17.6068 16.5898 17 16M19 19H12" /></svg>`;
+// the weeks of the diagnostic, and a phase's span in words for screen readers (the bars are drawn only)
+const WEEKS = [1, 2, 3, 4, 5];
+const weeksLabel = ([from, to]: [number, number]) => {
+  const first = Math.floor(from / 2) + 1;
+  const last = Math.ceil(to / 2);
+  return first === last ? `Тиждень ${first}` : `Тижні ${first}–${last}`;
+};
 ---
 
 <section class="why why--gains" id="methodology">
@@ -50,10 +57,19 @@ const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="
           Шкала зрілості <span class="nowrap">1–5</span>&nbsp;— спільна мова
         </h3>
         <div class="card__body">
+          <!-- a measuring rule: the levels' numbers left of a line that fades towards Ad hoc, a mark on it per
+               level, bigger the higher the level -->
           <ol class="method__list method__scale">
-            {scale.map((level) => (
-              <li>
-                <span set:html={level} />
+            {scale.map((l) => (
+              <li style={`--level: ${l.level}`}>
+                <span class="method__level" aria-hidden="true">
+                  {l.level}
+                </span>
+                <strong>
+                  <span class="visually-hidden">{l.level}. </span>
+                  {l.name}
+                </strong>
+                <span class="method__level-text">{l.text}</span>
               </li>
             ))}
           </ol>
@@ -75,65 +91,47 @@ const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="
           ))}
         </ul>
       </div>
-      <ol class="timeline">
-        {phases.map((p) => (
-          <li>
-            <div>
-              <h4 class="timeline__title" set:html={p.title} />
-              <p class="timeline__text" set:html={p.text} />
-            </div>
-            <div class="timeline__side">
-              <p class="timeline__artifact">
+      <!-- the phases as a working paper: number, what happens, what stays with you, and where it falls in the
+           weeks (a pale track per phase, the whole path, with the phase's weeks in blue; it also parts the phases) -->
+      <div class="phases">
+        <div class="phases__weeks" aria-hidden="true">
+          {WEEKS.map(() => (
+            <span />
+          ))}
+        </div>
+        <ol class="phases__list">
+          {phases.map((p, i) => (
+            <li>
+              <span class="phases__n" aria-hidden="true">
+                {i}
+              </span>
+              <div>
+                <h4 class="phases__title" set:html={`<span class="visually-hidden">Фаза ${i}: </span>${p.title}`} />
+                <p
+                  class="phases__text"
+                  set:html={`${p.text}<span class="visually-hidden">. ${weeksLabel(p.weeks)}</span>`}
+                />
+              </div>
+              <p class="phases__artifact">
                 <Fragment set:html={FILE_ICON} />
-                {p.artifact}
+                <span set:html={p.artifact} />
               </p>
-            </div>
-          </li>
-        ))}
-      </ol>
+              <span class="phases__track" aria-hidden="true">
+                <i style={`--from: ${p.weeks[0] + 1}; --to: ${p.weeks[1] + 1}`} />
+              </span>
+            </li>
+          ))}
+        </ol>
+        <div class="phases__scale" aria-hidden="true">
+          <span>тижні</span>
+          {WEEKS.map((w) => (
+            <span>{w}</span>
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 </section>
-
-<script>
-  // The timeline's blue rail draws itself once, when 80% of the card is in view (or 80% of the viewport, if the
-  // card is taller than that). The script measures the rail into --rail-*; CSS does the drawing.
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  for (const tl of document.querySelectorAll<HTMLElement>(".timeline")) {
-    if (reduced || !("IntersectionObserver" in window)) continue;
-    const DRAW = 2; // seconds, first dot to last
-    const items = [...tl.children] as HTMLElement[];
-    function measure() {
-      const first = items[0];
-      const top = first.offsetTop;
-      const line = parseFloat(getComputedStyle(first.querySelector(".timeline__title")!).lineHeight);
-      const len = items.at(-1)!.offsetTop + line - top; // the last phase's rail ends with its title line
-      tl.style.setProperty("--rail-top", `${top}px`);
-      tl.style.setProperty("--rail-left", `${first.offsetLeft}px`);
-      tl.style.setProperty("--rail-len", `${len}px`);
-      tl.style.setProperty("--rail-draw", `${DRAW}s`);
-      for (const li of items) li.style.setProperty("--dot-delay", `${(DRAW * (li.offsetTop - top + line / 2)) / len}s`);
-    }
-    measure();
-    // re-measure whenever the card's size changes (viewport, late fonts, text reflow), not only on resize
-    new ResizeObserver(() => measure()).observe(tl);
-    tl.classList.add("has-rail", "is-pending");
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          const enough =
-            e.intersectionRatio >= 0.8 || e.intersectionRect.height >= 0.8 * (e.rootBounds?.height ?? innerHeight);
-          if (!enough) continue;
-          io.disconnect();
-          tl.classList.add("is-drawn");
-          requestAnimationFrame(() => requestAnimationFrame(() => tl.classList.remove("is-pending")));
-        }
-      },
-      { threshold: Array.from({ length: 21 }, (_, k) => k / 20) },
-    );
-    io.observe(tl);
-  }
-</script>
 
 <style is:global>
   /* "Як працює ATLAS": three lists in the card grid; the maturity scale counts down from 5 */
@@ -148,52 +146,77 @@ const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="
   .method__list strong {
     font-weight: 600;
   }
-  /* the maturity levels carry a signal-strength icon instead of a number: full bars at 5, one bar at 1 */
+  /* the maturity levels on a measuring rule (DAA-246 follow-up): the numbers, a line that fades from 5 to 1 and a
+     mark per level on it, bigger the higher the level; the name, and under it what the level means */
   .method__scale {
+    --rule-left: calc(40 * var(--px)); /* the line, from the list's left edge */
+    position: relative;
     display: grid;
-    row-gap: var(--space-xs);
+    row-gap: var(--space-sm);
     margin-bottom: 0;
-    padding: 0;
+    padding: 0 0 0 calc(64 * var(--px));
     list-style: none;
   }
-  .method__scale li {
-    display: grid;
-    grid-template-columns: 1.2em 1fr;
-    column-gap: 0.5em;
-  }
-  .method__scale li::before {
+  .method__scale::before {
     content: "";
-    width: 1.2em;
-    height: 1.2em;
-    margin-top: calc((var(--leading-body) * 1em - 1.2em) / 2); /* centred on the first line */
-    background: var(--c-peach);
-    -webkit-mask: var(--signal) center / contain no-repeat;
-    mask: var(--signal) center / contain no-repeat;
+    position: absolute;
+    top: 0.71em; /* from the first mark to the last */
+    bottom: calc(var(--text-small) * 1.45 + 0.71em);
+    left: var(--rule-left);
+    width: 1px;
+    background: linear-gradient(var(--c-accent), rgb(254 177 97 / 0.15));
+    transform-origin: top;
   }
-  .method__scale li:nth-child(1) {
-    --signal: url("../../../assets/icons/icon-signal-5.svg");
+  .method__scale li {
+    position: relative;
   }
-  .method__scale li:nth-child(2) {
-    --signal: url("../../../assets/icons/icon-signal-4.svg");
+  .method__scale strong {
+    display: block;
   }
-  .method__scale li:nth-child(3) {
-    --signal: url("../../../assets/icons/icon-signal-3.svg");
+  /* the mark, centred on the line and on the name's line; a ring of the section's navy parts it from the line */
+  .method__scale li::before {
+    --d: calc((3 + 1.5 * var(--level)) * var(--px));
+    content: "";
+    position: absolute;
+    top: calc(var(--leading-body) * 0.5em - var(--d) / 2);
+    left: calc(var(--rule-left) - calc(64 * var(--px)) + 0.5px - var(--d) / 2);
+    width: var(--d);
+    height: var(--d);
+    border-radius: 50%;
+    background: var(--c-accent);
+    box-shadow: 0 0 0 calc(3 * var(--px)) var(--c-hero);
   }
-  .method__scale li:nth-child(4) {
-    --signal: url("../../../assets/icons/icon-signal-2.svg");
+  .method__level {
+    position: absolute;
+    top: 0;
+    left: calc(-64 * var(--px));
+    width: calc(22 * var(--px));
+    color: var(--c-accent);
+    font-family: var(--font-display);
+    font-weight: 300;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
-  .method__scale li:nth-child(5) {
-    --signal: url("../../../assets/icons/icon-signal-1.svg");
+  .method__level-text {
+    display: block;
+    color: rgb(237 233 222 / 0.6); /* dimmed cream, as the phases' descriptions */
+    font-size: var(--text-small);
+    line-height: 1.45;
   }
-  /* Project timeline: a blue rail with a white dot per phase; what the phase does on the left,
-         its number and the artifact it leaves you on the right */
-  /* title in the first column, timeline across the other two (the lists' grid above) */
+  /* one card: the title in the first column, the phases across the other two. The card reaches out past the
+     content by its padding, so its text stays on the lists' grid above */
   .method__process {
+    --pad: var(--space-lg);
     display: grid;
     grid-template-columns: var(--col) var(--span-2);
     column-gap: var(--col-gap);
     align-items: start;
-    margin-top: var(--space-3xl);
+    width: calc(var(--span-3) + 2 * var(--pad));
+    margin: var(--space-xl) 0 0 calc(-1 * var(--pad));
+    padding: var(--pad);
+    border-radius: 6px; /* as the teaser images */
+    /* a step lighter than the section's navy, so it reads as one object; its lowest 40% fades into the section */
+    background: linear-gradient(to bottom, var(--c-surface) 60%, var(--c-hero));
   }
   .method__subtitle {
     margin: 0;
@@ -233,122 +256,78 @@ const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="
   .method__notes strong {
     font-weight: 600;
   }
-  .timeline {
-    --rail: calc(20 * var(--px));
-    --dot: calc(8 * var(--px));
-    --timeline-gap: var(--space-lg);
+  /* the phases: a working paper (DAA-246 follow-up). Weeks: 1px lines down the whole list, behind everything */
+  .phases {
+    --num: calc(51.2 * var(--px)); /* the phase numbers' column */
+    --gap: calc(20 * var(--px));
+    --weeks-left: calc(var(--num) + var(--gap));
     position: relative;
+  }
+  .phases__weeks {
+    position: absolute;
+    inset: calc(-1 * var(--pad)) 0 calc(-1 * var(--pad)) var(--weeks-left); /* the card's full height */
     display: grid;
-    grid-template-columns: 1fr auto; /* the artifacts share one column, so their icons line up on the left */
-    row-gap: var(--timeline-gap);
+    grid-template-columns: repeat(5, 1fr);
+    pointer-events: none;
+  }
+  .phases__weeks span + span {
+    border-left: 1px solid rgb(237 233 222 / 0.04); /* barely there: a guide, not a grid */
+  }
+  .phases__list {
+    position: relative;
     margin: 0;
-    padding: var(--space-lg);
+    padding: 0;
     list-style: none;
-    border-radius: 6px; /* as the teaser images */
-    background: var(--c-surface); /* a step lighter than the section's navy */
-    /* a deep, very soft shadow (night-tinted) that lifts the card off the section */
-    box-shadow:
-      0 calc(80 * var(--px)) calc(160 * var(--px)) calc(-20 * var(--px)) rgb(6 10 14 / 0.35),
-      0 calc(24 * var(--px)) calc(64 * var(--px)) rgb(6 10 14 / 0.2);
   }
-  .timeline li {
-    position: relative;
+  .phases__list li {
     display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-    column-gap: var(--space-lg);
-    padding-left: calc(var(--rail) + var(--space-lg));
+    grid-template-columns: var(--num) minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--gap);
+    align-items: center; /* the number, the text and the artifact centred on one another */
+    padding-top: var(--space-md);
   }
-  /* the rail is drawn per phase, down to the next one; the last stops just past its dot,
-         as far below it as the rail starts above the first */
-  .timeline li::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: calc(-1 * var(--timeline-gap));
-    left: 0;
-    width: var(--rail);
-    background: var(--c-primary);
+  /* the first phase starts level with the title beside it */
+  .phases__list li:first-child {
+    padding-top: 0;
   }
-  /* One-time draw (the script adds .has-rail, measuring the rail into --rail-*): the per-phase rail becomes
-         a dark track, and one rounded blue bar over it is revealed top to bottom with clip-path, so its growing
-         end stays round. .is-pending holds it empty with dimmed dots; .is-drawn reveals it once 80% of the card
-         is in view, lighting each dot as the bar passes it (--dot-delay). */
-  .timeline.has-rail li::before {
-    background: var(--c-night);
-  }
-  .timeline.has-rail::after {
-    content: "";
-    position: absolute;
-    z-index: 1;
-    top: var(--rail-top);
-    left: var(--rail-left);
-    width: var(--rail);
-    height: var(--rail-len);
-    border-radius: 999px;
-    background: var(--c-primary);
-    clip-path: inset(0 0 0 0 round calc(var(--rail) / 2));
-  }
-  .timeline.is-pending::after {
-    clip-path: inset(0 0 100% 0 round calc(var(--rail) / 2));
-  }
-  .timeline.is-pending li::after {
-    background: rgb(237 233 222 / 0.3);
-  }
-  .timeline.is-drawn::after {
-    transition: clip-path var(--rail-draw) linear;
-  }
-  .timeline.is-drawn li::after {
-    transition: background-color 0.2s ease var(--dot-delay, 0s);
-  }
-  .timeline li:first-child::before {
-    border-radius: 999px 999px 0 0;
-  }
-  .timeline li:last-child::before {
-    bottom: auto;
-    height: calc(var(--text-body) * 1.3);
-    border-radius: 0 0 999px 999px;
-  }
-  .timeline li::after {
-    content: "";
-    position: absolute;
-    z-index: 2;
-    left: calc((var(--rail) - var(--dot)) / 2);
-    top: calc((var(--text-body) * 1.3 - var(--dot)) / 2); /* centred on the title's first line */
-    width: var(--dot);
-    height: var(--dot);
-    border-radius: 50%;
-    background: var(--c-white);
-  }
-  .timeline p {
+  .phases__list p {
     margin: 0;
   }
-  .timeline__title {
+  .phases__n {
+    color: var(--c-accent);
+    font-family: var(--font-display);
+    font-size: calc(32 * var(--px));
+    font-weight: 300;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .phases__title {
     margin: 0;
     color: var(--c-white);
     font-size: var(--text-body);
     font-weight: 500;
     line-height: 1.3;
   }
-  .timeline__text {
+  .phases__text {
     margin-top: var(--space-xs);
     color: rgb(237 233 222 / 0.6); /* dimmed cream, as on the roadmap tabs */
     font-size: var(--text-small);
-    line-height: 1.35;
+    line-height: 1.45; /* light on navy reads better a little looser */
   }
-  .timeline__side {
-    align-self: center;
-  }
-  .timeline__artifact {
+  /* what stays with you: at the list's right edge, like a page reference; Regular, so the phase title leads */
+  .phases__artifact {
     display: flex;
+    justify-self: end;
+    justify-content: flex-end;
     align-items: center;
-    gap: 0.4em;
+    gap: 0.45em;
     color: var(--c-cream);
     font-size: var(--text-small);
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.35;
+    text-align: right;
   }
-  .timeline__icon {
+  .phases__icon {
     flex: none;
     width: 1.2em;
     height: 1.2em;
@@ -358,27 +337,86 @@ const FILE_ICON = `<svg class="timeline__icon" viewBox="0 0 24 24" aria-hidden="
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+  /* the whole path, pale, under every phase (it parts the phases); the blue part is when the phase happens */
+  .phases__track {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    height: calc(4 * var(--px));
+    margin-top: var(--space-md);
+    border-radius: 2px;
+    background: rgb(237 233 222 / 0.04); /* as the week lines */
+  }
+  .phases__track i {
+    grid-column: var(--from) / var(--to);
+    border-radius: 2px;
+    background: var(--c-primary);
+  }
+  .phases__scale {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--weeks-left) repeat(5, 1fr);
+    margin-top: var(--space-md);
+    color: rgb(237 233 222 / 0.6);
+    font-size: calc(14 * var(--px));
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .phases__scale span {
+    padding-left: calc(8 * var(--px));
+  }
+  .phases__scale span:first-child {
+    padding: 0 calc(8 * var(--px)) 0 0;
+    text-align: right;
+    letter-spacing: 0.02em;
+  }
 
   @media (width < 64rem) {
+    /* phones: the card stays within the page margins; the title above the phases */
     .method__process {
+      --pad: 20px;
       grid-template-columns: 1fr;
       row-gap: 32px;
-      margin-top: 80px;
+      width: auto;
+      margin: 48px 0 0;
     }
-    .timeline {
-      --rail: 16px;
-      --dot: 7px;
-      --timeline-gap: 24px;
-      padding: 20px;
+    /* the artifact under its phase, left; the weeks stay across the text column, from the phases down */
+    .phases {
+      --num: 36px;
+      --gap: 14px;
     }
-    .timeline {
-      grid-template-columns: 1fr;
+    .phases__weeks {
+      top: 0;
     }
-    .timeline li {
-      padding-left: calc(var(--rail) + 16px);
+    .phases__list li {
+      grid-template-columns: var(--num) minmax(0, 1fr);
     }
-    .timeline__artifact {
-      margin-top: var(--space-xs);
+    .phases__n {
+      font-size: 24px;
+    }
+    .phases__artifact {
+      grid-column: 2;
+      justify-self: start;
+      justify-content: flex-start;
+      margin-top: 8px;
+      text-align: left;
+    }
+    .phases__scale {
+      font-size: 13px;
+    }
+    .method__scale {
+      --rule-left: 34px;
+      row-gap: 12px;
+      padding-left: 54px;
+    }
+    .method__scale li::before {
+      --d: calc(3px + 1.5px * var(--level));
+      left: calc(var(--rule-left) - 54px + 0.5px - var(--d) / 2);
+      box-shadow: 0 0 0 3px var(--c-hero);
+    }
+    .method__level {
+      left: -54px;
+      width: 20px;
     }
   }
 </style>
