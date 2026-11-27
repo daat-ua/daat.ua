@@ -1,7 +1,7 @@
 ---
 import { contact } from "../../../data/navigation";
 import { Picture } from "astro:assets";
-import founders from "../../../assets/images/founders.jpg";
+import founders from "../../../assets/images/founders-why-daat.jpg";
 import { problems, reasons } from "../../../data/why-now";
 import Divider from "../../ui/Divider.astro";
 ---
@@ -63,13 +63,13 @@ import Divider from "../../ui/Divider.astro";
 
     <div class="why-daat">
       <div class="why-daat__photo">
-        <!-- cropped by the CSS mask; the image is drawn at ~1.93× the column -->
+        <!-- the founders' studio portrait (Nov 2024), cut to the frame's proportion; the CSS mask gives its shape -->
         <Picture
           src={founders}
-          alt="Засновники Daat"
+          alt="Сергій Герасимов і Олена Кияновська, засновники Daat"
           formats={["avif", "webp"]}
           widths={[480, 640, 900, 1200, 1600]}
-          sizes="(width < 64rem) 620px, 40.8vw"
+          sizes="(width < 64rem) 320px, 21.1vw"
           layout="none"
         />
       </div>
@@ -144,13 +144,12 @@ import Divider from "../../ui/Divider.astro";
     -webkit-mask: url("../../../assets/images/founders-mask.svg") no-repeat 0 0 / 100% 100%;
     mask: url("../../../assets/images/founders-mask.svg") no-repeat 0 0 / 100% 100%;
   }
+  /* the photo is cut to the frame's proportion (301.2 : 339), so it fills it as it is */
   .why-daat__photo img {
     position: absolute;
-    /* Figma crop, expressed relative to the mask box so it scales with the column */
-    left: -46.81%;
-    top: -1.18%;
-    width: 193.39%;
-    height: 114.6%;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     max-width: none;
     object-fit: cover;
   }
