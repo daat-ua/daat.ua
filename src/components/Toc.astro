@@ -4,7 +4,8 @@ import { toc } from "../data/navigation";
 
 <!--
   The area beside the floating table of contents: the TOC plus the sections it lists (the slot).
-  Stacking inside: content sections (0) < TOC (1) < animated clip (2) < hero (3) < header (4).
+  Stacking inside: content sections (0) < TOC (1) < animated clip (2) < hero (3) < header (4). On phones the TOC is
+  a sticky bar at the top instead, at 4: above the roadmap's text (3), which scrolls under it.
 -->
 <div class="toc-scope">
   <aside class="why__toc">
@@ -139,7 +140,9 @@ import { toc } from "../data/navigation";
     .why__toc {
       position: sticky;
       top: 0;
-      z-index: 2;
+      /* above the roadmap's text and tabs (3), which on desktop sit over the floating TOC on purpose; the
+         header isn't sticky on phones, so nothing else meets it here (DAA-246) */
+      z-index: 4;
       width: auto;
       margin: 0;
       background: var(--c-primary);

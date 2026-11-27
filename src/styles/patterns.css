@@ -466,12 +466,18 @@
 .findings__controls[hidden] {
   display: none; /* the flex above would override [hidden] */
 }
+/* The page dashes share what's left of the row: with many pages on a phone (one per card) they narrow rather
+   than push the row, and with it the whole page, wider than the screen (DAA-246); the arrows keep their size */
 .findings__pages {
   display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
   gap: var(--space-xs);
   margin-right: var(--space-lg);
 }
 .findings__pages span {
+  flex: 0 1 auto;
+  min-width: 6px;
   width: calc(48 * var(--px));
   height: 3px;
   border-radius: 2px;
@@ -483,6 +489,7 @@
 }
 .findings__nav {
   display: grid;
+  flex: none;
   place-items: center;
   width: 44px;
   height: 44px;

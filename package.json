@@ -14,6 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:visual": "node tests/visual/compare.mjs",
+    "test:mobile": "node tests/mobile/check.mjs",
     "typegen": "npm --prefix studio run typegen"
   },
   "dependencies": {
