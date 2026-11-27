@@ -442,6 +442,10 @@ const testimonials = raw.map((t) => {
     filter: brightness(0.13);
   }
   .vt__case {
+    /* a 44px target around the line of text, without moving it (DAA-246) */
+    display: inline-block;
+    padding-block: 12px;
+    margin-block: -12px;
     color: var(--c-primary); /* same as "Читати кейс" */
     font-size: var(--text-body);
     font-weight: 500;
