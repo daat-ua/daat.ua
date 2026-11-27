@@ -198,9 +198,19 @@
     .scrub::after {
       height: 64px;
     }
+    /* the labels stay readable on a phone: 13px at the least (they were 10px on a 390px screen), in circles
+       big enough to hold "досконалість" (DAA-246) */
     .pillars {
-      --pillar-size: clamp(68px, 17vw, 121.5px);
-      --pillar-font: clamp(10px, 2.3vw, 17px);
+      --pillar-size: clamp(96px, 26vw, 121.5px);
+      --pillar-font: clamp(13px, 3.4vw, 17px);
+    }
+    /* bigger circles than the traces leave room for: the outer two keep half a circle + 6px from the edges */
+    .pillar--technical {
+      --x: max(13.628%, calc(var(--pillar-size) / 2 + 6px));
+    }
+    .pillar--delivery {
+      --x: min(88.073%, calc(100% - var(--pillar-size) / 2 - 6px));
+      --y: max(26.215%, calc(var(--pillar-size) / 2 + 6px));
     }
   }
 </style>
