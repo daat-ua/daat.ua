@@ -17,6 +17,7 @@ npm run build         # static build into dist/
 npm run preview       # serve dist/ locally
 npm run format        # Prettier; CI runs format:check
 npm run test:visual   # compare each section of the ATLAS page with a reference (needs a build; see below)
+npm run test:mobile   # phones: no page wider than the screen, the ATLAS sticky bar and CTA (needs a build)
 ```
 
 In `npm run dev`, the dev toolbar's **SEO** app (`src/dev-toolbar/seo-app.ts`) shows the page being viewed as a search result and as a shared link on Facebook/LinkedIn, X and Telegram, and checks its title and description lengths, canonical, robots, Open Graph tags, share image size, JSON-LD and heading order. It's registered only by `astro dev`, so the build has none of it.

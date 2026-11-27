@@ -33,6 +33,9 @@ jobs:
         run: npm run check
       - name: Build
         run: npm run build
+      # every page fits a phone's width, and the ATLAS page's sticky bar and call to action hold (DAA-246)
+      - name: Phone checks
+        run: npm run test:mobile
       # Only what a pull request changes on the ATLAS page: its build against its base branch's build. A PR that
       # changes the page on purpose gets the `visual-change` label, which skips this step (diffs stay reviewable
       # locally with `npm run test:visual -- --base-ref=origin/main`).
