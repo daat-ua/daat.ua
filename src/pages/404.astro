@@ -1,16 +1,18 @@
 ---
 import FindingsLayout from "../layouts/FindingsLayout.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
 import { contact, legalLinks, projects } from "../data/navigation";
 
 // The page for an address that doesn't exist (Caddy serves it with a 404): the site's main sections, so a reader who
 // followed an old or mistyped link still finds their way (DAA-220). No canonical URL (Base).
 
+const url = (path: string) => getRelativeLocaleUrl("uk-UA", path, { normalizeLocale: false });
 const sitemap = legalLinks.find((l) => l.href.endsWith("/sitemap"));
 const [delivery, talks] = projects;
 const sections = [
-  { label: "Діагностика ATLAS", href: "/uk-UA/atlas", note: "Що стримує зростання IT-компанії, за 4–5 тижнів" },
-  { label: "Знахідки аудитів", href: "/uk-UA/atlas/findings", note: "Типові проблеми IT-компаній і як їх розв’язати" },
-  { label: "Кейси", href: "/uk-UA/atlas/case-studies", note: "Що змінилося в компаніях після діагностики" },
+  { label: "Діагностика ATLAS", href: url("atlas"), note: "Що стримує зростання IT-компанії, за 4–5 тижнів" },
+  { label: "Знахідки аудитів", href: url("atlas/findings"), note: "Типові проблеми IT-компаній і як їх розв’язати" },
+  { label: "Кейси", href: url("atlas/case-studies"), note: "Що змінилося в компаніях після діагностики" },
   { ...delivery, note: "Короткі відео про delivery-менеджмент" },
   { ...talks, note: "Подкаст про бізнес IT-компаній і статті з розмов" },
   { ...contact, note: "Засновники Daat відповідають протягом робочого дня" },
@@ -45,7 +47,7 @@ const sections = [
 <style>
   .nf-intro {
     margin: 0;
-    max-width: 40rem;
+    max-width: calc(640 * var(--px));
     font-size: var(--text-lead);
     line-height: var(--leading-body);
   }
